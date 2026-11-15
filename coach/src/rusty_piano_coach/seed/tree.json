@@ -1,0 +1,3784 @@
+{
+  "version": 1,
+  "kind": "rusty_piano.tree",
+  "decay_days": 30,
+  "default_gates": {
+    "good": {
+      "accuracy": 0.95,
+      "timing": 0.6,
+      "tempo_ratio": 0.8,
+      "clean_runs": 3,
+      "days": 2,
+      "holds": true
+    },
+    "solid": {
+      "accuracy": 0.98,
+      "timing": 0.8,
+      "tempo_ratio": 1.0,
+      "window": 7,
+      "clean_in_window": 5,
+      "days": 3,
+      "habit_free": true,
+      "holds": true
+    },
+    "mastered": {
+      "accuracy": 0.98,
+      "timing": 0.8,
+      "tempo_ratio": 1.0,
+      "away_days": 7,
+      "cold_runs": 3,
+      "cold_runs_per_drill": 2,
+      "materials": 2,
+      "holds": true
+    }
+  },
+  "tracks": [
+    {
+      "id": "reading",
+      "title": "Reading"
+    },
+    {
+      "id": "rhythm",
+      "title": "Rhythm"
+    },
+    {
+      "id": "technique",
+      "title": "Technique"
+    },
+    {
+      "id": "coordination",
+      "title": "Coordination"
+    },
+    {
+      "id": "expression",
+      "title": "Expression"
+    },
+    {
+      "id": "pedal",
+      "title": "Pedal"
+    },
+    {
+      "id": "pieces",
+      "title": "Pieces"
+    },
+    {
+      "id": "scales",
+      "title": "Scales and arpeggios"
+    },
+    {
+      "id": "ear",
+      "title": "Ear training"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "R1",
+      "kind": "skill",
+      "track": "reading",
+      "title": "Keyboard geography",
+      "summary": "Find notes on the keyboard by the pattern of black keys.",
+      "requires": [],
+      "measures": [
+        "pitch"
+      ],
+      "drills": [
+        {
+          "id": "r1.all-cs",
+          "kind": "generated",
+          "title": "Find every C",
+          "score": "gen:r1-all-cs",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Play each C from low to high and back. C sits just left of the two black keys."
+        },
+        {
+          "id": "r1.two-black",
+          "kind": "generated",
+          "title": "C D E around the two black keys",
+          "score": "gen:r1-two-black",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Find C D E by the group of two black keys."
+        },
+        {
+          "id": "r1.three-black",
+          "kind": "generated",
+          "title": "F G A B around the three black keys",
+          "score": "gen:r1-three-black",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Find F G A B by the group of three black keys."
+        }
+      ]
+    },
+    {
+      "id": "R2",
+      "kind": "skill",
+      "track": "reading",
+      "title": "Treble C-G position",
+      "summary": "Read the five treble notes C to G and play them.",
+      "requires": [
+        "R1"
+      ],
+      "measures": [
+        "pitch"
+      ],
+      "drills": [
+        {
+          "id": "r2.steps",
+          "kind": "generated",
+          "title": "Steps up and down",
+          "score": "gen:r2-steps",
+          "hands": "right",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Read each note and play it, moving by step."
+        },
+        {
+          "id": "r2.skips",
+          "kind": "generated",
+          "title": "Skips",
+          "score": "gen:r2-skips",
+          "hands": "right",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Read each note and play it, moving by skips."
+        },
+        {
+          "id": "r2.read-1",
+          "kind": "generated",
+          "title": "Reading snippet 1",
+          "score": "gen:r2-read-1",
+          "hands": "right",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Read it, don't memorise it: one slow try, then move on."
+        },
+        {
+          "id": "r2.read-2",
+          "kind": "generated",
+          "title": "Reading snippet 2",
+          "score": "gen:r2-read-2",
+          "hands": "right",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Read it, don't memorise it: one slow try, then move on."
+        },
+        {
+          "id": "r2.read-3",
+          "kind": "generated",
+          "title": "Reading snippet 3",
+          "score": "gen:r2-read-3",
+          "hands": "right",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Read it, don't memorise it: one slow try, then move on."
+        },
+        {
+          "id": "r2.read-4",
+          "kind": "generated",
+          "title": "Reading snippet 4",
+          "score": "gen:r2-read-4",
+          "hands": "right",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Read it, don't memorise it: one slow try, then move on."
+        },
+        {
+          "id": "r2.read-5",
+          "kind": "generated",
+          "title": "Reading snippet 5",
+          "score": "gen:r2-read-5",
+          "hands": "right",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Read it, don't memorise it: one slow try, then move on."
+        },
+        {
+          "id": "r2.read-6",
+          "kind": "generated",
+          "title": "Reading snippet 6",
+          "score": "gen:r2-read-6",
+          "hands": "right",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Read it, don't memorise it: one slow try, then move on."
+        },
+        {
+          "id": "sr.r2-treble",
+          "kind": "generated",
+          "title": "Sight-reading: treble C-G notes",
+          "score": "sight:r2-treble",
+          "hands": "right",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Name each note at sight and play it; aim for 95% first try with a median under 2 s."
+        }
+      ]
+    },
+    {
+      "id": "R3",
+      "kind": "skill",
+      "track": "reading",
+      "title": "Bass C-G position",
+      "summary": "Read the five bass notes C to G and play them.",
+      "requires": [
+        "R1"
+      ],
+      "measures": [
+        "pitch"
+      ],
+      "drills": [
+        {
+          "id": "r3.steps",
+          "kind": "generated",
+          "title": "Steps up and down (left hand)",
+          "score": "gen:r3-steps",
+          "hands": "left",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Read each note and play it, moving by step."
+        },
+        {
+          "id": "r3.skips",
+          "kind": "generated",
+          "title": "Skips (left hand)",
+          "score": "gen:r3-skips",
+          "hands": "left",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Read each note and play it, moving by skips."
+        },
+        {
+          "id": "r3.read-1",
+          "kind": "generated",
+          "title": "Reading snippet 1 (left hand)",
+          "score": "gen:r3-read-1",
+          "hands": "left",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Read it, don't memorise it: one slow try, then move on."
+        },
+        {
+          "id": "r3.read-2",
+          "kind": "generated",
+          "title": "Reading snippet 2 (left hand)",
+          "score": "gen:r3-read-2",
+          "hands": "left",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Read it, don't memorise it: one slow try, then move on."
+        },
+        {
+          "id": "r3.read-3",
+          "kind": "generated",
+          "title": "Reading snippet 3 (left hand)",
+          "score": "gen:r3-read-3",
+          "hands": "left",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Read it, don't memorise it: one slow try, then move on."
+        },
+        {
+          "id": "r3.read-4",
+          "kind": "generated",
+          "title": "Reading snippet 4 (left hand)",
+          "score": "gen:r3-read-4",
+          "hands": "left",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Read it, don't memorise it: one slow try, then move on."
+        },
+        {
+          "id": "r3.read-5",
+          "kind": "generated",
+          "title": "Reading snippet 5 (left hand)",
+          "score": "gen:r3-read-5",
+          "hands": "left",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Read it, don't memorise it: one slow try, then move on."
+        },
+        {
+          "id": "r3.read-6",
+          "kind": "generated",
+          "title": "Reading snippet 6 (left hand)",
+          "score": "gen:r3-read-6",
+          "hands": "left",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Read it, don't memorise it: one slow try, then move on."
+        },
+        {
+          "id": "sr.r3-bass",
+          "kind": "generated",
+          "title": "Sight-reading: bass C-G notes",
+          "score": "sight:r3-bass",
+          "hands": "left",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Name each note at sight and play it; aim for 95% first try with a median under 2 s."
+        }
+      ]
+    },
+    {
+      "id": "R4",
+      "kind": "skill",
+      "track": "reading",
+      "title": "Grand staff landmarks",
+      "summary": "Use landmark notes to find your place on both staves.",
+      "requires": [
+        "R2",
+        "R3"
+      ],
+      "drills": [
+        {
+          "id": "sr.r4-grand",
+          "kind": "generated",
+          "title": "Sight-reading: grand staff C3-C5",
+          "score": "sight:r4-grand",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Find each note from the landmarks (bass F, middle C, treble G) and play it."
+        },
+        {
+          "id": "r4.landmarks",
+          "kind": "generated",
+          "title": "Landmark notes",
+          "score": "gen:r4-landmarks",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Find your place from the landmark notes: middle C, treble G, bass F."
+        },
+        {
+          "id": "r4.middle-c",
+          "kind": "generated",
+          "title": "Middle C in both clefs",
+          "score": "gen:r4-middle-c",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Find your place from the landmark notes: middle C, treble G, bass F."
+        },
+        {
+          "id": "r4.read-1",
+          "kind": "generated",
+          "title": "Reading snippet 1 (both hands)",
+          "score": "gen:r4-read-1",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Find your place from the landmark notes: middle C, treble G, bass F."
+        },
+        {
+          "id": "r4.read-2",
+          "kind": "generated",
+          "title": "Reading snippet 2 (both hands)",
+          "score": "gen:r4-read-2",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Find your place from the landmark notes: middle C, treble G, bass F."
+        },
+        {
+          "id": "r4.read-3",
+          "kind": "generated",
+          "title": "Reading snippet 3 (both hands)",
+          "score": "gen:r4-read-3",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Find your place from the landmark notes: middle C, treble G, bass F."
+        }
+      ]
+    },
+    {
+      "id": "R5",
+      "kind": "skill",
+      "track": "reading",
+      "title": "Intervals by shape",
+      "summary": "Read steps, skips and jumps from how they look on the staff.",
+      "requires": [
+        "R4"
+      ],
+      "drills": [
+        {
+          "id": "sr.r5-intervals",
+          "kind": "generated",
+          "title": "Sight-reading: intervals 2nd to 5th",
+          "score": "sight:r5-intervals",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Read the step or skip from its shape and play both notes in order."
+        },
+        {
+          "id": "r5.seconds",
+          "kind": "generated",
+          "title": "Seconds (steps)",
+          "score": "gen:r5-seconds",
+          "hands": "right",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Read the distance between notes from their shape: step, skip or jump."
+        },
+        {
+          "id": "r5.thirds",
+          "kind": "generated",
+          "title": "Thirds (skips)",
+          "score": "gen:r5-thirds",
+          "hands": "right",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Read the distance between notes from their shape: step, skip or jump."
+        },
+        {
+          "id": "r5.fourths-fifths",
+          "kind": "generated",
+          "title": "Fourths and fifths",
+          "score": "gen:r5-fourths-fifths",
+          "hands": "right",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Read the distance between notes from their shape: step, skip or jump."
+        },
+        {
+          "id": "r5.intervals-lh",
+          "kind": "generated",
+          "title": "Intervals (left hand)",
+          "score": "gen:r5-intervals-lh",
+          "hands": "left",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Read the distance between notes from their shape: step, skip or jump."
+        },
+        {
+          "id": "r5.read-1",
+          "kind": "generated",
+          "title": "Reading snippet 1 (right hand)",
+          "score": "gen:r5-read-1",
+          "hands": "right",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Read the distance between notes from their shape: step, skip or jump."
+        },
+        {
+          "id": "r5.read-2",
+          "kind": "generated",
+          "title": "Reading snippet 2 (right hand)",
+          "score": "gen:r5-read-2",
+          "hands": "right",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Read the distance between notes from their shape: step, skip or jump."
+        }
+      ]
+    },
+    {
+      "id": "R6",
+      "kind": "skill",
+      "track": "reading",
+      "title": "Ledger lines and wider range",
+      "summary": "Read notes above and below the staff.",
+      "requires": [
+        "R5"
+      ],
+      "drills": [
+        {
+          "id": "sr.r6-ledger",
+          "kind": "generated",
+          "title": "Sight-reading: ledger line notes",
+          "score": "sight:r6-ledger",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Count the ledger lines from the staff and play the note."
+        },
+        {
+          "id": "r6.high-c",
+          "kind": "generated",
+          "title": "Up to high C (right hand)",
+          "score": "gen:r6-high-c",
+          "hands": "right",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Count the ledger lines to find each note before you play it."
+        },
+        {
+          "id": "r6.below-treble",
+          "kind": "generated",
+          "title": "Below the treble staff (right hand)",
+          "score": "gen:r6-below-treble",
+          "hands": "right",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Count the ledger lines to find each note before you play it."
+        },
+        {
+          "id": "r6.low-c",
+          "kind": "generated",
+          "title": "Down to low C (left hand)",
+          "score": "gen:r6-low-c",
+          "hands": "left",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Count the ledger lines to find each note before you play it."
+        },
+        {
+          "id": "r6.above-bass",
+          "kind": "generated",
+          "title": "Above the bass staff (left hand)",
+          "score": "gen:r6-above-bass",
+          "hands": "left",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Count the ledger lines to find each note before you play it."
+        },
+        {
+          "id": "r6.read-1",
+          "kind": "generated",
+          "title": "Reading snippet 1 (high notes)",
+          "score": "gen:r6-read-1",
+          "hands": "right",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Count the ledger lines to find each note before you play it."
+        }
+      ]
+    },
+    {
+      "id": "R7",
+      "kind": "skill",
+      "track": "reading",
+      "title": "Key signatures (one sharp or flat)",
+      "summary": "Read pieces with one sharp or one flat in the key signature.",
+      "requires": [
+        "R6"
+      ],
+      "drills": [
+        {
+          "id": "sr.r7-keys",
+          "kind": "generated",
+          "title": "Sight-reading: one sharp or one flat",
+          "score": "sight:r7-keys",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Watch the key signature: F is F sharp in G major, B is B flat in F major."
+        },
+        {
+          "id": "r7.g-rh",
+          "kind": "generated",
+          "title": "G major: F is F sharp (right hand)",
+          "score": "gen:r7-g-rh",
+          "hands": "right",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Remember the key signature: every F is F sharp in G major, every B is B flat in F major."
+        },
+        {
+          "id": "r7.g-lh",
+          "kind": "generated",
+          "title": "G major: F is F sharp (left hand)",
+          "score": "gen:r7-g-lh",
+          "hands": "left",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Remember the key signature: every F is F sharp in G major, every B is B flat in F major."
+        },
+        {
+          "id": "r7.f-rh",
+          "kind": "generated",
+          "title": "F major: B is B flat (right hand)",
+          "score": "gen:r7-f-rh",
+          "hands": "right",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Remember the key signature: every F is F sharp in G major, every B is B flat in F major."
+        },
+        {
+          "id": "r7.f-lh",
+          "kind": "generated",
+          "title": "F major: B is B flat (left hand)",
+          "score": "gen:r7-f-lh",
+          "hands": "left",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Remember the key signature: every F is F sharp in G major, every B is B flat in F major."
+        },
+        {
+          "id": "r7.read-g",
+          "kind": "generated",
+          "title": "Reading snippet in G major",
+          "score": "gen:r7-read-g",
+          "hands": "right",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Remember the key signature: every F is F sharp in G major, every B is B flat in F major."
+        },
+        {
+          "id": "r7.read-f",
+          "kind": "generated",
+          "title": "Reading snippet in F major",
+          "score": "gen:r7-read-f",
+          "hands": "right",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Remember the key signature: every F is F sharp in G major, every B is B flat in F major."
+        }
+      ]
+    },
+    {
+      "id": "R8",
+      "kind": "skill",
+      "track": "reading",
+      "title": "Sight-reading",
+      "summary": "Play new easy music at first sight, keeping going through mistakes.",
+      "requires": [
+        "R4",
+        "T3"
+      ],
+      "drills": [
+        {
+          "id": "sr.r8a-five",
+          "kind": "generated",
+          "title": "Sight-reading: 2-bar phrases, five-finger position",
+          "score": "sight:r8a-five",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Play each new phrase at first sight; fix a wrong note and keep going."
+        },
+        {
+          "id": "sr.r8b-wide",
+          "kind": "generated",
+          "title": "Sight-reading: 2-bar phrases, wider range",
+          "score": "sight:r8b-wide",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Play each new phrase at first sight; fix a wrong note and keep going."
+        },
+        {
+          "id": "sr.r8c-hands",
+          "kind": "generated",
+          "title": "Sight-reading: 2-bar phrases, both hands",
+          "score": "sight:r8c-hands",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Play each new phrase at first sight; fix a wrong note and keep going."
+        },
+        {
+          "id": "r8.sight-1",
+          "kind": "generated",
+          "title": "Sight-reading 1 (right hand)",
+          "score": "gen:r8-sight-1",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Keep going through mistakes; do not stop to fix them."
+        },
+        {
+          "id": "r8.sight-2",
+          "kind": "generated",
+          "title": "Sight-reading 2 (right hand)",
+          "score": "gen:r8-sight-2",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Keep going through mistakes; do not stop to fix them."
+        },
+        {
+          "id": "r8.sight-3",
+          "kind": "generated",
+          "title": "Sight-reading 3 (left hand)",
+          "score": "gen:r8-sight-3",
+          "hands": "left",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Keep going through mistakes; do not stop to fix them."
+        },
+        {
+          "id": "r8.sight-4",
+          "kind": "generated",
+          "title": "Sight-reading 4 (G position, right hand)",
+          "score": "gen:r8-sight-4",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Keep going through mistakes; do not stop to fix them."
+        },
+        {
+          "id": "r8.sight-5",
+          "kind": "generated",
+          "title": "Sight-reading 5 (3/4, right hand)",
+          "score": "gen:r8-sight-5",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Keep going through mistakes; do not stop to fix them."
+        }
+      ]
+    },
+    {
+      "id": "T1",
+      "kind": "skill",
+      "track": "rhythm",
+      "title": "Steady pulse (quarters)",
+      "summary": "Play quarter notes evenly with a steady beat.",
+      "requires": [],
+      "measures": [
+        "timing"
+      ],
+      "drills": [
+        {
+          "id": "t1.quarters-rh",
+          "kind": "generated",
+          "title": "Quarter notes, right hand",
+          "score": "gen:t1-quarters-rh",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Keep the beats even after the count-in; don't rush."
+        },
+        {
+          "id": "t1.quarters-lh",
+          "kind": "generated",
+          "title": "Quarter notes, left hand",
+          "score": "gen:t1-quarters-lh",
+          "hands": "left",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Keep the beats even after the count-in; don't rush."
+        },
+        {
+          "id": "t1.quarters-cg",
+          "kind": "generated",
+          "title": "C and G quarters",
+          "score": "gen:t1-quarters-cg",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Keep the beats even after the count-in; don't rush."
+        }
+      ]
+    },
+    {
+      "id": "T2",
+      "kind": "skill",
+      "track": "rhythm",
+      "title": "Halves and wholes held full length",
+      "summary": "Hold half and whole notes for their full length.",
+      "requires": [
+        "T1"
+      ],
+      "measures": [
+        "timing",
+        "length"
+      ],
+      "drills": [
+        {
+          "id": "t2.halves-rh",
+          "kind": "generated",
+          "title": "Half notes held",
+          "score": "gen:t2-halves-rh",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Hold every note for its full length."
+        },
+        {
+          "id": "t2.wholes-rh",
+          "kind": "generated",
+          "title": "Whole notes held",
+          "score": "gen:t2-wholes-rh",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Hold every note for its full length."
+        },
+        {
+          "id": "t2.mixed-rh",
+          "kind": "generated",
+          "title": "Mixed lengths, right hand",
+          "score": "gen:t2-mixed-rh",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Hold every note for its full length."
+        },
+        {
+          "id": "t2.mixed-lh",
+          "kind": "generated",
+          "title": "Mixed lengths, left hand",
+          "score": "gen:t2-mixed-lh",
+          "hands": "left",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Hold every note for its full length."
+        }
+      ]
+    },
+    {
+      "id": "T3",
+      "kind": "skill",
+      "track": "rhythm",
+      "title": "Eighths",
+      "summary": "Play eighth notes evenly, two to a beat.",
+      "requires": [
+        "T2"
+      ],
+      "drills": [
+        {
+          "id": "t3.eighths-rh",
+          "kind": "generated",
+          "title": "Eighth notes (right hand)",
+          "score": "gen:t3-eighths-rh",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Two even eighths per beat; count 1-and 2-and."
+        },
+        {
+          "id": "t3.eighths-lh",
+          "kind": "generated",
+          "title": "Eighth notes (left hand)",
+          "score": "gen:t3-eighths-lh",
+          "hands": "left",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Two even eighths per beat; count 1-and 2-and."
+        },
+        {
+          "id": "t3.quarters-eighths",
+          "kind": "generated",
+          "title": "Quarters and eighths (right hand)",
+          "score": "gen:t3-quarters-eighths",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Two even eighths per beat; count 1-and 2-and."
+        },
+        {
+          "id": "t3.eighths-34",
+          "kind": "generated",
+          "title": "Eighths in 3/4 (right hand)",
+          "score": "gen:t3-eighths-34",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Two even eighths per beat; count 1-and 2-and."
+        },
+        {
+          "id": "t3.hot-cross-buns",
+          "kind": "generated",
+          "title": "Hot Cross Buns rhythm (right hand)",
+          "score": "gen:t3-hot-cross-buns",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Two even eighths per beat; count 1-and 2-and."
+        }
+      ]
+    },
+    {
+      "id": "T4",
+      "kind": "skill",
+      "track": "rhythm",
+      "title": "Rests counted",
+      "summary": "Count silent beats accurately and come in on time.",
+      "requires": [
+        "T3"
+      ],
+      "drills": [
+        {
+          "id": "t4.quarter-rests",
+          "kind": "generated",
+          "title": "Quarter rests (right hand)",
+          "score": "gen:t4-quarter-rests",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Count the rests and come in exactly on time."
+        },
+        {
+          "id": "t4.half-rests",
+          "kind": "generated",
+          "title": "Half rests (right hand)",
+          "score": "gen:t4-half-rests",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Count the rests and come in exactly on time."
+        },
+        {
+          "id": "t4.after-rest",
+          "kind": "generated",
+          "title": "Coming in after a rest (right hand)",
+          "score": "gen:t4-after-rest",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Count the rests and come in exactly on time."
+        },
+        {
+          "id": "t4.rests-lh",
+          "kind": "generated",
+          "title": "Rests (left hand)",
+          "score": "gen:t4-rests-lh",
+          "hands": "left",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Count the rests and come in exactly on time."
+        },
+        {
+          "id": "t4.bar-rest",
+          "kind": "generated",
+          "title": "Counting a whole bar of rest (right hand)",
+          "score": "gen:t4-bar-rest",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Count the rests and come in exactly on time."
+        }
+      ]
+    },
+    {
+      "id": "T5",
+      "kind": "skill",
+      "track": "rhythm",
+      "title": "Dotted rhythms",
+      "summary": "Play dotted notes with the right long-short feel.",
+      "requires": [
+        "T4"
+      ],
+      "drills": [
+        {
+          "id": "t5.dotted-half-34",
+          "kind": "generated",
+          "title": "Dotted half notes (3/4, right hand)",
+          "score": "gen:t5-dotted-half-34",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Feel the long-short of the dot; count it out loud the first time."
+        },
+        {
+          "id": "t5.dotted-half",
+          "kind": "generated",
+          "title": "Dotted half and quarter (right hand)",
+          "score": "gen:t5-dotted-half",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Feel the long-short of the dot; count it out loud the first time."
+        },
+        {
+          "id": "t5.dotted-quarter",
+          "kind": "generated",
+          "title": "Dotted quarter and eighth (right hand)",
+          "score": "gen:t5-dotted-quarter",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Feel the long-short of the dot; count it out loud the first time."
+        },
+        {
+          "id": "t5.dotted-quarter-lh",
+          "kind": "generated",
+          "title": "Dotted quarter and eighth (left hand)",
+          "score": "gen:t5-dotted-quarter-lh",
+          "hands": "left",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Feel the long-short of the dot; count it out loud the first time."
+        },
+        {
+          "id": "t5.dotted-34",
+          "kind": "generated",
+          "title": "Dotted rhythms in 3/4 (right hand)",
+          "score": "gen:t5-dotted-34",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Feel the long-short of the dot; count it out loud the first time."
+        }
+      ]
+    },
+    {
+      "id": "T6",
+      "kind": "skill",
+      "track": "rhythm",
+      "title": "Ties and syncopation",
+      "summary": "Play tied notes and off-beat rhythms correctly.",
+      "requires": [
+        "T5"
+      ],
+      "drills": [
+        {
+          "id": "t6.ties-across",
+          "kind": "generated",
+          "title": "Ties across the bar line (right hand)",
+          "score": "gen:t6-ties-across",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Hold tied notes through the tie; do not play the second note again."
+        },
+        {
+          "id": "t6.ties-inside",
+          "kind": "generated",
+          "title": "Ties inside the bar (right hand)",
+          "score": "gen:t6-ties-inside",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Hold tied notes through the tie; do not play the second note again."
+        },
+        {
+          "id": "t6.syncopation",
+          "kind": "generated",
+          "title": "Eighth-quarter-eighth (right hand)",
+          "score": "gen:t6-syncopation",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Hold tied notes through the tie; do not play the second note again."
+        },
+        {
+          "id": "t6.tied-eighths",
+          "kind": "generated",
+          "title": "Off-beat ties (right hand)",
+          "score": "gen:t6-tied-eighths",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Hold tied notes through the tie; do not play the second note again."
+        },
+        {
+          "id": "t6.ties-lh",
+          "kind": "generated",
+          "title": "Ties (left hand)",
+          "score": "gen:t6-ties-lh",
+          "hands": "left",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Hold tied notes through the tie; do not play the second note again."
+        }
+      ]
+    },
+    {
+      "id": "T7",
+      "kind": "skill",
+      "track": "rhythm",
+      "title": "Triplets",
+      "summary": "Play three even notes in the space of one beat.",
+      "requires": [
+        "T6"
+      ],
+      "drills": [
+        {
+          "id": "t7.triplets",
+          "kind": "generated",
+          "title": "Triplet eighths (right hand)",
+          "score": "gen:t7-triplets",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Three even notes per beat; say tri-po-let."
+        },
+        {
+          "id": "t7.triplets-eighths",
+          "kind": "generated",
+          "title": "Triplets and eighths (right hand)",
+          "score": "gen:t7-triplets-eighths",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Three even notes per beat; say tri-po-let."
+        },
+        {
+          "id": "t7.quarters-triplets",
+          "kind": "generated",
+          "title": "Quarters and triplets (right hand)",
+          "score": "gen:t7-quarters-triplets",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Three even notes per beat; say tri-po-let."
+        },
+        {
+          "id": "t7.triplets-lh",
+          "kind": "generated",
+          "title": "Triplet eighths (left hand)",
+          "score": "gen:t7-triplets-lh",
+          "hands": "left",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Three even notes per beat; say tri-po-let."
+        },
+        {
+          "id": "t7.triplets-34",
+          "kind": "generated",
+          "title": "Triplets in 3/4 (right hand)",
+          "score": "gen:t7-triplets-34",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Three even notes per beat; say tri-po-let."
+        }
+      ]
+    },
+    {
+      "id": "K1",
+      "kind": "skill",
+      "track": "technique",
+      "title": "Five-finger evenness",
+      "summary": "Play a five-finger pattern with even timing and even loudness.",
+      "requires": [],
+      "measures": [
+        "timing",
+        "velocity"
+      ],
+      "drills": [
+        {
+          "id": "k1.c5-rh",
+          "kind": "generated",
+          "title": "C five-finger, right hand",
+          "score": "gen:k1-c5-rh",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Every note equally loud and evenly spaced."
+        },
+        {
+          "id": "k1.c5-lh",
+          "kind": "generated",
+          "title": "C five-finger, left hand",
+          "score": "gen:k1-c5-lh",
+          "hands": "left",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Every note equally loud and evenly spaced."
+        },
+        {
+          "id": "k1.c5-eighths-rh",
+          "kind": "generated",
+          "title": "C five-finger in eighths, right hand",
+          "score": "gen:k1-c5-eighths-rh",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Every note equally loud and evenly spaced."
+        },
+        {
+          "id": "k1.c5-eighths-lh",
+          "kind": "generated",
+          "title": "C five-finger in eighths, left hand",
+          "score": "gen:k1-c5-eighths-lh",
+          "hands": "left",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Every note equally loud and evenly spaced."
+        }
+      ]
+    },
+    {
+      "id": "K2",
+      "kind": "skill",
+      "track": "technique",
+      "title": "Legato",
+      "summary": "Connect notes smoothly with no gaps.",
+      "requires": [
+        "K1"
+      ],
+      "measures": [
+        "length"
+      ],
+      "drills": [
+        {
+          "id": "k2.legato-rh",
+          "kind": "generated",
+          "title": "Legato five-finger (right hand)",
+          "score": "gen:k2-legato-rh",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Connect every note under the slur: no gaps, no overlaps."
+        },
+        {
+          "id": "k2.legato-lh",
+          "kind": "generated",
+          "title": "Legato five-finger (left hand)",
+          "score": "gen:k2-legato-lh",
+          "hands": "left",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Connect every note under the slur: no gaps, no overlaps."
+        },
+        {
+          "id": "k2.two-note-slurs",
+          "kind": "generated",
+          "title": "Two-note slurs (right hand)",
+          "score": "gen:k2-two-note-slurs",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Connect every note under the slur: no gaps, no overlaps."
+        },
+        {
+          "id": "k2.phrases",
+          "kind": "generated",
+          "title": "Legato phrases (right hand)",
+          "score": "gen:k2-phrases",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Connect every note under the slur: no gaps, no overlaps."
+        },
+        {
+          "id": "k2.halves-lh",
+          "kind": "generated",
+          "title": "Legato half notes (left hand)",
+          "score": "gen:k2-halves-lh",
+          "hands": "left",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Connect every note under the slur: no gaps, no overlaps."
+        }
+      ]
+    },
+    {
+      "id": "K3",
+      "kind": "skill",
+      "track": "technique",
+      "title": "Staccato",
+      "summary": "Play short, detached notes.",
+      "requires": [
+        "K1"
+      ],
+      "measures": [
+        "length"
+      ],
+      "drills": [
+        {
+          "id": "k3.staccato-rh",
+          "kind": "generated",
+          "title": "Staccato quarters (right hand)",
+          "score": "gen:k3-staccato-rh",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Short and light: let go of each staccato note right away."
+        },
+        {
+          "id": "k3.staccato-lh",
+          "kind": "generated",
+          "title": "Staccato quarters (left hand)",
+          "score": "gen:k3-staccato-lh",
+          "hands": "left",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Short and light: let go of each staccato note right away."
+        },
+        {
+          "id": "k3.repeated",
+          "kind": "generated",
+          "title": "Repeated staccato notes (right hand)",
+          "score": "gen:k3-repeated",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Short and light: let go of each staccato note right away."
+        },
+        {
+          "id": "k3.legato-staccato",
+          "kind": "generated",
+          "title": "Legato then staccato (right hand)",
+          "score": "gen:k3-legato-staccato",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Short and light: let go of each staccato note right away."
+        },
+        {
+          "id": "k3.staccato-eighths",
+          "kind": "generated",
+          "title": "Staccato eighths (right hand)",
+          "score": "gen:k3-staccato-eighths",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Short and light: let go of each staccato note right away."
+        }
+      ]
+    },
+    {
+      "id": "K4",
+      "kind": "skill",
+      "track": "technique",
+      "title": "Thumb-under, scales C, G and F",
+      "summary": "Play one-octave scales with smooth thumb-under.",
+      "requires": [
+        "K2"
+      ],
+      "drills": [
+        {
+          "id": "k4.c-rh",
+          "kind": "generated",
+          "title": "C major scale (right hand)",
+          "score": "gen:k4-c-rh",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Pass the thumb under smoothly, with no bump in the sound. Follow the fingering."
+        },
+        {
+          "id": "k4.c-lh",
+          "kind": "generated",
+          "title": "C major scale (left hand)",
+          "score": "gen:k4-c-lh",
+          "hands": "left",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Pass the thumb under smoothly, with no bump in the sound. Follow the fingering."
+        },
+        {
+          "id": "k4.g-rh",
+          "kind": "generated",
+          "title": "G major scale (right hand)",
+          "score": "gen:k4-g-rh",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Pass the thumb under smoothly, with no bump in the sound. Follow the fingering."
+        },
+        {
+          "id": "k4.g-lh",
+          "kind": "generated",
+          "title": "G major scale (left hand)",
+          "score": "gen:k4-g-lh",
+          "hands": "left",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Pass the thumb under smoothly, with no bump in the sound. Follow the fingering."
+        },
+        {
+          "id": "k4.f-rh",
+          "kind": "generated",
+          "title": "F major scale (right hand)",
+          "score": "gen:k4-f-rh",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Pass the thumb under smoothly, with no bump in the sound. Follow the fingering."
+        },
+        {
+          "id": "k4.f-lh",
+          "kind": "generated",
+          "title": "F major scale (left hand)",
+          "score": "gen:k4-f-lh",
+          "hands": "left",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Pass the thumb under smoothly, with no bump in the sound. Follow the fingering."
+        }
+      ]
+    },
+    {
+      "id": "K5",
+      "kind": "skill",
+      "track": "technique",
+      "title": "Position shifts",
+      "summary": "Move the hand to a new position without breaking the line.",
+      "requires": [
+        "K4"
+      ],
+      "drills": [
+        {
+          "id": "k5.c-to-g",
+          "kind": "generated",
+          "title": "C position to G position (right hand)",
+          "score": "gen:k5-c-to-g",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Move the hand during the rest or the last note so the line does not break."
+        },
+        {
+          "id": "k5.octave-rh",
+          "kind": "generated",
+          "title": "Same pattern an octave higher (right hand)",
+          "score": "gen:k5-octave-rh",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Move the hand during the rest or the last note so the line does not break."
+        },
+        {
+          "id": "k5.octave-lh",
+          "kind": "generated",
+          "title": "Same pattern an octave lower (left hand)",
+          "score": "gen:k5-octave-lh",
+          "hands": "left",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Move the hand during the rest or the last note so the line does not break."
+        },
+        {
+          "id": "k5.c-to-a",
+          "kind": "generated",
+          "title": "C position to A position (right hand)",
+          "score": "gen:k5-c-to-a",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Move the hand during the rest or the last note so the line does not break."
+        },
+        {
+          "id": "k5.no-rest",
+          "kind": "generated",
+          "title": "Shift without a rest (right hand)",
+          "score": "gen:k5-no-rest",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Move the hand during the rest or the last note so the line does not break."
+        }
+      ]
+    },
+    {
+      "id": "K6",
+      "kind": "skill",
+      "track": "technique",
+      "title": "Block chords",
+      "summary": "Play all notes of a chord together.",
+      "requires": [
+        "K5"
+      ],
+      "measures": [
+        "timing"
+      ],
+      "drills": [
+        {
+          "id": "k6.c-chord-rh",
+          "kind": "generated",
+          "title": "C chord (right hand)",
+          "score": "gen:k6-c-chord-rh",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "All notes of the chord sound exactly together."
+        },
+        {
+          "id": "k6.c-chord-lh",
+          "kind": "generated",
+          "title": "C chord (left hand)",
+          "score": "gen:k6-c-chord-lh",
+          "hands": "left",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "All notes of the chord sound exactly together."
+        },
+        {
+          "id": "k6.c-g7-rh",
+          "kind": "generated",
+          "title": "C and G7 chords (right hand)",
+          "score": "gen:k6-c-g7-rh",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "All notes of the chord sound exactly together."
+        },
+        {
+          "id": "k6.c-f-g-lh",
+          "kind": "generated",
+          "title": "C, F and G chords (left hand)",
+          "score": "gen:k6-c-f-g-lh",
+          "hands": "left",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "All notes of the chord sound exactly together."
+        },
+        {
+          "id": "k6.chords-quarters",
+          "kind": "generated",
+          "title": "Chords in quarter notes (right hand)",
+          "score": "gen:k6-chords-quarters",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "All notes of the chord sound exactly together."
+        }
+      ]
+    },
+    {
+      "id": "K7",
+      "kind": "skill",
+      "track": "technique",
+      "title": "Broken chords and arpeggios",
+      "summary": "Play chord notes one after another, evenly.",
+      "requires": [
+        "K6"
+      ],
+      "drills": [
+        {
+          "id": "k7.broken-c-rh",
+          "kind": "generated",
+          "title": "Broken C chord (right hand)",
+          "score": "gen:k7-broken-c-rh",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Play the chord notes one after another, evenly and smoothly."
+        },
+        {
+          "id": "k7.broken-lh",
+          "kind": "generated",
+          "title": "Broken chords (left hand)",
+          "score": "gen:k7-broken-lh",
+          "hands": "left",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Play the chord notes one after another, evenly and smoothly."
+        },
+        {
+          "id": "k7.alberti-lh",
+          "kind": "generated",
+          "title": "Alberti bass (left hand)",
+          "score": "gen:k7-alberti-lh",
+          "hands": "left",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Play the chord notes one after another, evenly and smoothly."
+        },
+        {
+          "id": "k7.arpeggio-rh",
+          "kind": "generated",
+          "title": "C arpeggio (right hand)",
+          "score": "gen:k7-arpeggio-rh",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Play the chord notes one after another, evenly and smoothly."
+        },
+        {
+          "id": "k7.broken-c-f-g",
+          "kind": "generated",
+          "title": "Broken C, F and G chords (right hand)",
+          "score": "gen:k7-broken-c-f-g",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Play the chord notes one after another, evenly and smoothly."
+        }
+      ]
+    },
+    {
+      "id": "C1",
+      "kind": "skill",
+      "track": "coordination",
+      "title": "Hands separate",
+      "summary": "Play each hand alone with confidence.",
+      "requires": [
+        "R2",
+        "T1"
+      ],
+      "drills": [
+        {
+          "id": "c1.take-turns",
+          "kind": "generated",
+          "title": "Hands take turns",
+          "score": "gen:c1-take-turns",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Play each hand alone with confidence; the other hand rests."
+        },
+        {
+          "id": "c1.melody-rh",
+          "kind": "generated",
+          "title": "Mary Had a Little Lamb (right hand)",
+          "score": "gen:c1-melody-rh",
+          "hands": "right",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Play each hand alone with confidence; the other hand rests."
+        },
+        {
+          "id": "c1.melody-lh",
+          "kind": "generated",
+          "title": "Mary Had a Little Lamb (left hand)",
+          "score": "gen:c1-melody-lh",
+          "hands": "left",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Play each hand alone with confidence; the other hand rests."
+        },
+        {
+          "id": "c1.hand-off",
+          "kind": "generated",
+          "title": "Passing the tune between hands",
+          "score": "gen:c1-hand-off",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Play each hand alone with confidence; the other hand rests."
+        },
+        {
+          "id": "c1.read-1",
+          "kind": "generated",
+          "title": "Hands in turn (reading snippet)",
+          "score": "gen:c1-read-1",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Play each hand alone with confidence; the other hand rests."
+        }
+      ]
+    },
+    {
+      "id": "C2",
+      "kind": "skill",
+      "track": "coordination",
+      "title": "Melody plus held bass",
+      "summary": "Play a melody while the other hand holds a note.",
+      "requires": [
+        "C1",
+        "T2"
+      ],
+      "drills": [
+        {
+          "id": "c2.held-c",
+          "kind": "generated",
+          "title": "Tune over a held C",
+          "score": "gen:c2-held-c",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Hold the long notes in one hand while the other plays the tune."
+        },
+        {
+          "id": "c2.held-c-g",
+          "kind": "generated",
+          "title": "Tune over held C and G",
+          "score": "gen:c2-held-c-g",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Hold the long notes in one hand while the other plays the tune."
+        },
+        {
+          "id": "c2.held-halves",
+          "kind": "generated",
+          "title": "Tune over held half notes",
+          "score": "gen:c2-held-halves",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Hold the long notes in one hand while the other plays the tune."
+        },
+        {
+          "id": "c2.lh-tune",
+          "kind": "generated",
+          "title": "Left-hand tune under a held note",
+          "score": "gen:c2-lh-tune",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Hold the long notes in one hand while the other plays the tune."
+        },
+        {
+          "id": "c2.waltz",
+          "kind": "generated",
+          "title": "Waltz tune over held bass (3/4)",
+          "score": "gen:c2-waltz",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Hold the long notes in one hand while the other plays the tune."
+        }
+      ]
+    },
+    {
+      "id": "C3",
+      "kind": "skill",
+      "track": "coordination",
+      "title": "Hands together, same rhythm",
+      "summary": "Play both hands together when they share a rhythm.",
+      "requires": [
+        "C2"
+      ],
+      "drills": [
+        {
+          "id": "c3.octaves",
+          "kind": "generated",
+          "title": "Same notes in both hands",
+          "score": "gen:c3-octaves",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Both hands together in the same rhythm: line up every note."
+        },
+        {
+          "id": "c3.contrary",
+          "kind": "generated",
+          "title": "Contrary motion",
+          "score": "gen:c3-contrary",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Both hands together in the same rhythm: line up every note."
+        },
+        {
+          "id": "c3.tenths-halves",
+          "kind": "generated",
+          "title": "Half notes together",
+          "score": "gen:c3-tenths-halves",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Both hands together in the same rhythm: line up every note."
+        },
+        {
+          "id": "c3.tenths-quarters",
+          "kind": "generated",
+          "title": "Quarter notes together",
+          "score": "gen:c3-tenths-quarters",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Both hands together in the same rhythm: line up every note."
+        },
+        {
+          "id": "c3.melody-bass",
+          "kind": "generated",
+          "title": "Tune and bass in the same rhythm",
+          "score": "gen:c3-melody-bass",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Both hands together in the same rhythm: line up every note."
+        }
+      ]
+    },
+    {
+      "id": "C4",
+      "kind": "skill",
+      "track": "coordination",
+      "title": "Hands together, different rhythms",
+      "summary": "Play both hands together when the rhythms differ.",
+      "requires": [
+        "C3",
+        "T3"
+      ],
+      "drills": [
+        {
+          "id": "c4.quarters-halves",
+          "kind": "generated",
+          "title": "Quarters over half notes",
+          "score": "gen:c4-quarters-halves",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Keep each hand in its own rhythm; count steadily."
+        },
+        {
+          "id": "c4.eighths-quarters",
+          "kind": "generated",
+          "title": "Eighths over quarter notes",
+          "score": "gen:c4-eighths-quarters",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Keep each hand in its own rhythm; count steadily."
+        },
+        {
+          "id": "c4.halves-quarters",
+          "kind": "generated",
+          "title": "Half notes over moving quarters",
+          "score": "gen:c4-halves-quarters",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Keep each hand in its own rhythm; count steadily."
+        },
+        {
+          "id": "c4.dotted-tune",
+          "kind": "generated",
+          "title": "Dotted tune over steady bass",
+          "score": "gen:c4-dotted-tune",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Keep each hand in its own rhythm; count steadily."
+        },
+        {
+          "id": "c4.waltz",
+          "kind": "generated",
+          "title": "Waltz: tune over bass and chords (3/4)",
+          "score": "gen:c4-waltz",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Keep each hand in its own rhythm; count steadily."
+        }
+      ]
+    },
+    {
+      "id": "D1",
+      "kind": "skill",
+      "track": "expression",
+      "title": "Two dynamic levels on demand",
+      "summary": "Play soft or loud when asked.",
+      "requires": [
+        "K1"
+      ],
+      "measures": [
+        "velocity"
+      ],
+      "drills": [
+        {
+          "id": "d1.loud-soft-rh",
+          "kind": "generated",
+          "title": "Loud then soft (right hand)",
+          "score": "gen:d1-loud-soft-rh",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Make p clearly soft and f clearly loud."
+        },
+        {
+          "id": "d1.echo-rh",
+          "kind": "generated",
+          "title": "Echo (right hand)",
+          "score": "gen:d1-echo-rh",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Make p clearly soft and f clearly loud."
+        },
+        {
+          "id": "d1.soft-loud-lh",
+          "kind": "generated",
+          "title": "Soft then loud (left hand)",
+          "score": "gen:d1-soft-loud-lh",
+          "hands": "left",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Make p clearly soft and f clearly loud."
+        },
+        {
+          "id": "d1.echo-lh",
+          "kind": "generated",
+          "title": "Echo (left hand)",
+          "score": "gen:d1-echo-lh",
+          "hands": "left",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Make p clearly soft and f clearly loud."
+        },
+        {
+          "id": "d1.three-levels",
+          "kind": "generated",
+          "title": "Three levels: p, mf, f (right hand)",
+          "score": "gen:d1-three-levels",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Make p clearly soft and f clearly loud."
+        }
+      ]
+    },
+    {
+      "id": "D2",
+      "kind": "skill",
+      "track": "expression",
+      "title": "Melody louder than accompaniment",
+      "summary": "Bring out the melody over the accompaniment.",
+      "requires": [
+        "D1",
+        "C2"
+      ],
+      "measures": [
+        "velocity"
+      ],
+      "drills": [
+        {
+          "id": "d2.held-bass",
+          "kind": "generated",
+          "title": "Loud tune, soft held bass",
+          "score": "gen:d2-held-bass",
+          "hands": "both",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Make the tune clearly louder than the other hand."
+        },
+        {
+          "id": "d2.chords",
+          "kind": "generated",
+          "title": "Tune over soft chords",
+          "score": "gen:d2-chords",
+          "hands": "both",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Make the tune clearly louder than the other hand."
+        },
+        {
+          "id": "d2.lh-tune",
+          "kind": "generated",
+          "title": "Left-hand tune louder than the right hand",
+          "score": "gen:d2-lh-tune",
+          "hands": "both",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Make the tune clearly louder than the other hand."
+        },
+        {
+          "id": "d2.waltz",
+          "kind": "generated",
+          "title": "Waltz tune over soft chords (3/4)",
+          "score": "gen:d2-waltz",
+          "hands": "both",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Make the tune clearly louder than the other hand."
+        },
+        {
+          "id": "d2.alberti",
+          "kind": "generated",
+          "title": "Tune over a soft Alberti bass",
+          "score": "gen:d2-alberti",
+          "hands": "both",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Make the tune clearly louder than the other hand."
+        }
+      ]
+    },
+    {
+      "id": "D3",
+      "kind": "skill",
+      "track": "expression",
+      "title": "Phrase shape (crescendo and diminuendo)",
+      "summary": "Grow and fade the sound across a phrase.",
+      "requires": [
+        "D2"
+      ],
+      "measures": [
+        "velocity"
+      ],
+      "drills": [
+        {
+          "id": "d3.cresc-rh",
+          "kind": "generated",
+          "title": "Crescendo and diminuendo (right hand)",
+          "score": "gen:d3-cresc-rh",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Grow louder through the crescendo and softer through the diminuendo."
+        },
+        {
+          "id": "d3.cresc-lh",
+          "kind": "generated",
+          "title": "Crescendo and diminuendo (left hand)",
+          "score": "gen:d3-cresc-lh",
+          "hands": "left",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Grow louder through the crescendo and softer through the diminuendo."
+        },
+        {
+          "id": "d3.one-phrase",
+          "kind": "generated",
+          "title": "Grow and fade in one phrase (right hand)",
+          "score": "gen:d3-one-phrase",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Grow louder through the crescendo and softer through the diminuendo."
+        },
+        {
+          "id": "d3.both-hands",
+          "kind": "generated",
+          "title": "Crescendo with both hands",
+          "score": "gen:d3-both-hands",
+          "hands": "both",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Grow louder through the crescendo and softer through the diminuendo."
+        },
+        {
+          "id": "d3.phrase-34",
+          "kind": "generated",
+          "title": "Phrase shape in 3/4 (right hand)",
+          "score": "gen:d3-phrase-34",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Grow louder through the crescendo and softer through the diminuendo."
+        }
+      ]
+    },
+    {
+      "id": "P1",
+      "kind": "skill",
+      "track": "pedal",
+      "title": "Legato pedal timing",
+      "summary": "Change the pedal just after each new note or chord.",
+      "requires": [
+        "K2",
+        "C3"
+      ],
+      "measures": [
+        "pedal"
+      ],
+      "drills": [
+        {
+          "id": "p1.whole-chords",
+          "kind": "generated",
+          "title": "Change the pedal on each chord (left hand)",
+          "score": "gen:p1-whole-chords",
+          "hands": "left",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Press the pedal just after each new chord; at each change mark lift it and press it again."
+        },
+        {
+          "id": "p1.half-chords",
+          "kind": "generated",
+          "title": "Pedal on half-note chords (left hand)",
+          "score": "gen:p1-half-chords",
+          "hands": "left",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Press the pedal just after each new chord; at each change mark lift it and press it again."
+        },
+        {
+          "id": "p1.tune-over-fifths",
+          "kind": "generated",
+          "title": "Pedalled tune over open fifths",
+          "score": "gen:p1-tune-over-fifths",
+          "hands": "both",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Press the pedal just after each new chord; at each change mark lift it and press it again."
+        },
+        {
+          "id": "p1.broken-chords",
+          "kind": "generated",
+          "title": "Pedal through broken chords (left hand)",
+          "score": "gen:p1-broken-chords",
+          "hands": "left",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Press the pedal just after each new chord; at each change mark lift it and press it again."
+        },
+        {
+          "id": "p1.rh-chords",
+          "kind": "generated",
+          "title": "Pedal with right-hand chords",
+          "score": "gen:p1-rh-chords",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Press the pedal just after each new chord; at each change mark lift it and press it again."
+        }
+      ]
+    },
+    {
+      "id": "S1",
+      "kind": "skill",
+      "track": "scales",
+      "title": "Major scales, one octave, hands separate",
+      "summary": "Play the major scales one octave up and down, each hand alone, with even notes.",
+      "requires": [],
+      "measures": [
+        "pitch",
+        "timing"
+      ],
+      "gates": {
+        "good": {
+          "evenness": 0.8
+        },
+        "solid": {
+          "evenness": 0.8
+        },
+        "mastered": {
+          "evenness": 0.8
+        }
+      },
+      "drills": [
+        {
+          "id": "s1.c-major-rh",
+          "kind": "generated",
+          "title": "C major, right hand",
+          "score": "scales:c-major-1oct-rh",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 75,
+          "loop": false,
+          "bars": null,
+          "goal": "Up and down with every note evenly spaced; keep the turn at the top smooth."
+        },
+        {
+          "id": "s1.c-major-lh",
+          "kind": "generated",
+          "title": "C major, left hand",
+          "score": "scales:c-major-1oct-lh",
+          "hands": "left",
+          "mode": "live",
+          "tempo": 75,
+          "loop": false,
+          "bars": null,
+          "goal": "Up and down with every note evenly spaced; keep the turn at the top smooth."
+        },
+        {
+          "id": "s1.g-major-rh",
+          "kind": "generated",
+          "title": "G major, right hand",
+          "score": "scales:g-major-1oct-rh",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 75,
+          "loop": false,
+          "bars": null,
+          "goal": "Up and down with every note evenly spaced; keep the turn at the top smooth."
+        },
+        {
+          "id": "s1.g-major-lh",
+          "kind": "generated",
+          "title": "G major, left hand",
+          "score": "scales:g-major-1oct-lh",
+          "hands": "left",
+          "mode": "live",
+          "tempo": 75,
+          "loop": false,
+          "bars": null,
+          "goal": "Up and down with every note evenly spaced; keep the turn at the top smooth."
+        },
+        {
+          "id": "s1.f-major-rh",
+          "kind": "generated",
+          "title": "F major, right hand",
+          "score": "scales:f-major-1oct-rh",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 75,
+          "loop": false,
+          "bars": null,
+          "goal": "Up and down with every note evenly spaced; keep the turn at the top smooth."
+        },
+        {
+          "id": "s1.f-major-lh",
+          "kind": "generated",
+          "title": "F major, left hand",
+          "score": "scales:f-major-1oct-lh",
+          "hands": "left",
+          "mode": "live",
+          "tempo": 75,
+          "loop": false,
+          "bars": null,
+          "goal": "Up and down with every note evenly spaced; keep the turn at the top smooth."
+        },
+        {
+          "id": "s1.d-major-rh",
+          "kind": "generated",
+          "title": "D major, right hand",
+          "score": "scales:d-major-1oct-rh",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 75,
+          "loop": false,
+          "bars": null,
+          "goal": "Up and down with every note evenly spaced; keep the turn at the top smooth."
+        },
+        {
+          "id": "s1.d-major-lh",
+          "kind": "generated",
+          "title": "D major, left hand",
+          "score": "scales:d-major-1oct-lh",
+          "hands": "left",
+          "mode": "live",
+          "tempo": 75,
+          "loop": false,
+          "bars": null,
+          "goal": "Up and down with every note evenly spaced; keep the turn at the top smooth."
+        }
+      ]
+    },
+    {
+      "id": "S2",
+      "kind": "skill",
+      "track": "scales",
+      "title": "Minor scales, one octave, hands separate",
+      "summary": "Natural, harmonic and melodic minor scales one octave, each hand alone, evenly.",
+      "requires": [
+        "S1"
+      ],
+      "measures": [
+        "pitch",
+        "timing"
+      ],
+      "gates": {
+        "good": {
+          "evenness": 0.8
+        },
+        "solid": {
+          "evenness": 0.8
+        },
+        "mastered": {
+          "evenness": 0.8
+        }
+      },
+      "drills": [
+        {
+          "id": "s2.a-natural-rh",
+          "kind": "generated",
+          "title": "A natural minor, right hand",
+          "score": "scales:a-minor-natural-1oct-rh",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 75,
+          "loop": false,
+          "bars": null,
+          "goal": "Even notes; in melodic minor raise the 6th and 7th going up and lower them coming down."
+        },
+        {
+          "id": "s2.a-natural-lh",
+          "kind": "generated",
+          "title": "A natural minor, left hand",
+          "score": "scales:a-minor-natural-1oct-lh",
+          "hands": "left",
+          "mode": "live",
+          "tempo": 75,
+          "loop": false,
+          "bars": null,
+          "goal": "Even notes; in melodic minor raise the 6th and 7th going up and lower them coming down."
+        },
+        {
+          "id": "s2.a-harmonic-rh",
+          "kind": "generated",
+          "title": "A harmonic minor, right hand",
+          "score": "scales:a-minor-harmonic-1oct-rh",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 75,
+          "loop": false,
+          "bars": null,
+          "goal": "Even notes; in melodic minor raise the 6th and 7th going up and lower them coming down."
+        },
+        {
+          "id": "s2.a-harmonic-lh",
+          "kind": "generated",
+          "title": "A harmonic minor, left hand",
+          "score": "scales:a-minor-harmonic-1oct-lh",
+          "hands": "left",
+          "mode": "live",
+          "tempo": 75,
+          "loop": false,
+          "bars": null,
+          "goal": "Even notes; in melodic minor raise the 6th and 7th going up and lower them coming down."
+        },
+        {
+          "id": "s2.a-melodic-rh",
+          "kind": "generated",
+          "title": "A melodic minor, right hand",
+          "score": "scales:a-minor-melodic-1oct-rh",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 75,
+          "loop": false,
+          "bars": null,
+          "goal": "Even notes; in melodic minor raise the 6th and 7th going up and lower them coming down."
+        },
+        {
+          "id": "s2.a-melodic-lh",
+          "kind": "generated",
+          "title": "A melodic minor, left hand",
+          "score": "scales:a-minor-melodic-1oct-lh",
+          "hands": "left",
+          "mode": "live",
+          "tempo": 75,
+          "loop": false,
+          "bars": null,
+          "goal": "Even notes; in melodic minor raise the 6th and 7th going up and lower them coming down."
+        }
+      ]
+    },
+    {
+      "id": "S3",
+      "kind": "skill",
+      "track": "scales",
+      "title": "Arpeggios, one octave, hands separate",
+      "summary": "Major and minor arpeggios one octave, each hand alone, evenly.",
+      "requires": [
+        "S1"
+      ],
+      "measures": [
+        "pitch",
+        "timing"
+      ],
+      "gates": {
+        "good": {
+          "evenness": 0.8
+        },
+        "solid": {
+          "evenness": 0.8
+        },
+        "mastered": {
+          "evenness": 0.8
+        }
+      },
+      "drills": [
+        {
+          "id": "s3.c-major-rh",
+          "kind": "generated",
+          "title": "C major arpeggio, right hand",
+          "score": "scales:c-arp-major-1oct-rh",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 75,
+          "loop": false,
+          "bars": null,
+          "goal": "Even notes across the bigger jumps; no bump when the thumb passes under."
+        },
+        {
+          "id": "s3.c-major-lh",
+          "kind": "generated",
+          "title": "C major arpeggio, left hand",
+          "score": "scales:c-arp-major-1oct-lh",
+          "hands": "left",
+          "mode": "live",
+          "tempo": 75,
+          "loop": false,
+          "bars": null,
+          "goal": "Even notes across the bigger jumps; no bump when the thumb passes under."
+        },
+        {
+          "id": "s3.g-major-rh",
+          "kind": "generated",
+          "title": "G major arpeggio, right hand",
+          "score": "scales:g-arp-major-1oct-rh",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 75,
+          "loop": false,
+          "bars": null,
+          "goal": "Even notes across the bigger jumps; no bump when the thumb passes under."
+        },
+        {
+          "id": "s3.g-major-lh",
+          "kind": "generated",
+          "title": "G major arpeggio, left hand",
+          "score": "scales:g-arp-major-1oct-lh",
+          "hands": "left",
+          "mode": "live",
+          "tempo": 75,
+          "loop": false,
+          "bars": null,
+          "goal": "Even notes across the bigger jumps; no bump when the thumb passes under."
+        },
+        {
+          "id": "s3.a-minor-rh",
+          "kind": "generated",
+          "title": "A minor arpeggio, right hand",
+          "score": "scales:a-arp-minor-1oct-rh",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 75,
+          "loop": false,
+          "bars": null,
+          "goal": "Even notes across the bigger jumps; no bump when the thumb passes under."
+        },
+        {
+          "id": "s3.a-minor-lh",
+          "kind": "generated",
+          "title": "A minor arpeggio, left hand",
+          "score": "scales:a-arp-minor-1oct-lh",
+          "hands": "left",
+          "mode": "live",
+          "tempo": 75,
+          "loop": false,
+          "bars": null,
+          "goal": "Even notes across the bigger jumps; no bump when the thumb passes under."
+        },
+        {
+          "id": "s3.e-minor-rh",
+          "kind": "generated",
+          "title": "E minor arpeggio, right hand",
+          "score": "scales:e-arp-minor-1oct-rh",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 75,
+          "loop": false,
+          "bars": null,
+          "goal": "Even notes across the bigger jumps; no bump when the thumb passes under."
+        },
+        {
+          "id": "s3.e-minor-lh",
+          "kind": "generated",
+          "title": "E minor arpeggio, left hand",
+          "score": "scales:e-arp-minor-1oct-lh",
+          "hands": "left",
+          "mode": "live",
+          "tempo": 75,
+          "loop": false,
+          "bars": null,
+          "goal": "Even notes across the bigger jumps; no bump when the thumb passes under."
+        }
+      ]
+    },
+    {
+      "id": "S4",
+      "kind": "skill",
+      "track": "scales",
+      "title": "Two octaves, hands separate",
+      "summary": "Scales and arpeggios over two octaves in eighth notes, each hand alone.",
+      "requires": [
+        "S2",
+        "S3"
+      ],
+      "measures": [
+        "pitch",
+        "timing"
+      ],
+      "gates": {
+        "good": {
+          "evenness": 0.8
+        },
+        "solid": {
+          "evenness": 0.8
+        },
+        "mastered": {
+          "evenness": 0.8
+        }
+      },
+      "drills": [
+        {
+          "id": "s4.c-major-rh",
+          "kind": "generated",
+          "title": "C major, 2 octaves, right hand",
+          "score": "scales:c-major-2oct-rh",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 60,
+          "loop": false,
+          "bars": null,
+          "goal": "Eighth notes evenly spaced through the change of octave."
+        },
+        {
+          "id": "s4.c-major-lh",
+          "kind": "generated",
+          "title": "C major, 2 octaves, left hand",
+          "score": "scales:c-major-2oct-lh",
+          "hands": "left",
+          "mode": "live",
+          "tempo": 60,
+          "loop": false,
+          "bars": null,
+          "goal": "Eighth notes evenly spaced through the change of octave."
+        },
+        {
+          "id": "s4.g-major-rh",
+          "kind": "generated",
+          "title": "G major, 2 octaves, right hand",
+          "score": "scales:g-major-2oct-rh",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 60,
+          "loop": false,
+          "bars": null,
+          "goal": "Eighth notes evenly spaced through the change of octave."
+        },
+        {
+          "id": "s4.g-major-lh",
+          "kind": "generated",
+          "title": "G major, 2 octaves, left hand",
+          "score": "scales:g-major-2oct-lh",
+          "hands": "left",
+          "mode": "live",
+          "tempo": 60,
+          "loop": false,
+          "bars": null,
+          "goal": "Eighth notes evenly spaced through the change of octave."
+        },
+        {
+          "id": "s4.a-harmonic-rh",
+          "kind": "generated",
+          "title": "A harmonic minor, 2 octaves, right hand",
+          "score": "scales:a-minor-harmonic-2oct-rh",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 60,
+          "loop": false,
+          "bars": null,
+          "goal": "Eighth notes evenly spaced through the change of octave."
+        },
+        {
+          "id": "s4.a-harmonic-lh",
+          "kind": "generated",
+          "title": "A harmonic minor, 2 octaves, left hand",
+          "score": "scales:a-minor-harmonic-2oct-lh",
+          "hands": "left",
+          "mode": "live",
+          "tempo": 60,
+          "loop": false,
+          "bars": null,
+          "goal": "Eighth notes evenly spaced through the change of octave."
+        },
+        {
+          "id": "s4.c-arpeggio-rh",
+          "kind": "generated",
+          "title": "C major arpeggio, 2 octaves, right hand",
+          "score": "scales:c-arp-major-2oct-rh",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 60,
+          "loop": false,
+          "bars": null,
+          "goal": "Eighth notes evenly spaced through the change of octave."
+        },
+        {
+          "id": "s4.c-arpeggio-lh",
+          "kind": "generated",
+          "title": "C major arpeggio, 2 octaves, left hand",
+          "score": "scales:c-arp-major-2oct-lh",
+          "hands": "left",
+          "mode": "live",
+          "tempo": 60,
+          "loop": false,
+          "bars": null,
+          "goal": "Eighth notes evenly spaced through the change of octave."
+        }
+      ]
+    },
+    {
+      "id": "S5",
+      "kind": "skill",
+      "track": "scales",
+      "title": "Hands together",
+      "summary": "Scales and arpeggios with both hands an octave apart, together and even.",
+      "requires": [
+        "S4"
+      ],
+      "measures": [
+        "pitch",
+        "timing"
+      ],
+      "gates": {
+        "good": {
+          "evenness": 0.8
+        },
+        "solid": {
+          "evenness": 0.8
+        },
+        "mastered": {
+          "evenness": 0.8
+        }
+      },
+      "drills": [
+        {
+          "id": "s5.c-major-1oct",
+          "kind": "generated",
+          "title": "C major, hands together",
+          "score": "scales:c-major-1oct-ht",
+          "hands": "both",
+          "mode": "live",
+          "tempo": 60,
+          "loop": false,
+          "bars": null,
+          "goal": "Both hands exactly together and evenly spaced."
+        },
+        {
+          "id": "s5.g-major-1oct",
+          "kind": "generated",
+          "title": "G major, hands together",
+          "score": "scales:g-major-1oct-ht",
+          "hands": "both",
+          "mode": "live",
+          "tempo": 60,
+          "loop": false,
+          "bars": null,
+          "goal": "Both hands exactly together and evenly spaced."
+        },
+        {
+          "id": "s5.a-harmonic-1oct",
+          "kind": "generated",
+          "title": "A harmonic minor, hands together",
+          "score": "scales:a-minor-harmonic-1oct-ht",
+          "hands": "both",
+          "mode": "live",
+          "tempo": 60,
+          "loop": false,
+          "bars": null,
+          "goal": "Both hands exactly together and evenly spaced."
+        },
+        {
+          "id": "s5.c-arpeggio-1oct",
+          "kind": "generated",
+          "title": "C major arpeggio, hands together",
+          "score": "scales:c-arp-major-1oct-ht",
+          "hands": "both",
+          "mode": "live",
+          "tempo": 60,
+          "loop": false,
+          "bars": null,
+          "goal": "Both hands exactly together and evenly spaced."
+        },
+        {
+          "id": "s5.c-major-2oct",
+          "kind": "generated",
+          "title": "C major, 2 octaves, hands together",
+          "score": "scales:c-major-2oct-ht",
+          "hands": "both",
+          "mode": "live",
+          "tempo": 60,
+          "loop": false,
+          "bars": null,
+          "goal": "Both hands exactly together and evenly spaced."
+        }
+      ]
+    },
+    {
+      "id": "S6",
+      "kind": "skill",
+      "track": "scales",
+      "title": "Four octaves, chromatic and seventh arpeggios",
+      "summary": "Four-octave scales, chromatic scales and dominant and diminished seventh arpeggios.",
+      "requires": [
+        "S5"
+      ],
+      "measures": [
+        "pitch",
+        "timing"
+      ],
+      "gates": {
+        "good": {
+          "evenness": 0.8
+        },
+        "solid": {
+          "evenness": 0.8
+        },
+        "mastered": {
+          "evenness": 0.8
+        }
+      },
+      "drills": [
+        {
+          "id": "s6.c-major-4oct",
+          "kind": "generated",
+          "title": "C major, 4 octaves, hands together",
+          "score": "scales:c-major-4oct-ht",
+          "hands": "both",
+          "mode": "live",
+          "tempo": 50,
+          "loop": false,
+          "bars": null,
+          "goal": "Long runs: keep the notes even from the bottom to the top and back."
+        },
+        {
+          "id": "s6.a-harmonic-4oct",
+          "kind": "generated",
+          "title": "A harmonic minor, 4 octaves, hands together",
+          "score": "scales:a-minor-harmonic-4oct-ht",
+          "hands": "both",
+          "mode": "live",
+          "tempo": 50,
+          "loop": false,
+          "bars": null,
+          "goal": "Long runs: keep the notes even from the bottom to the top and back."
+        },
+        {
+          "id": "s6.chromatic-c-rh",
+          "kind": "generated",
+          "title": "Chromatic scale from C, right hand",
+          "score": "scales:c-chromatic-1oct-rh",
+          "hands": "right",
+          "mode": "live",
+          "tempo": 60,
+          "loop": false,
+          "bars": null,
+          "goal": "Long runs: keep the notes even from the bottom to the top and back."
+        },
+        {
+          "id": "s6.chromatic-c-ht",
+          "kind": "generated",
+          "title": "Chromatic scale from C, 2 octaves, hands together",
+          "score": "scales:c-chromatic-2oct-ht",
+          "hands": "both",
+          "mode": "live",
+          "tempo": 50,
+          "loop": false,
+          "bars": null,
+          "goal": "Long runs: keep the notes even from the bottom to the top and back."
+        },
+        {
+          "id": "s6.g7-ht",
+          "kind": "generated",
+          "title": "G7 arpeggio, hands together",
+          "score": "scales:g-arp-dom7-1oct-ht",
+          "hands": "both",
+          "mode": "live",
+          "tempo": 60,
+          "loop": false,
+          "bars": null,
+          "goal": "Long runs: keep the notes even from the bottom to the top and back."
+        },
+        {
+          "id": "s6.b-dim7-ht",
+          "kind": "generated",
+          "title": "B diminished seventh arpeggio, hands together",
+          "score": "scales:b-arp-dim7-1oct-ht",
+          "hands": "both",
+          "mode": "live",
+          "tempo": 60,
+          "loop": false,
+          "bars": null,
+          "goal": "Long runs: keep the notes even from the bottom to the top and back."
+        }
+      ]
+    },
+    {
+      "id": "piece-first-steps",
+      "kind": "piece",
+      "track": "pieces",
+      "title": "First Steps",
+      "summary": "A first tune for the right hand in C position.",
+      "requires": [
+        "R2",
+        "T2"
+      ],
+      "measures": [
+        "pitch",
+        "timing"
+      ],
+      "score": "gen:piece-first-steps",
+      "drills": [
+        {
+          "id": "piece.first-steps-learn",
+          "kind": "generated",
+          "title": "First Steps, learn slowly",
+          "score": "gen:piece-first-steps",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Learn the notes slowly in wait mode, then play the whole piece in live mode."
+        },
+        {
+          "id": "piece.first-steps",
+          "kind": "generated",
+          "title": "First Steps",
+          "score": "gen:piece-first-steps",
+          "hands": "both",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Play the whole piece through in time; keep going if you slip."
+        }
+      ]
+    },
+    {
+      "id": "piece-evening-song",
+      "kind": "piece",
+      "track": "pieces",
+      "title": "Evening Song",
+      "summary": "A calm tune for the left hand in C position.",
+      "requires": [
+        "R3",
+        "T2"
+      ],
+      "measures": [
+        "pitch",
+        "timing"
+      ],
+      "score": "gen:piece-evening-song",
+      "drills": [
+        {
+          "id": "piece.evening-song-learn",
+          "kind": "generated",
+          "title": "Evening Song, learn slowly",
+          "score": "gen:piece-evening-song",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Learn the notes slowly in wait mode, then play the whole piece in live mode."
+        },
+        {
+          "id": "piece.evening-song",
+          "kind": "generated",
+          "title": "Evening Song",
+          "score": "gen:piece-evening-song",
+          "hands": "both",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Play the whole piece through in time; keep going if you slip."
+        }
+      ]
+    },
+    {
+      "id": "piece-ode-to-joy",
+      "kind": "piece",
+      "track": "pieces",
+      "title": "Ode to Joy",
+      "summary": "Beethoven's melody for the right hand in C position.",
+      "requires": [
+        "R2",
+        "T2",
+        "C1"
+      ],
+      "measures": [
+        "pitch",
+        "timing"
+      ],
+      "score": "gen:piece-ode-to-joy",
+      "drills": [
+        {
+          "id": "piece.ode-to-joy-learn",
+          "kind": "generated",
+          "title": "Ode to Joy, learn slowly",
+          "score": "gen:piece-ode-to-joy",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Learn the notes slowly in wait mode, then play the whole piece in live mode."
+        },
+        {
+          "id": "piece.ode-to-joy",
+          "kind": "generated",
+          "title": "Ode to Joy",
+          "score": "gen:piece-ode-to-joy",
+          "hands": "both",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Play the whole piece through in time; keep going if you slip."
+        }
+      ]
+    },
+    {
+      "id": "piece-twinkle",
+      "kind": "piece",
+      "track": "pieces",
+      "title": "Twinkle, Twinkle, Little Star",
+      "summary": "The tune in the right hand over slow left-hand notes.",
+      "requires": [
+        "R4",
+        "C2"
+      ],
+      "measures": [
+        "pitch",
+        "timing"
+      ],
+      "score": "gen:piece-twinkle",
+      "drills": [
+        {
+          "id": "piece.twinkle-rh",
+          "kind": "generated",
+          "title": "Twinkle, Twinkle, Little Star, right hand alone",
+          "score": "gen:piece-twinkle",
+          "hands": "right",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Learn the notes slowly in wait mode, then play the whole piece in live mode."
+        },
+        {
+          "id": "piece.twinkle-lh",
+          "kind": "generated",
+          "title": "Twinkle, Twinkle, Little Star, left hand alone",
+          "score": "gen:piece-twinkle",
+          "hands": "left",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Learn the notes slowly in wait mode, then play the whole piece in live mode."
+        },
+        {
+          "id": "piece.twinkle",
+          "kind": "generated",
+          "title": "Twinkle, Twinkle, Little Star",
+          "score": "gen:piece-twinkle",
+          "hands": "both",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Play the whole piece through in time; keep going if you slip."
+        }
+      ]
+    },
+    {
+      "id": "piece-lightly-row",
+      "kind": "piece",
+      "track": "pieces",
+      "title": "Lightly Row",
+      "summary": "Hands together with a half-note left hand.",
+      "requires": [
+        "R4",
+        "C4"
+      ],
+      "measures": [
+        "pitch",
+        "timing"
+      ],
+      "score": "gen:piece-lightly-row",
+      "drills": [
+        {
+          "id": "piece.lightly-row-rh",
+          "kind": "generated",
+          "title": "Lightly Row, right hand alone",
+          "score": "gen:piece-lightly-row",
+          "hands": "right",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Learn the notes slowly in wait mode, then play the whole piece in live mode."
+        },
+        {
+          "id": "piece.lightly-row-lh",
+          "kind": "generated",
+          "title": "Lightly Row, left hand alone",
+          "score": "gen:piece-lightly-row",
+          "hands": "left",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Learn the notes slowly in wait mode, then play the whole piece in live mode."
+        },
+        {
+          "id": "piece.lightly-row",
+          "kind": "generated",
+          "title": "Lightly Row",
+          "score": "gen:piece-lightly-row",
+          "hands": "both",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Play the whole piece through in time; keep going if you slip."
+        }
+      ]
+    },
+    {
+      "id": "piece-little-waltz",
+      "kind": "piece",
+      "track": "pieces",
+      "title": "Little Waltz",
+      "summary": "A waltz with a bass-chord-chord left hand and dynamics.",
+      "requires": [
+        "C4",
+        "K6",
+        "D1"
+      ],
+      "measures": [
+        "pitch",
+        "timing",
+        "velocity"
+      ],
+      "score": "gen:piece-little-waltz",
+      "drills": [
+        {
+          "id": "piece.little-waltz-rh",
+          "kind": "generated",
+          "title": "Little Waltz, right hand alone",
+          "score": "gen:piece-little-waltz",
+          "hands": "right",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Learn the notes slowly in wait mode, then play the whole piece in live mode."
+        },
+        {
+          "id": "piece.little-waltz-lh",
+          "kind": "generated",
+          "title": "Little Waltz, left hand alone",
+          "score": "gen:piece-little-waltz",
+          "hands": "left",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Learn the notes slowly in wait mode, then play the whole piece in live mode."
+        },
+        {
+          "id": "piece.little-waltz",
+          "kind": "generated",
+          "title": "Little Waltz",
+          "score": "gen:piece-little-waltz",
+          "hands": "both",
+          "mode": "live",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Play the whole piece through in time; keep going if you slip."
+        }
+      ]
+    },
+    {
+      "id": "E1",
+      "kind": "skill",
+      "track": "ear",
+      "title": "Pitch and direction by ear",
+      "summary": "Hear a note and find it on the keys; hear two notes and tell higher from lower, step from skip.",
+      "requires": [],
+      "measures": [
+        "pitch"
+      ],
+      "gates": {
+        "good": {
+          "accuracy": 0.9
+        },
+        "solid": {
+          "accuracy": 0.95
+        },
+        "mastered": {
+          "accuracy": 0.95
+        }
+      },
+      "drills": [
+        {
+          "id": "ear.echo-1",
+          "kind": "generated",
+          "title": "Ear: Echo one note, C to G",
+          "score": "ear:echo-1",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Find the note by ear; aim for 90% first try."
+        },
+        {
+          "id": "ear.echo-2",
+          "kind": "generated",
+          "title": "Ear: Echo one note, C to C",
+          "score": "ear:echo-2",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Find the note by ear; aim for 90% first try."
+        },
+        {
+          "id": "ear.echo-3",
+          "kind": "generated",
+          "title": "Ear: Echo one note, black keys too",
+          "score": "ear:echo-3",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Find the note by ear; aim for 90% first try."
+        },
+        {
+          "id": "ear.updown-1",
+          "kind": "generated",
+          "title": "Ear: Higher or lower",
+          "score": "ear:updown-1",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Hear which way the second note goes and play it; aim for 90% first try."
+        },
+        {
+          "id": "ear.updown-2",
+          "kind": "generated",
+          "title": "Ear: Step or skip",
+          "score": "ear:updown-2",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Hear which way the second note goes and play it; aim for 90% first try."
+        }
+      ]
+    },
+    {
+      "id": "E2",
+      "kind": "skill",
+      "track": "ear",
+      "title": "Intervals by ear",
+      "summary": "Hear an interval from a given note and play the other note: 2nds, 3rds, 5ths and octaves first, then all intervals up, down and together.",
+      "requires": [
+        "E1"
+      ],
+      "measures": [
+        "pitch"
+      ],
+      "gates": {
+        "good": {
+          "accuracy": 0.9
+        },
+        "solid": {
+          "accuracy": 0.95
+        },
+        "mastered": {
+          "accuracy": 0.95
+        }
+      },
+      "drills": [
+        {
+          "id": "ear.interval-1",
+          "kind": "generated",
+          "title": "Ear: Intervals: 2nd, 3rd, 5th, octave",
+          "score": "ear:interval-1",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Hear the interval and play the other note; aim for 90% first try."
+        },
+        {
+          "id": "ear.interval-2",
+          "kind": "generated",
+          "title": "Ear: Intervals: add minor 3rd, 4th, 6th",
+          "score": "ear:interval-2",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Hear the interval and play the other note; aim for 90% first try."
+        },
+        {
+          "id": "ear.interval-3",
+          "kind": "generated",
+          "title": "Ear: Intervals: all, upward",
+          "score": "ear:interval-3",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Hear the interval and play the other note; aim for 90% first try."
+        },
+        {
+          "id": "ear.interval-4",
+          "kind": "generated",
+          "title": "Ear: Intervals: all, up, down and together",
+          "score": "ear:interval-4",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Hear the interval and play the other note; aim for 90% first try."
+        }
+      ]
+    },
+    {
+      "id": "E3",
+      "kind": "skill",
+      "track": "ear",
+      "title": "Chord quality by ear",
+      "summary": "Hear a chord and play it: major or minor first, then diminished and augmented.",
+      "requires": [
+        "E2"
+      ],
+      "measures": [
+        "pitch"
+      ],
+      "gates": {
+        "good": {
+          "accuracy": 0.9
+        },
+        "solid": {
+          "accuracy": 0.95
+        },
+        "mastered": {
+          "accuracy": 0.95
+        }
+      },
+      "drills": [
+        {
+          "id": "ear.chord-1",
+          "kind": "generated",
+          "title": "Ear: Chords: major or minor, roots C to G",
+          "score": "ear:chord-1",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Hear the chord quality and play the chord; aim for 90% first try."
+        },
+        {
+          "id": "ear.chord-2",
+          "kind": "generated",
+          "title": "Ear: Chords: major or minor, any root",
+          "score": "ear:chord-2",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Hear the chord quality and play the chord; aim for 90% first try."
+        },
+        {
+          "id": "ear.chord-3",
+          "kind": "generated",
+          "title": "Ear: Chords: major, minor, diminished, augmented",
+          "score": "ear:chord-3",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Hear the chord quality and play the chord; aim for 90% first try."
+        }
+      ]
+    },
+    {
+      "id": "E4",
+      "kind": "skill",
+      "track": "ear",
+      "title": "Melodies and tunes by ear",
+      "summary": "Play back short phrases, then known tunes from a given first note, later in any key.",
+      "requires": [
+        "E1"
+      ],
+      "measures": [
+        "pitch"
+      ],
+      "gates": {
+        "good": {
+          "accuracy": 0.9
+        },
+        "solid": {
+          "accuracy": 0.95
+        },
+        "mastered": {
+          "accuracy": 0.95
+        }
+      },
+      "drills": [
+        {
+          "id": "ear.echo-4",
+          "kind": "generated",
+          "title": "Ear: Echo 2-3 note phrases",
+          "score": "ear:echo-4",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Play the phrase back after one hearing if you can; aim for 90% first try."
+        },
+        {
+          "id": "ear.echo-5",
+          "kind": "generated",
+          "title": "Ear: Echo 4-5 note phrases",
+          "score": "ear:echo-5",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Play the phrase back after one hearing if you can; aim for 90% first try."
+        },
+        {
+          "id": "ear.tune-1",
+          "kind": "generated",
+          "title": "Ear: Tunes by ear: easy tunes in C",
+          "score": "ear:tune-1",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Play the tune back from the lit key; aim for 90% first try."
+        },
+        {
+          "id": "ear.tune-2",
+          "kind": "generated",
+          "title": "Ear: Tunes by ear: all tunes in C",
+          "score": "ear:tune-2",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Play the tune back from the lit key; aim for 90% first try."
+        },
+        {
+          "id": "ear.tune-3",
+          "kind": "generated",
+          "title": "Ear: Tunes by ear: any key",
+          "score": "ear:tune-3",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Play the tune back from the lit key; aim for 90% first try."
+        }
+      ]
+    },
+    {
+      "id": "E5",
+      "kind": "skill",
+      "track": "ear",
+      "title": "Progressions by ear",
+      "summary": "Hear I, IV and V (later ii and vi) and play the bass note of each chord.",
+      "requires": [
+        "E3",
+        "E4"
+      ],
+      "measures": [
+        "pitch"
+      ],
+      "gates": {
+        "good": {
+          "accuracy": 0.9
+        },
+        "solid": {
+          "accuracy": 0.95
+        },
+        "mastered": {
+          "accuracy": 0.95
+        }
+      },
+      "drills": [
+        {
+          "id": "ear.bass-1",
+          "kind": "generated",
+          "title": "Ear: Bass of I, IV, V in C",
+          "score": "ear:bass-1",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Play the bass note of each chord in order; aim for 90% first try."
+        },
+        {
+          "id": "ear.bass-2",
+          "kind": "generated",
+          "title": "Ear: Bass of I, IV, V in any key",
+          "score": "ear:bass-2",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Play the bass note of each chord in order; aim for 90% first try."
+        },
+        {
+          "id": "ear.bass-3",
+          "kind": "generated",
+          "title": "Ear: Bass of I, ii, IV, V, vi",
+          "score": "ear:bass-3",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Play the bass note of each chord in order; aim for 90% first try."
+        }
+      ]
+    },
+    {
+      "id": "E6",
+      "kind": "skill",
+      "track": "ear",
+      "title": "Jazz basics: 7th chords and ii-V-I",
+      "summary": "Hear the five 7th-chord qualities and the bass of ii-V-I progressions in all keys.",
+      "requires": [
+        "E5"
+      ],
+      "measures": [
+        "pitch"
+      ],
+      "gates": {
+        "good": {
+          "accuracy": 0.9
+        },
+        "solid": {
+          "accuracy": 0.95
+        },
+        "mastered": {
+          "accuracy": 0.95
+        }
+      },
+      "drills": [
+        {
+          "id": "ear.chord-4",
+          "kind": "generated",
+          "title": "Ear: Seventh chords: maj7, 7, m7, m7b5, dim7",
+          "score": "ear:chord-4",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Hear the chord quality and play the chord; aim for 90% first try."
+        },
+        {
+          "id": "ear.bass-4",
+          "kind": "generated",
+          "title": "Ear: Bass of ii-V-I with 7th chords",
+          "score": "ear:bass-4",
+          "hands": "both",
+          "mode": "wait",
+          "tempo": 100,
+          "loop": false,
+          "bars": null,
+          "goal": "Play the bass note of each chord in order; aim for 90% first try."
+        }
+      ]
+    }
+  ]
+}

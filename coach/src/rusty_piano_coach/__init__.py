@@ -1,0 +1,1 @@
+"""rusty_piano coach package. It will analyse recorded practice sessions against scores, write reports and track trends. The modules are scores, sessions, compare, reports and trends. Not implemented yet."""

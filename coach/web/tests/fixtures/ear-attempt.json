@@ -1,0 +1,248 @@
+{
+  "version": 2,
+  "kind": "rusty_piano.attempt",
+  "score": {
+    "id": "ear:echo-1",
+    "title": "Ear training: Echo one note, C to G",
+    "composer": null
+  },
+  "mode": "wait",
+  "end": "done",
+  "started_at": "2026-11-08T10:00:00.000Z",
+  "ended_at": "2026-11-08T10:00:30.000Z",
+  "duration_ms": 30000,
+  "clock": {
+    "page_start_ms": 1000,
+    "t0_ms": null,
+    "first_engine_t": 5400,
+    "first_engine_page_ms": 4400
+  },
+  "practice": {
+    "hands": "both",
+    "range": null,
+    "loop": false,
+    "loops_completed": 0,
+    "tempo": {
+      "percent": 100
+    }
+  },
+  "plan": {
+    "steps_total": 3,
+    "length_quarters": 0,
+    "first_bar": null,
+    "last_bar": null
+  },
+  "settings": {
+    "ear": {
+      "seed": 7,
+      "reveal_after": 3,
+      "sound": "engine",
+      "counted": true,
+      "settings": {
+        "low": 60,
+        "high": 67,
+        "key": 0,
+        "set": [
+          "scale"
+        ],
+        "direction": "up",
+        "harmonic": "melodic",
+        "bpm": 80,
+        "len_min": 1,
+        "len_max": 1
+      }
+    }
+  },
+  "autoplay": {
+    "on_at_start": false,
+    "used": false
+  },
+  "sources": [
+    "engine"
+  ],
+  "pedal_down_at_start": false,
+  "ear": {
+    "level": "echo-1",
+    "type": "echo",
+    "node": "E1",
+    "kind": "note",
+    "items_total": 3,
+    "items_done": 3,
+    "first_try": 3,
+    "replays": 1,
+    "revealed": 0,
+    "median_step_ms": 2400,
+    "targets_ms": {
+      "good": 5000,
+      "solid": 3000,
+      "mastered": 2000
+    },
+    "sound": "engine"
+  },
+  "steps": [
+    {
+      "step": 0,
+      "item": 0,
+      "type": "echo",
+      "category": "C4",
+      "label": "C4",
+      "prompt_notes": [
+        60
+      ],
+      "given": [],
+      "answer_notes": [
+        60
+      ],
+      "answer_steps": 1,
+      "result": "hit",
+      "first_try": true,
+      "wrong_count": 0,
+      "wrong_notes": [],
+      "replays": 0,
+      "revealed": false,
+      "response_ms": 2400,
+      "asked_page_ms": 2000,
+      "done_page_ms": 4400
+    },
+    {
+      "step": 1,
+      "item": 1,
+      "type": "echo",
+      "category": "E4",
+      "label": "E4",
+      "prompt_notes": [
+        64
+      ],
+      "given": [],
+      "answer_notes": [
+        64
+      ],
+      "answer_steps": 1,
+      "result": "hit",
+      "first_try": true,
+      "wrong_count": 0,
+      "wrong_notes": [],
+      "replays": 1,
+      "revealed": false,
+      "response_ms": 2600,
+      "asked_page_ms": 6000,
+      "done_page_ms": 8600
+    },
+    {
+      "step": 2,
+      "item": 2,
+      "type": "echo",
+      "category": "G4",
+      "label": "G4",
+      "prompt_notes": [
+        67
+      ],
+      "given": [],
+      "answer_notes": [
+        67
+      ],
+      "answer_steps": 1,
+      "result": "hit",
+      "first_try": true,
+      "wrong_count": 0,
+      "wrong_notes": [],
+      "replays": 0,
+      "revealed": false,
+      "response_ms": 2200,
+      "asked_page_ms": 10000,
+      "done_page_ms": 12200
+    }
+  ],
+  "events": [
+    {
+      "type": "note_on",
+      "t": 5400,
+      "page_ms": 4400,
+      "source": "engine",
+      "note": 60,
+      "velocity": 80
+    },
+    {
+      "type": "note_off",
+      "t": 5600,
+      "page_ms": 4600,
+      "source": "engine",
+      "note": 60
+    },
+    {
+      "type": "note_on",
+      "t": 9600,
+      "page_ms": 8600,
+      "source": "engine",
+      "note": 64,
+      "velocity": 80
+    },
+    {
+      "type": "note_off",
+      "t": 9800,
+      "page_ms": 8800,
+      "source": "engine",
+      "note": 64
+    },
+    {
+      "type": "note_on",
+      "t": 13200,
+      "page_ms": 12200,
+      "source": "engine",
+      "note": 67,
+      "velocity": 80
+    },
+    {
+      "type": "note_off",
+      "t": 13400,
+      "page_ms": 12400,
+      "source": "engine",
+      "note": 67
+    }
+  ],
+  "summary": {
+    "counts": {
+      "expectedNotes": 3,
+      "correctNotes": 3,
+      "wrongNotes": 0,
+      "missedNotes": 0
+    },
+    "metrics": {
+      "accuracy": "100%",
+      "tempo": "-",
+      "wrong": "0",
+      "missed": "0"
+    },
+    "rows": [
+      [
+        "Level",
+        "Echo one note, C to G"
+      ],
+      [
+        "First try",
+        "3 of 3"
+      ],
+      [
+        "Replays",
+        "1"
+      ],
+      [
+        "Median time",
+        "2.4 s"
+      ]
+    ],
+    "ear": {
+      "accuracy": 1,
+      "median_step_ms": 2400,
+      "first_try": 3,
+      "items": 3,
+      "replays": 1,
+      "revealed": 0
+    }
+  },
+  "drill_id": "ear.echo-1",
+  "plan_id": null,
+  "tags": [
+    "ear-training"
+  ]
+}

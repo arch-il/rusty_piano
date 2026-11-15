@@ -1,0 +1,339 @@
+// rusty_piano sound profile: physical_sl990 (the modal physical-model piano tuned for the Studiologic SL990 on laptop speakers).
+// Fitted on 2026-11-06 against private Pianoteq 9 NY Steinway D Player renders (docs/reports/2026-11-06-physical-engine-m6-fit.md; refitted in docs/reports/2026-11-06-physical-engine-fit-followups.md, which lists the previous values; note 96 keeps its earlier anchor, the damper tail and the resonance strength/partials/max_hz are fitted too): output_gain, the velocity curve, hammer exponents, coupling_loss_fraction, undamped_from_note, EQ gains and the per-note table are fitted; the rest is approximate published grand-piano data.
+// The SL990's hardest hits reach about velocity 85 (typical playing 40-65), so velocity 90 counts as full force.
+// With the hammer speed curve (speed_curve 2.0) typical velocity 52 then drives the hammer at about (52/90)^2 = 0.33 of the
+// speed range instead of (52/127)^2 = 0.17, so playing is louder and brighter through the physics, not only by gain.
+// Bass is lifted with level_tilt_db_per_octave for small speakers; for headphones set level_tilt_db_per_octave back to 0.0.
+// Choose it with --profile physical_sl990 or profile: Some("physical_sl990") in engine/setup.ron.
+// Live edits apply to new notes within about 0.5 s (board and mics edits apply at once; decay edits reach the coupled low partials of sounding notes at once and their other partials on the next note-on; coupled modes of sounding notes are updated unless the coupled split changes, then new notes only); a broken or out-of-range edit prints an error and the last good settings stay active.
+// Changing engine needs a restart.
+// Always write decimal numbers with a point for decimal fields (1.0, not 1), whole numbers for note numbers, velocities and counts.
+(
+    engine: Modal,
+    output: (
+        // Volume of the whole mix before the limiter. 1.0 = unchanged. Range 0.0 - 4.0. physical_sl990: was 1.0; 4.0 (+12 dB) because the headroom-first level was too quiet on laptop speakers.
+        master_volume: 4.0,
+        // Scales bridge force in newtons to output level. Range 0.0 - 10.0. physical_sl990: the gain floor is now 0.0086 (the fit never sets it below that; a test-piece cap at the reference velocities would be about 0.0016, because of master_volume 4.0 and the bass tilt). It was 0.0043 and was raised +6 dB on 2026-11-08 because real playing peaked at only about -15.6 dBFS on speakers; the limiter catches the peaks.
+        output_gain: 0.008600,
+        // physical_sl990: was 0.0; minus means bass louder: lifts low notes about 1.5 dB per octave below middle C for laptop speakers.
+        // Level tilt in dB per octave around note 60; positive = treble louder. Unit dB/octave. Range -12.0 - 12.0.
+        level_tilt_db_per_octave: -1.5,
+        // Stereo spread: 0 = mono, 1 = lowest key fully left and highest fully right. Range 0.0 - 1.0.
+        stereo_width: 0.5,
+        // Where soft limiting starts, as a fraction of ceiling. Range 0.1 - 0.99.
+        limiter_knee: 0.8,
+        // Highest output level ever produced (1.0 = full scale). Default 0.98 leaves a little headroom so the soft limiter never reaches full scale. Range 0.1 - 1.0.
+        limiter_ceiling: 0.98,
+    ),
+    velocity: (
+        // physical_sl990: was 127; the SL990's hardest hits reach about velocity 85, so 90 counts as full force.
+        // Velocity that counts as full force; harder hits count as this value. Count. Range 1 - 127.
+        full_force_velocity: 90,
+        // Hammer speed at the softest velocity, metres per second. Range 0.05 - 2.0.
+        hammer_speed_min_mps: 0.200,
+        // Hammer speed at full force, metres per second. Range 0.5 - 10.0.
+        hammer_speed_max_mps: 5.500,
+        // speed = min + (max - min) * (velocity / full)^curve. Dimensionless. Range 0.2 - 5.0.
+        speed_curve: 2.000,
+    ),
+    strings: (
+        // String tension in newtons. Range 100.0 - 2000.0.
+        tension_n: 700.0,
+        // Vibrating length of middle C in metres. Range 0.2 - 1.5.
+        length_middle_c_m: 0.62,
+        // Length exponent for notes above middle C (dimensionless). Range 0.3 - 1.0.
+        length_treble_exponent: 0.9,
+        // Length exponent for notes below middle C (dimensionless). Range 0.3 - 1.0.
+        length_bass_exponent: 0.75,
+        // Shortest string length in metres. Range 0.02 - 0.5.
+        length_min_m: 0.05,
+        // Longest string length in metres. Range 0.5 - 3.0.
+        length_max_m: 2.0,
+        // Stiffness inharmonicity B at middle C (dimensionless). Range 0.0 - 0.01.
+        inharmonicity_middle_c: 0.0004,
+        // Inharmonicity growth per octave above middle C (dimensionless factor). Range 1.0 - 5.0.
+        inharmonicity_treble_octave_factor: 2.5,
+        // Inharmonicity growth per octave below middle C (dimensionless factor). Range 0.2 - 2.0.
+        inharmonicity_bass_octave_factor: 0.7,
+        // First MIDI note with two strings per key. Note number. Range 21 - 109.
+        two_strings_from_note: 31,
+        // First MIDI note with three strings per key. Note number. Range 21 - 109.
+        three_strings_from_note: 47,
+        // Detuning between the strings of one unison in cents. Range 0.0 - 10.0.
+        unison_detune_cents: 1.0,
+        // Decay spread between the strings of one unison (fraction). Range 0.0 - 0.9.
+        unison_decay_spread: 0.25,
+        // Strike point as a fraction of string length at note 21. Range 0.02 - 0.5.
+        strike_position_bass: 0.12,
+        // Strike point as a fraction of string length at note 108. Range 0.02 - 0.5.
+        strike_position_treble: 0.07,
+        // Modes kept per voice over all strings. Count. Range 1 - 192.
+        max_partials: 64,
+        // Highest mode frequency kept, in hertz. Range 1000.0 - 22000.0.
+        max_mode_hz: 16000.0,
+    ),
+    tuning: (
+        // Octave stretch tuning: 0 = equal temperament; 1 = every note is tuned to the second partial of the note an octave below, so octaves do not beat (the stretch grows toward both ends with string stiffness); 2 = twice that. Dimensionless. Range 0.0 - 3.0.
+        stretch: 1.0,
+        // Pitch of A4 (MIDI note 69) in hertz; the stretch is measured from A4. Range 400.0 - 480.0.
+        a4_hz: 440.0,
+    ),
+    decay: (
+        // Time for middle C to fall by 60 dB (T60) in seconds; for coupled partials this is the in-phase (prompt) decay, the bridge takes up to two thirds of it and the rest stays in the string. Range 0.1 - 60.0.
+        t60_middle_c_s: 10.0,
+        // Semitones per halving of the decay time; higher notes decay faster. Unit semitones. Range 1.0 - 120.0.
+        t60_halving_semitones: 26.0,
+        // Shortest decay time any note gets, in seconds. Range 0.05 - 60.0.
+        t60_min_s: 0.4,
+        // Longest decay time any note gets, in seconds. Range 0.05 - 120.0.
+        t60_max_s: 30.0,
+        // Extra loss in 1/s per kHz squared, so high partials die faster. Range 0.0 - 10.0.
+        damping_per_khz2: 0.1,
+        // Damper decay time at the bass end, in seconds. Range 0.02 - 5.0.
+        damper_t60_bass_s: 0.6,
+        // Damper decay time at the treble end, in seconds. Range 0.02 - 5.0.
+        damper_t60_treble_s: 0.15,
+        // dB of damping after which the damper's grip weakens to the tail rate, in dB. Range 0.0 - 80.0. 0.0 = off (single damper).
+        damper_tail_db: 30.000,
+        // Damper decay time of the residual stage at the bass end, in seconds. Range 0.02 - 20.0.
+        damper_tail_t60_bass_s: 3.000,
+        // Damper decay time of the residual stage at the treble end, in seconds. Range 0.02 - 20.0.
+        damper_tail_t60_treble_s: 0.600,
+        // First MIDI note without dampers; 109 = all keys damped. Note number. Range 21 - 109. The fitter sets it from the references: one above the highest note Pianoteq damps, never below 89.
+        undamped_from_note: 97,
+    ),
+    hammer: (
+        // Hammer mass at the bass end, in grams. Range 1.0 - 30.0.
+        mass_bass_g: 10.0,
+        // Hammer mass at the treble end, in grams. Range 1.0 - 30.0.
+        mass_treble_g: 2.0,
+        // Felt force at 1 mm compression, bass end, in newtons. Range 0.5 - 500.0.
+        force_1mm_bass_n: 8.0,
+        // Felt force at 1 mm compression, treble end, in newtons. Range 0.5 - 500.0.
+        force_1mm_treble_n: 100.0,
+        // Felt stiffness exponent, bass end (dimensionless). Range 1.5 - 4.0.
+        exponent_bass: 2.150,
+        // Felt stiffness exponent, treble end (dimensionless). Range 1.5 - 4.0.
+        exponent_treble: 2.400,
+    ),
+    soundboard: (
+        // Number of soundboard modes, spread like a plate up to highest_hz. Count. Range 8 - 256.
+        modes: 150,
+        // Frequency of the lowest soundboard mode, in hertz. Range 20.0 - 200.0.
+        lowest_hz: 50.0,
+        // Frequency of the highest soundboard mode, in hertz; above it the body noise takes over. Range 300.0 - 5000.0.
+        highest_hz: 1500.0,
+        // Length to width ratio of the plate that sets the mode pattern (dimensionless). Range 1.0 - 4.0.
+        aspect: 1.4,
+        // Sharpness (quality factor Q) of the lowest board mode (dimensionless). Range 2.0 - 200.0.
+        q_low: 20.0,
+        // Sharpness (quality factor Q) of the highest board mode (dimensionless). Range 2.0 - 200.0.
+        q_high: 12.0,
+        // Peak mobility of one board mode relative to the plain bridge; 0 = no board modes. Dimensionless. The peak relative to the bridge holds at middle C; board modes are normalised so the average mobility is the same at every frequency. Range 0.0 - 10.0.
+        mode_peak: 2.0,
+        // Mean impedance of bridge and soundboard seen by the strings, in kg/s; lower = stronger coupling: more of the decay goes through the bridge, giving a longer aftersound and more sympathetic links. Range 300.0 - 50000.0.
+        bridge_impedance_kg_s: 6000.0,
+        // Bridge point along the board length, as a fraction. Range 0.02 - 0.98.
+        bridge_x: 0.37,
+        // Bridge point across the board width, as a fraction. Range 0.02 - 0.98.
+        bridge_y: 0.61,
+        // Bridge coupling: 1 = physical (real double decay), 0 = one-way (strings drive the board, no feedback); values between scale both directions together. Dimensionless. Range 0.0 - 4.0.
+        coupling: 1.0,
+        // Lowest partials of each string that feel the board (two-way coupling). Count. Range 0 - 16.
+        coupled_partials: 12,
+        // Only partials below this frequency feel the board, in hertz. Range 100.0 - 5000.0.
+        coupled_max_hz: 2500.0,
+        // Decay time of the body noise response (upper range), in milliseconds. Range 10.0 - 200.0.
+        body_t60_ms: 80.0,
+        // The body noise starts above this frequency (high-pass), in hertz. Range 200.0 - 8000.0.
+        body_crossover_hz: 1500.0,
+        // Share of a coupled partial's decay the bridge may take (the prompt, in-phase decay); the rest stays in the string and carries the aftersound. Lower = longer, louder aftersound. Fraction. Range 0.0 - 0.95.
+        coupling_loss_fraction: 0.671,
+    ),
+    mics: (
+        // Distance between the left and right microphones, in metres; 0 = mono board sound. Range 0.0 - 3.0.
+        spacing_m: 0.6,
+        // Height of the microphones above the soundboard, in metres. Range 0.1 - 5.0.
+        height_m: 1.0,
+        // Level of the direct string sound, panned by pitch with output.stereo_width. Range 0.0 - 4.0.
+        direct_mix: 1.0,
+        // Level of the soundboard modes heard by the two microphones. Range 0.0 - 4.0.
+        board_mix: 0.5,
+        // Level of the body noise response above body_crossover_hz. Range 0.0 - 4.0.
+        body_mix: 0.1,
+    ),
+    pedals: (
+        // Sustain pedal travel (0 = up, 1 = fully down; MIDI CC64 0 - 127) where the dampers start to leave the strings; below it they damp fully. Fraction. Range 0.0 - 0.9.
+        sustain_lift_start: 0.15,
+        // Sustain pedal travel where the dampers are fully off the strings; must be at least 0.05 above sustain_lift_start. Fraction. Range 0.1 - 1.0.
+        sustain_lift_full: 0.75,
+        // Half-pedal shape: damping = (1 - x)^curve with x = 0 at lift start and 1 at full lift; larger = the dampers lose their grip sooner. Dimensionless. Range 0.2 - 5.0.
+        half_pedal_curve: 2.0,
+        // Soft pedal (una corda, MIDI CC67) at full shift: how much of the third string of a three-string note the hammer still strikes (0 = missed). Fraction. Range 0.0 - 1.0.
+        una_corda_third_string: 0.0,
+        // At full shift: how much of the shifted string of a two-string note the hammer still strikes. Fraction. Range 0.0 - 1.0.
+        una_corda_two_string: 0.5,
+        // At full shift the hammer hits softer, less packed felt: felt force scales by (1 - this). Fraction. Range 0.0 - 0.8.
+        una_corda_felt_softening: 0.7,
+    ),
+    resonance: (
+        // Sympathetic resonance: strings that are not being played but are free to ring (dampers lifted by the sustain pedal, a held key or sostenuto, and the top treble without dampers) ring along through the bridge. Their bridge coupling relative to soundboard.coupling: 0 = off, 1 = the same as played strings. Dimensionless. Range 0.0 - 2.0.
+        strength: 0.25,
+        // Lowest partials of each such string that can ring along; more = richer and more CPU. Count. Range 1 - 8.
+        partials: 2,
+        // Only partials below this frequency ring along, hertz; keep it at 2200 or more so the undamped top treble (C7 = 2093 Hz) can resonate. Range 200.0 - 5000.0.
+        max_hz: 2200.0,
+    ),
+    noises: (
+        // Mechanical noises. Each level is the noise force as a fraction of the peak bridge force of middle C at full velocity (0.01 = -40 dB); 0 = off. Range 0.0 - 1.0 each.
+        // Key bottoming on the keybed at a key press, heard directly; grows with key speed. Was 0.01; lowered (about -16 dB) because the key clack was too loud, especially on headphones.
+        key_down: 0.0016,
+        // Key return and damper felt landing at key release, heard directly. Was 0.005.
+        key_up: 0.0008,
+        // Knock of the hammer hitting the strings, through the bridge and soundboard; grows with key speed and is strongest in the treble.
+        hammer_knock: 0.01,
+        // Sustain pedal pressed: the dampers lift off the strings (through the soundboard, so free strings ring along) plus a soft direct thump.
+        pedal_down: 0.00153,
+        // Sustain pedal released: the dampers land on the strings and the pedal mechanism thumps (soundboard plus direct); scaled by how far the dampers had lifted.
+        pedal_up: 0.00147,
+    ),
+    eq: (
+        // Output EQ before the limiter: a low shelf, three peaking bands and a high shelf. A gain of 0.0 switches that band off; all gains 0.0 = no EQ (exactly the dry sound). Frequencies in hertz, range 20.0 - 20000.0; gains in dB, range -12.0 - 12.0; Q (larger = narrower), range 0.1 - 10.0.
+        // Low shelf corner frequency, hertz.
+        low_shelf_hz: 120.0,
+        // Low shelf gain, dB; positive = more bass.
+        low_shelf_db: -6.0,
+        // Peaking band 1 centre frequency, hertz.
+        peak1_hz: 400.0,
+        // Peaking band 1 gain, dB.
+        peak1_db: -6.0,
+        // Peaking band 1 Q.
+        peak1_q: 1.0,
+        // Peaking band 2 centre frequency, hertz.
+        peak2_hz: 1200.0,
+        // Peaking band 2 gain, dB.
+        peak2_db: -3.0,
+        // Peaking band 2 Q.
+        peak2_q: 1.0,
+        // Peaking band 3 centre frequency, hertz.
+        peak3_hz: 3500.0,
+        // Peaking band 3 gain, dB.
+        peak3_db: -1.0,
+        // Peaking band 3 Q.
+        peak3_q: 1.0,
+        // High shelf corner frequency, hertz.
+        high_shelf_hz: 6000.0,
+        // High shelf gain, dB; positive = brighter.
+        high_shelf_db: -2.5,
+    ),
+    reverb: (
+        // Optional room reverb (8-line feedback network) added to the sound before the limiter. Off by default: the reference sound is the dry pianist's seat.
+        // Wet level relative to the dry sound; 0.0 = off (exactly the dry sound). Range 0.0 - 1.0.
+        mix: 0.0,
+        // Room size: scales the reflection paths. Range 0.5 - 2.0.
+        size: 1.0,
+        // Reverb decay time to -60 dB, seconds. Range 0.2 - 10.0.
+        decay_s: 1.6,
+        // High frequencies above this die faster in the reverb tail, hertz. Range 500.0 - 20000.0.
+        damping_hz: 5000.0,
+        // Gap before the reverb starts, milliseconds. Range 0.0 - 200.0.
+        predelay_ms: 15.0,
+    ),
+    voices: (
+        // Most notes sounding at once. Count. Range 1 - 32.
+        max_voices: 32,
+    ),
+    // Per-note adjustments, empty = none. Each entry is an anchor note with values; notes between two anchors are interpolated linearly, notes outside use the nearest anchor. Up to 88 entries, notes 21 - 108 in rising order; a value left out means no change.
+    // Values: cents (pitch offset, -100.0 - 100.0), level_db (-24.0 - 24.0), and multipliers where 1.0 = no change: t60 (decay time, 0.1 - 10.0), damping (high-partial loss, 0.0 - 10.0), inharmonicity (0.0 - 10.0), hardness (felt, 0.1 - 10.0), hammer_mass (0.25 - 4.0), strike (strike position, 0.25 - 4.0), detune (unison detune, 0.0 - 10.0), damper (damper decay time, 0.1 - 30.0), aftersound (share of the decay kept in the string, 0.1 - 5.0; below 1 = longer aftersound); explicit two-stage decay: prompt_db_per_s (extra decay of the prompt part, dB per second, 0.0 - 400.0; 0.0 = off) and after_level_db (level of the slower aftersound part relative to the start, -60.0 - 0.0; 0.0 = single decay), the aftersound follows t60.
+    // Example: notes: [(note: 21, t60: 1.2, level_db: 1.5), (note: 108, cents: 3.0)],
+    notes: [
+        (note: 21, cents: -13.20, level_db: -3.18, t60: 0.849, damping: 2.168, inharmonicity: 1.091, hardness: 2.378, strike: 1.000, damper: 0.631, aftersound: 0.765, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 22, cents: -12.43, level_db: -1.12, t60: 2.254, damping: 6.660, inharmonicity: 1.119, hardness: 2.000, strike: 1.000, damper: 0.716, aftersound: 0.265, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 23, cents: -10.17, level_db: -1.91, t60: 0.974, damping: 2.000, inharmonicity: 0.852, hardness: 2.000, strike: 1.000, damper: 0.786, aftersound: 0.820, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 24, cents: -10.25, level_db: -2.37, t60: 1.051, damping: 2.427, inharmonicity: 0.653, hardness: 2.828, strike: 1.000, damper: 1.000, aftersound: 0.957, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 25, cents: -9.01, level_db: 0.18, t60: 1.461, damping: 3.766, inharmonicity: 0.553, hardness: 1.000, strike: 1.000, damper: 0.525, aftersound: 0.345, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 26, cents: -8.07, level_db: 1.98, t60: 1.227, damping: 2.828, inharmonicity: 0.470, hardness: 2.828, strike: 1.000, damper: 0.848, aftersound: 0.439, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 27, cents: -6.20, level_db: 1.14, t60: 1.017, damping: 1.912, inharmonicity: 0.500, hardness: 2.000, strike: 1.000, damper: 0.586, aftersound: 0.576, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 28, cents: -6.21, level_db: 0.08, t60: 1.964, damping: 10.000, inharmonicity: 0.474, hardness: 4.000, strike: 1.000, damper: 0.707, aftersound: 0.288, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 29, cents: -5.65, level_db: 1.88, t60: 0.733, damping: 3.451, inharmonicity: 0.400, hardness: 4.000, strike: 1.000, damper: 0.853, aftersound: 0.333, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 30, cents: -4.89, level_db: 0.76, t60: 0.807, damping: 4.176, inharmonicity: 0.361, hardness: 2.000, strike: 1.000, damper: 1.985, aftersound: 0.338, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 31, cents: -4.04, level_db: -1.35, t60: 1.521, damping: 1.403, inharmonicity: 0.335, hardness: 4.000, strike: 1.000, damper: 1.971, aftersound: 3.036, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 32, cents: -3.45, level_db: -4.96, t60: 0.773, damping: 0.385, inharmonicity: 0.305, hardness: 4.000, strike: 1.000, damper: 0.603, aftersound: 0.200, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 33, cents: -2.73, level_db: -3.37, t60: 0.637, damping: 0.615, inharmonicity: 0.250, hardness: 4.000, strike: 1.000, damper: 1.256, aftersound: 0.969, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 34, cents: -2.16, level_db: -3.76, t60: 0.537, damping: 1.053, inharmonicity: 0.220, hardness: 4.000, strike: 1.000, damper: 1.158, aftersound: 0.872, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 35, cents: -1.98, level_db: -0.73, t60: 0.844, damping: 0.670, inharmonicity: 0.302, hardness: 4.000, strike: 1.000, damper: 1.303, aftersound: 0.276, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 36, cents: -1.66, level_db: -1.02, t60: 0.505, damping: 0.707, inharmonicity: 0.267, hardness: 4.000, strike: 1.000, damper: 1.564, aftersound: 0.666, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 37, cents: -1.87, level_db: -0.18, t60: 0.581, damping: 0.854, inharmonicity: 0.267, hardness: 2.000, strike: 1.000, damper: 1.175, aftersound: 1.773, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 38, cents: -1.66, level_db: -2.89, t60: 0.431, damping: 0.703, inharmonicity: 0.278, hardness: 2.000, strike: 1.000, damper: 1.802, aftersound: 0.251, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 39, cents: -0.89, level_db: -3.41, t60: 0.549, damping: 0.922, inharmonicity: 0.500, hardness: 2.000, strike: 1.000, damper: 1.348, aftersound: 2.004, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 40, cents: -0.81, level_db: -4.21, t60: 0.452, damping: 0.683, inharmonicity: 0.286, hardness: 2.000, strike: 1.000, damper: 1.097, aftersound: 1.002, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 41, cents: -0.37, level_db: -2.42, t60: 0.488, damping: 0.726, inharmonicity: 0.296, hardness: 4.000, strike: 1.000, damper: 1.435, aftersound: 0.200, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 42, cents: -0.90, level_db: -0.60, t60: 0.447, damping: 0.329, inharmonicity: 0.319, hardness: 4.000, strike: 1.000, damper: 1.378, aftersound: 0.200, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 43, cents: -0.66, level_db: 1.07, t60: 0.474, damping: 0.375, inharmonicity: 0.332, hardness: 4.000, strike: 1.000, damper: 1.671, aftersound: 1.550, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 44, cents: -0.41, level_db: 1.99, t60: 0.516, damping: 0.156, inharmonicity: 0.347, hardness: 3.588, strike: 1.000, damper: 1.777, aftersound: 0.200, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 45, cents: -0.10, level_db: 2.25, t60: 0.697, damping: 0.637, inharmonicity: 0.333, hardness: 3.851, strike: 1.000, damper: 0.770, aftersound: 0.251, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 46, cents: -0.26, level_db: 1.74, t60: 0.474, damping: 0.881, inharmonicity: 0.363, hardness: 4.000, strike: 1.000, damper: 1.048, aftersound: 0.200, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 47, cents: 0.08, level_db: -3.33, t60: 1.031, damping: 0.943, inharmonicity: 0.395, hardness: 4.000, strike: 1.000, damper: 1.400, aftersound: 1.639, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 48, cents: 0.09, level_db: -2.52, t60: 0.833, damping: 0.825, inharmonicity: 0.420, hardness: 4.000, strike: 1.000, damper: 1.990, aftersound: 1.436, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 49, cents: 0.20, level_db: -0.46, t60: 0.801, damping: 0.670, inharmonicity: 0.452, hardness: 2.000, strike: 1.000, damper: 1.744, aftersound: 2.836, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 50, cents: 0.44, level_db: -1.77, t60: 1.510, damping: 1.107, inharmonicity: 0.500, hardness: 2.000, strike: 1.000, damper: 1.632, aftersound: 0.998, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 51, cents: -0.04, level_db: -3.73, t60: 0.574, damping: 0.514, inharmonicity: 0.470, hardness: 2.000, strike: 1.000, damper: 1.744, aftersound: 1.419, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 52, cents: 0.53, level_db: -2.42, t60: 0.935, damping: 0.917, inharmonicity: 0.917, hardness: 1.091, strike: 1.000, damper: 1.435, aftersound: 1.000, prompt_db_per_s: 32.30, after_level_db: -2.30),
+        (note: 53, cents: 0.36, level_db: -2.27, t60: 1.142, damping: 1.586, inharmonicity: 0.562, hardness: 4.000, strike: 1.000, damper: 1.056, aftersound: 1.040, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 54, cents: -0.60, level_db: -0.66, t60: 1.821, damping: 2.981, inharmonicity: 0.626, hardness: 4.000, strike: 1.000, damper: 1.563, aftersound: 0.642, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 55, cents: 0.52, level_db: -0.71, t60: 2.199, damping: 1.000, inharmonicity: 0.676, hardness: 4.000, strike: 1.000, damper: 1.266, aftersound: 2.934, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 56, cents: 0.08, level_db: 0.08, t60: 0.926, damping: 0.436, inharmonicity: 0.737, hardness: 4.000, strike: 1.000, damper: 1.888, aftersound: 2.037, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 57, cents: -0.08, level_db: 1.39, t60: 0.643, damping: 2.367, inharmonicity: 0.811, hardness: 3.150, strike: 1.000, damper: 1.412, aftersound: 0.200, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 58, cents: 0.77, level_db: -2.69, t60: 1.587, damping: 2.079, inharmonicity: 0.778, hardness: 4.000, strike: 1.000, damper: 2.319, aftersound: 3.149, prompt_db_per_s: 35.58, after_level_db: -5.58),
+        (note: 59, cents: 0.65, level_db: -2.61, t60: 2.582, damping: 4.000, inharmonicity: 0.835, hardness: 4.000, strike: 1.000, damper: 3.074, aftersound: 3.036, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 60, cents: -0.47, level_db: -1.20, t60: 0.777, damping: 1.544, inharmonicity: 0.897, hardness: 4.000, strike: 1.000, damper: 2.068, aftersound: 0.200, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 61, cents: 0.06, level_db: -2.80, t60: 0.842, damping: 4.354, inharmonicity: 0.909, hardness: 4.000, strike: 1.000, damper: 2.127, aftersound: 0.271, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 62, cents: 0.45, level_db: -5.05, t60: 1.904, damping: 2.446, inharmonicity: 0.921, hardness: 4.000, strike: 1.000, damper: 2.529, aftersound: 3.434, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 63, cents: 0.23, level_db: -0.73, t60: 0.871, damping: 4.000, inharmonicity: 0.941, hardness: 4.000, strike: 1.000, damper: 2.437, aftersound: 2.347, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 64, cents: 1.01, level_db: 2.78, t60: 0.649, damping: 10.000, inharmonicity: 0.952, hardness: 2.690, strike: 1.000, damper: 2.349, aftersound: 0.876, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 65, cents: 0.40, level_db: 0.84, t60: 1.142, damping: 3.364, inharmonicity: 0.972, hardness: 2.490, strike: 1.000, damper: 2.397, aftersound: 1.295, prompt_db_per_s: 30.69, after_level_db: -0.69),
+        (note: 66, cents: 0.48, level_db: -0.69, t60: 0.673, damping: 4.000, inharmonicity: 0.988, hardness: 1.000, strike: 1.000, damper: 2.899, aftersound: 1.698, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 67, cents: 0.70, level_db: 0.45, t60: 0.389, damping: 1.000, inharmonicity: 1.008, hardness: 3.104, strike: 1.000, damper: 1.674, aftersound: 0.501, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 68, cents: 0.09, level_db: 3.95, t60: 0.360, damping: 2.000, inharmonicity: 1.033, hardness: 1.166, strike: 1.000, damper: 1.802, aftersound: 0.421, prompt_db_per_s: 30.13, after_level_db: -0.13),
+        (note: 69, cents: 1.21, level_db: -2.58, t60: 0.358, damping: 4.590, inharmonicity: 1.043, hardness: 4.000, strike: 1.000, damper: 2.703, aftersound: 0.200, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 70, cents: -0.55, level_db: 2.31, t60: 0.452, damping: 1.839, inharmonicity: 1.074, hardness: 1.856, strike: 1.000, damper: 2.000, aftersound: 0.386, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 71, cents: 0.09, level_db: -5.62, t60: 0.640, damping: 4.000, inharmonicity: 1.090, hardness: 4.000, strike: 1.000, damper: 3.149, aftersound: 0.251, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 72, cents: 0.70, level_db: -1.08, t60: 1.220, damping: 1.526, inharmonicity: 1.107, hardness: 2.000, strike: 1.000, damper: 2.889, aftersound: 1.685, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 73, cents: 1.41, level_db: 0.22, t60: 0.285, damping: 2.599, inharmonicity: 1.122, hardness: 1.940, strike: 1.000, damper: 3.004, aftersound: 0.200, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 74, cents: 0.55, level_db: -6.25, t60: 0.818, damping: 7.552, inharmonicity: 1.132, hardness: 3.500, strike: 1.000, damper: 3.127, aftersound: 1.002, prompt_db_per_s: 30.24, after_level_db: -0.24),
+        (note: 75, cents: 2.00, level_db: 0.83, t60: 1.507, damping: 7.256, inharmonicity: 1.112, hardness: 1.908, strike: 1.000, damper: 2.093, aftersound: 2.004, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 76, cents: 0.43, level_db: 2.66, t60: 0.358, damping: 1.087, inharmonicity: 1.166, hardness: 1.736, strike: 1.000, damper: 1.923, aftersound: 0.567, prompt_db_per_s: 32.70, after_level_db: -2.70),
+        (note: 77, cents: 0.08, level_db: 0.17, t60: 0.431, damping: 1.070, inharmonicity: 1.186, hardness: 1.443, strike: 1.000, damper: 1.846, aftersound: 1.000, prompt_db_per_s: 33.51, after_level_db: -3.51),
+        (note: 78, cents: 1.88, level_db: 2.07, t60: 0.236, damping: 1.905, inharmonicity: 1.180, hardness: 3.472, strike: 1.000, damper: 3.472, aftersound: 0.200, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 79, cents: 1.78, level_db: 4.89, t60: 0.202, damping: 0.135, inharmonicity: 1.167, hardness: 1.707, strike: 1.000, damper: 3.553, aftersound: 0.200, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 80, cents: 1.12, level_db: 4.04, t60: 0.200, damping: 0.753, inharmonicity: 1.215, hardness: 2.212, strike: 1.000, damper: 3.572, aftersound: 1.000, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 81, cents: 1.89, level_db: 2.90, t60: 0.302, damping: 3.212, inharmonicity: 1.196, hardness: 3.798, strike: 1.000, damper: 3.981, aftersound: 0.649, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 82, cents: 1.45, level_db: 4.88, t60: 1.410, damping: 3.292, inharmonicity: 1.227, hardness: 3.344, strike: 1.000, damper: 3.913, aftersound: 0.839, prompt_db_per_s: 43.80, after_level_db: -13.80),
+        (note: 83, cents: 1.72, level_db: 1.10, t60: 0.183, damping: 0.859, inharmonicity: 1.232, hardness: 4.000, strike: 1.000, damper: 5.400, aftersound: 0.200, prompt_db_per_s: 31.50, after_level_db: -1.50),
+        (note: 84, cents: 2.49, level_db: 2.16, t60: 0.232, damping: 4.950, inharmonicity: 1.235, hardness: 4.000, strike: 1.000, damper: 8.016, aftersound: 0.405, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 85, cents: 2.09, level_db: -0.19, t60: 0.297, damping: 0.811, inharmonicity: 1.263, hardness: 1.000, strike: 1.000, damper: 8.583, aftersound: 0.903, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 86, cents: 0.74, level_db: 0.33, t60: 0.795, damping: 1.104, inharmonicity: 1.287, hardness: 1.000, strike: 1.000, damper: 15.200, aftersound: 2.037, prompt_db_per_s: 38.58, after_level_db: -8.58),
+        (note: 87, cents: 2.14, level_db: -2.52, t60: 0.200, damping: 3.294, inharmonicity: 1.323, hardness: 1.000, strike: 1.000, damper: 15.667, aftersound: 0.254, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 88, cents: 1.63, level_db: 6.80, t60: 0.421, damping: 9.838, inharmonicity: 1.305, hardness: 1.000, strike: 1.000, damper: 9.176, aftersound: 1.000, prompt_db_per_s: 31.50, after_level_db: -1.50),
+        (note: 89, cents: 0.68, level_db: 3.91, t60: 0.576, damping: 2.864, inharmonicity: 1.304, hardness: 1.000, strike: 1.000, damper: 11.333, aftersound: 1.000, prompt_db_per_s: 41.38, after_level_db: -11.38),
+        (note: 90, cents: 1.13, level_db: 2.43, t60: 0.986, damping: 3.409, inharmonicity: 1.357, hardness: 1.000, strike: 1.000, damper: 7.117, aftersound: 1.134, prompt_db_per_s: 48.00, after_level_db: -18.00),
+        (note: 91, cents: 3.16, level_db: 7.38, t60: 0.606, damping: 3.846, inharmonicity: 1.252, hardness: 1.000, strike: 1.000, damper: 8.000, aftersound: 2.147, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 92, cents: -4.80, level_db: 7.65, t60: 0.654, damping: 8.000, inharmonicity: 1.472, hardness: 1.000, strike: 1.000, damper: 29.854, aftersound: 3.036, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 93, cents: 2.50, level_db: 10.93, t60: 0.520, damping: 4.000, inharmonicity: 1.346, hardness: 1.000, strike: 1.000, damper: 14.338, aftersound: 2.116, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 94, cents: -2.91, level_db: 9.07, t60: 0.542, damping: 2.000, inharmonicity: 1.493, hardness: 1.000, strike: 1.000, damper: 25.698, aftersound: 2.437, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 95, cents: 3.54, level_db: 6.12, t60: 0.377, damping: 4.000, inharmonicity: 1.493, hardness: 1.000, strike: 1.000, damper: 13.089, aftersound: 0.709, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 96, cents: 0.00, level_db: 8.99, t60: 0.420, damping: 1.000, inharmonicity: 1.494, hardness: 1.000, strike: 1.000, damper: 30.000, aftersound: 1.000, prompt_db_per_s: 30.86, after_level_db: -0.86),
+        (note: 97, cents: 7.51, level_db: 4.65, t60: 0.684, damping: 4.000, inharmonicity: 1.493, hardness: 1.000, strike: 1.000, damper: 1.000, aftersound: 2.784, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 98, cents: 5.31, level_db: 3.97, t60: 0.622, damping: 4.000, inharmonicity: 1.493, hardness: 1.000, strike: 1.000, damper: 1.000, aftersound: 4.976, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 99, cents: -1.34, level_db: 6.57, t60: 0.440, damping: 4.000, inharmonicity: 1.493, hardness: 1.000, strike: 1.000, damper: 1.000, aftersound: 3.036, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 100, cents: 1.39, level_db: 4.85, t60: 0.586, damping: 2.000, inharmonicity: 1.493, hardness: 1.000, strike: 1.000, damper: 1.000, aftersound: 1.692, prompt_db_per_s: 36.38, after_level_db: -6.38),
+        (note: 101, cents: 0.00, level_db: 8.61, t60: 0.680, damping: 1.000, inharmonicity: 1.493, hardness: 1.000, strike: 1.000, damper: 1.000, aftersound: 1.634, prompt_db_per_s: 47.03, after_level_db: -17.03),
+        (note: 102, cents: 3.97, level_db: 8.02, t60: 0.562, damping: 10.000, inharmonicity: 1.493, hardness: 1.000, strike: 1.000, damper: 1.000, aftersound: 1.577, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 103, cents: 5.08, level_db: 13.93, t60: 0.560, damping: 8.000, inharmonicity: 1.493, hardness: 1.000, strike: 1.000, damper: 1.000, aftersound: 1.523, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 104, cents: 0.20, level_db: 11.13, t60: 0.881, damping: 4.000, inharmonicity: 1.493, hardness: 1.000, strike: 1.000, damper: 1.000, aftersound: 1.471, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 105, cents: -1.08, level_db: 11.11, t60: 0.654, damping: 10.000, inharmonicity: 1.493, hardness: 1.000, strike: 1.000, damper: 1.000, aftersound: 1.420, prompt_db_per_s: 0.00, after_level_db: 0.00),
+        (note: 106, cents: 3.14, level_db: 10.79, t60: 0.636, damping: 2.000, inharmonicity: 1.493, hardness: 1.000, strike: 1.000, damper: 1.000, aftersound: 1.371, prompt_db_per_s: 32.41, after_level_db: -2.41),
+        (note: 107, cents: 6.45, level_db: 9.82, t60: 0.624, damping: 8.000, inharmonicity: 1.493, hardness: 1.000, strike: 1.000, damper: 1.000, aftersound: 1.324, prompt_db_per_s: 35.69, after_level_db: -5.69),
+        (note: 108, cents: 12.23, level_db: 8.09, t60: 0.919, damping: 2.000, inharmonicity: 1.493, hardness: 2.000, strike: 1.000, damper: 1.000, aftersound: 1.278, prompt_db_per_s: 0.00, after_level_db: 0.00),
+    ],
+)

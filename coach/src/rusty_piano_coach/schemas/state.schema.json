@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "rusty_piano.state",
+  "title": "rusty_piano practice state",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "kind", "updated_at", "last_review", "plan_id", "nodes", "habits"],
+  "properties": {
+    "version": {"const": 1},
+    "kind": {"const": "rusty_piano.state"},
+    "updated_at": {"type": "string"},
+    "last_review": {"type": ["string", "null"]},
+    "plan_id": {"type": ["string", "null"]},
+    "nodes": {
+      "type": "object",
+      "propertyNames": {"pattern": "^([A-Z][0-9]{1,2}|piece-[a-z0-9-]+)$"},
+      "additionalProperties": {"$ref": "#/$defs/state_node"}
+    },
+    "habits": {"type": "array", "items": {"$ref": "#/$defs/habit"}}
+  },
+  "$defs": {
+    "state_node": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["level"],
+      "properties": {
+        "level": {"type": "integer", "minimum": 0, "maximum": 4},
+        "verdict": {"type": "string"},
+        "last_seen": {"type": ["string", "null"]},
+        "rusty": {"type": "boolean"},
+        "locked": {"type": "boolean"},
+        "max_level": {"type": "integer", "minimum": 0, "maximum": 4},
+        "habits": {"type": "array", "items": {"type": "string"}},
+        "runs": {"type": "integer", "minimum": 0},
+        "last_clean": {"type": ["string", "null"]},
+        "gates": {
+          "type": "object",
+          "properties": {
+            "good": {"type": "object", "required": ["met"], "properties": {"met": {"type": "boolean"}}, "additionalProperties": true},
+            "solid": {"type": "object", "required": ["met"], "properties": {"met": {"type": "boolean"}}, "additionalProperties": true},
+            "mastered": {"type": "object", "required": ["met"], "properties": {"met": {"type": "boolean"}}, "additionalProperties": true}
+          }
+        }
+      }
+    },
+    "habit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title", "status", "nodes"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^H[0-9]+$"},
+        "title": {"type": "string", "minLength": 1},
+        "status": {"enum": ["active", "improving", "fixed"]},
+        "nodes": {"type": "array", "items": {"type": "string"}},
+        "first_seen": {"type": ["string", "null"]},
+        "last_seen": {"type": ["string", "null"]}
+      }
+    }
+  }
+}

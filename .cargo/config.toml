@@ -1,0 +1,6 @@
+# Build settings for the ASIO backend (on by default, see engine/Cargo.toml).
+# bindgen needs libclang (MSYS2 clang) and the MSVC target, otherwise asio-sys fails to build.
+# Real environment variables with the same names win over these.
+[env]
+LIBCLANG_PATH = { value = 'C:\msys64\ucrt64\bin', force = false }
+BINDGEN_EXTRA_CLANG_ARGS = { value = "--target=x86_64-pc-windows-msvc", force = false }

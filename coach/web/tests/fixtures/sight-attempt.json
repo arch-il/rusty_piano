@@ -1,0 +1,198 @@
+{
+  "version": 2,
+  "kind": "rusty_piano.attempt",
+  "score": {
+    "id": "sight:r2-treble",
+    "title": "Sight-reading: Treble C-G notes",
+    "composer": null
+  },
+  "mode": "wait",
+  "end": "done",
+  "started_at": "2026-11-06T20:00:00.000Z",
+  "ended_at": "2026-11-06T20:00:03.800Z",
+  "duration_ms": 3800,
+  "clock": {
+    "page_start_ms": 1000,
+    "t0_ms": null,
+    "first_engine_t": 900,
+    "first_engine_page_ms": 1900
+  },
+  "practice": {
+    "hands": "right",
+    "range": null,
+    "loop": false,
+    "loops_completed": 0,
+    "tempo": {
+      "percent": 100
+    }
+  },
+  "plan": {
+    "steps_total": 3,
+    "length_quarters": 0,
+    "first_bar": null,
+    "last_bar": null
+  },
+  "settings": {
+    "sight": {
+      "hint_after": 2,
+      "seed": 42,
+      "custom": null
+    }
+  },
+  "autoplay": {
+    "on_at_start": false,
+    "used": false
+  },
+  "sources": [
+    "engine"
+  ],
+  "pedal_down_at_start": false,
+  "sight": {
+    "level": "r2-treble",
+    "kind": "notes",
+    "cards_total": 3,
+    "steps_total": 3,
+    "custom": null,
+    "targets_ms": {
+      "good": 2000,
+      "solid": 1200,
+      "mastered": 800
+    }
+  },
+  "steps": [
+    {
+      "step": 0,
+      "card": 0,
+      "notes": [
+        60
+      ],
+      "result": "hit",
+      "first_try": true,
+      "wrong_count": 0,
+      "wrong_notes": [],
+      "hinted": false,
+      "reaction_ms": 900,
+      "shown_page_ms": 1000,
+      "done_page_ms": 1900
+    },
+    {
+      "step": 1,
+      "card": 1,
+      "notes": [
+        64
+      ],
+      "result": "hit",
+      "first_try": true,
+      "wrong_count": 0,
+      "wrong_notes": [],
+      "hinted": false,
+      "reaction_ms": 1100,
+      "shown_page_ms": 2000,
+      "done_page_ms": 3100
+    },
+    {
+      "step": 2,
+      "card": 2,
+      "notes": [
+        67
+      ],
+      "result": "hit",
+      "first_try": true,
+      "wrong_count": 0,
+      "wrong_notes": [],
+      "hinted": false,
+      "reaction_ms": 1500,
+      "shown_page_ms": 3200,
+      "done_page_ms": 4700
+    }
+  ],
+  "events": [
+    {
+      "type": "note_on",
+      "t": 900,
+      "page_ms": 1900,
+      "source": "engine",
+      "note": 60,
+      "velocity": 80
+    },
+    {
+      "type": "note_off",
+      "t": 950,
+      "page_ms": 1950,
+      "source": "engine",
+      "note": 60
+    },
+    {
+      "type": "note_on",
+      "t": 2100,
+      "page_ms": 3100,
+      "source": "engine",
+      "note": 64,
+      "velocity": 80
+    },
+    {
+      "type": "note_off",
+      "t": 2150,
+      "page_ms": 3150,
+      "source": "engine",
+      "note": 64
+    },
+    {
+      "type": "note_on",
+      "t": 3700,
+      "page_ms": 4700,
+      "source": "engine",
+      "note": 67,
+      "velocity": 80
+    },
+    {
+      "type": "note_off",
+      "t": 3750,
+      "page_ms": 4750,
+      "source": "engine",
+      "note": 67
+    }
+  ],
+  "summary": {
+    "counts": {
+      "expectedNotes": 3,
+      "correctNotes": 3,
+      "wrongNotes": 0,
+      "missedNotes": 0
+    },
+    "metrics": {
+      "accuracy": "100%",
+      "tempo": "-",
+      "wrong": "0",
+      "missed": "0"
+    },
+    "rows": [
+      [
+        "Level",
+        "Treble C-G notes"
+      ],
+      [
+        "First try",
+        "3 of 3"
+      ],
+      [
+        "Median time",
+        "1.1 s"
+      ]
+    ],
+    "sight": {
+      "accuracy": 1,
+      "median_ms": 1100,
+      "mean_ms": 1166.6666666666667,
+      "first_try": 3,
+      "steps": 3,
+      "hinted": 0,
+      "wrong_notes": 0
+    }
+  },
+  "drill_id": "sr.r2-treble",
+  "plan_id": null,
+  "tags": [
+    "sight-reading"
+  ]
+}

@@ -1,0 +1,70 @@
+# >>> manager (managed block, do not edit) >>>
+.manager/
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.pfx
+*.p12
+*.jks
+*.keystore
+id_rsa*
+id_ed25519*
+id_ecdsa*
+credentials
+credentials.json
+.npmrc
+.netrc
+.git-credentials
+.aws/
+.ssh/
+.azure/
+.gnupg/
+.kube/
+secrets.*
+*.log
+.DS_Store
+Thumbs.db
+tests/e2e/screenshots/
+tests/e2e/scratch/
+# <<< manager <<<
+
+target/
+engine/setup.ron
+engine/setup.ron.bak
+engine/setup.ron.tmp
+engine/renders/
+
+# Python (coach)
+coach/.venv/
+__pycache__/
+.pytest_cache/
+*.egg-info/
+
+# Web page (coach/web)
+coach/web/node_modules/
+coach/web/dist/
+
+# Coach personal data: keep the READMEs, ignore recordings, generated reports and the sheet music library
+coach/data/sessions/*
+!coach/data/sessions/README.md
+coach/data/attempts/*
+!coach/data/attempts/README.md
+coach/data/attempts-ignored/
+coach/data/reports/*
+!coach/data/reports/README.md
+coach/data/scores/*
+!coach/data/scores/README.md
+# The practice plan lives in its own git repo (coach/data/plan/.git); main keeps only the READMEs as placeholders
+coach/data/plan/*
+!coach/data/plan/README.md
+!coach/data/plan/journal/
+coach/data/plan/journal/*
+!coach/data/plan/journal/README.md
+!coach/data/plan/pieces/
+coach/data/plan/pieces/*
+!coach/data/plan/pieces/README.md
+
+# Claude Code
+.claude/

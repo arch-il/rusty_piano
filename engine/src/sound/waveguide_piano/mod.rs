@@ -1,0 +1,1 @@
+//! Placeholder for a future digital waveguide piano engine (strings as delay lines with loss and dispersion filters). It will implement `SoundEngine` like `modal_piano`, get its own `EngineKind` variant and profile struct, and be listed in docs/TODO.md.

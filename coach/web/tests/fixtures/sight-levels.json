@@ -1,0 +1,116 @@
+{
+  "levels": [
+    {
+      "level": "r2-treble",
+      "node": "R2",
+      "drill": "sr.r2-treble",
+      "kind": "notes",
+      "hands": "right",
+      "clef": "treble",
+      "cards": 20,
+      "title": "Treble C-G notes"
+    },
+    {
+      "level": "r3-bass",
+      "node": "R3",
+      "drill": "sr.r3-bass",
+      "kind": "notes",
+      "hands": "left",
+      "clef": "bass",
+      "cards": 20,
+      "title": "Bass C-G notes"
+    },
+    {
+      "level": "r4-grand",
+      "node": "R4",
+      "drill": "sr.r4-grand",
+      "kind": "notes",
+      "hands": "both",
+      "clef": "grand",
+      "cards": 20,
+      "title": "Grand staff C3-C5"
+    },
+    {
+      "level": "r5-intervals",
+      "node": "R5",
+      "drill": "sr.r5-intervals",
+      "kind": "intervals",
+      "hands": "both",
+      "clef": "treble",
+      "cards": 20,
+      "title": "Intervals 2nd-5th"
+    },
+    {
+      "level": "r6-ledger",
+      "node": "R6",
+      "drill": "sr.r6-ledger",
+      "kind": "notes",
+      "hands": "both",
+      "clef": "treble",
+      "cards": 20,
+      "title": "Ledger line notes"
+    },
+    {
+      "level": "r7-keys",
+      "node": "R7",
+      "drill": "sr.r7-keys",
+      "kind": "notes",
+      "hands": "both",
+      "clef": "grand",
+      "cards": 20,
+      "title": "One sharp or flat"
+    },
+    {
+      "level": "r8a-five",
+      "node": "R8",
+      "drill": "sr.r8a-five",
+      "kind": "bars",
+      "hands": "both",
+      "clef": "treble",
+      "cards": 4,
+      "title": "Phrases: five-finger"
+    },
+    {
+      "level": "r8b-wide",
+      "node": "R8",
+      "drill": "sr.r8b-wide",
+      "kind": "bars",
+      "hands": "both",
+      "clef": "treble",
+      "cards": 4,
+      "title": "Phrases: wider range"
+    },
+    {
+      "level": "r8c-hands",
+      "node": "R8",
+      "drill": "sr.r8c-hands",
+      "kind": "bars",
+      "hands": "both",
+      "clef": "grand",
+      "cards": 4,
+      "title": "Phrases: both hands"
+    }
+  ],
+  "custom": {
+    "level": "custom",
+    "drill": "sr.custom",
+    "kind": "notes"
+  },
+  "targets_ms": {
+    "notes": {
+      "good": 2000,
+      "solid": 1200,
+      "mastered": 800
+    },
+    "intervals": {
+      "good": 3000,
+      "solid": 2000,
+      "mastered": 1400
+    },
+    "bars": {
+      "good": 1500,
+      "solid": 1000,
+      "mastered": 700
+    }
+  }
+}

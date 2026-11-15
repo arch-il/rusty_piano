@@ -1,0 +1,93 @@
+// rusty_piano sound profile: default (universal).
+// Reproduces the original built-in SimplePiano sound and uses the full MIDI velocity range 0-127.
+// Choose a profile with --profile <name> or with profile in engine/setup.ron.
+// Live edits: save this file while the engine runs and the change applies within about 0.5 s.
+// master_volume and the limiter act at once; all other values apply to the next notes you play.
+// A broken or out-of-range edit prints an error and the last good settings stay active.
+// Always write decimal numbers with a point (1.0, not 1).
+(
+    loudness: (
+        // Volume of the whole mix before the limiter. 1.0 = unchanged, 2.0 = +6 dB, 0.5 = -6 dB. Range 0.0 - 4.0.
+        master_volume: 1.0,
+        // Peak level of one note hit at full force. Range 0.0 - 1.0.
+        voice_gain: 0.3,
+        // Velocity curve: level = voice_gain * (velocity / full_force_velocity) ^ velocity_curve.
+        // 1.0 = linear; higher = soft notes quieter (wider dynamics); lower = soft notes louder. Range 0.2 - 5.0.
+        velocity_curve: 1.5,
+        // Velocity that counts as full force; harder hits count as this value. 127 = whole MIDI range. Range 1 - 127.
+        full_force_velocity: 127,
+    ),
+    tone: (
+        // Relative levels of the partials (1x to 8x the note frequency). Only the ratios matter: they are
+        // normalised so the overall level stays set by voice_gain. Partials above 0.45 x sample rate are dropped.
+        // At least one must be above 0.0. 0.0 = partial off.
+        harmonics: (
+            // Fundamental (1x), not affected by brightness. Range 0.0 - 2.0.
+            fundamental: 1.0,
+            // Second partial (2x, an octave up), scaled by brightness. Range 0.0 - 2.0.
+            second: 0.5,
+            // Third partial (3x), scaled by brightness. Range 0.0 - 2.0.
+            third: 0.3,
+            // Fourth partial (4x, two octaves up), scaled by brightness. Range 0.0 - 2.0.
+            fourth: 0.15,
+            // Fifth partial (5x), scaled by brightness. Range 0.0 - 2.0.
+            fifth: 0.0,
+            // Sixth partial (6x), scaled by brightness. Range 0.0 - 2.0.
+            sixth: 0.0,
+            // Seventh partial (7x), scaled by brightness. Range 0.0 - 2.0.
+            seventh: 0.0,
+            // Eighth partial (8x, three octaves up), scaled by brightness. Range 0.0 - 2.0.
+            eighth: 0.0,
+        ),
+        // Brightness = brightness_min + brightness_velocity * velocity (velocity as 0.0 - 1.0 of full force).
+        // Brightness of the softest hit. Range 0.0 - 1.0.
+        brightness_min: 0.35,
+        // How much harder hits add brightness. Range 0.0 - 1.0.
+        brightness_velocity: 0.65,
+    ),
+    bass: (
+        // Bass compensation for small speakers: laptop speakers play little below about 150-200 Hz, so low
+        // notes sound much quieter. Compensation grows per octave below pivot_note and is zero from it upward.
+        // 0.0 per octave = off (this file). Use it for laptop speakers, keep it off for headphones.
+        // MIDI note where compensation starts (60 = middle C). Range 21 - 108.
+        pivot_note: 60,
+        // Extra loudness per octave below pivot_note, in dB. Range 0.0 - 12.0.
+        gain_db_per_octave: 0.0,
+        // Most extra loudness any note gets, in dB. Range 0.0 - 24.0.
+        max_gain_db: 12.0,
+        // Extra level of partials 2-8 per octave below pivot_note, in dB (before normalising), so low notes
+        // move energy from the fundamental into partials small speakers can play. Range 0.0 - 12.0.
+        overtone_db_per_octave: 0.0,
+        // Most overtone boost any note gets, in dB. Range 0.0 - 24.0.
+        max_overtone_db: 12.0,
+    ),
+    envelope: (
+        // Fade-in time of each note in milliseconds; shorter = sharper hammer attack. Range 0.1 - 100.0.
+        attack_ms: 2.0,
+        // How long a held middle C (note 60) rings: seconds to fall to 37% (-8.7 dB). Range 0.05 - 30.0.
+        decay_middle_c_s: 1.5,
+        // Low notes ring longer: decay time doubles every this many semitones below middle C and halves
+        // every this many above. 24.0 = every two octaves. Range 1.0 - 120.0.
+        decay_doubling_semitones: 24.0,
+        // Shortest decay time any note gets (treble), seconds. Range 0.01 - 30.0, at most decay_max_s.
+        decay_min_s: 0.2,
+        // Longest decay time any note gets (bass), seconds. Range 0.01 - 30.0.
+        decay_max_s: 6.0,
+        // Fade-out after key up (or pedal up): milliseconds to fall to 37%. Range 1.0 - 5000.0.
+        release_ms: 80.0,
+    ),
+    voices: (
+        // Most notes sounding at once (pedalled notes count). Range 1 - 32.
+        max_voices: 32,
+        // Which note is cut when max_voices is reached; already released notes go first.
+        // Quietest = cut the quietest note, Oldest = cut the note that started first.
+        steal: Quietest,
+    ),
+    limiter: (
+        // Where soft limiting starts, as a fraction of ceiling: output below knee * ceiling is untouched,
+        // louder peaks are bent smoothly toward ceiling. Range 0.1 - 0.99.
+        knee: 0.8,
+        // Highest output level ever produced (1.0 = full scale). Lower it to protect ears and speakers. Range 0.1 - 1.0.
+        ceiling: 1.0,
+    ),
+)

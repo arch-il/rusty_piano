@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "rusty_piano.tree",
+  "title": "rusty_piano practice tree",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "kind", "decay_days", "default_gates", "tracks", "nodes"],
+  "properties": {
+    "version": {"const": 1},
+    "kind": {"const": "rusty_piano.tree"},
+    "decay_days": {"type": "integer", "minimum": 1, "maximum": 365},
+    "default_gates": {
+      "type": "object",
+      "required": ["good", "solid", "mastered"],
+      "properties": {
+        "good": {"$ref": "#/$defs/gate_good"},
+        "solid": {"$ref": "#/$defs/gate_solid"},
+        "mastered": {"$ref": "#/$defs/gate_mastered"}
+      }
+    },
+    "tracks": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/track"}},
+    "nodes": {"type": "array", "items": {"$ref": "#/$defs/node"}}
+  },
+  "$defs": {
+    "track": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z][a-z0-9-]*$"},
+        "title": {"type": "string", "minLength": 1}
+      }
+    },
+    "node": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "track", "title", "requires", "drills"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^([A-Z][0-9]{1,2}|piece-[a-z0-9-]+)$"},
+        "kind": {"enum": ["skill", "piece"]},
+        "track": {"type": "string"},
+        "title": {"type": "string", "minLength": 1},
+        "summary": {"type": "string"},
+        "requires": {"type": "array", "items": {"type": "string"}},
+        "measures": {"type": "array", "items": {"enum": ["pitch", "timing", "length", "velocity", "pedal"]}},
+        "score": {"type": "string"},
+        "gates": {
+          "type": "object",
+          "properties": {
+            "good": {"type": "object"},
+            "solid": {"type": "object"},
+            "mastered": {"type": "object"}
+          }
+        },
+        "drills": {"type": "array", "items": {"$ref": "#/$defs/drill"}}
+      }
+    },
+    "drill": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title", "score", "hands", "mode", "tempo", "loop", "bars", "goal", "kind"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z][a-z0-9]*([.][a-z0-9-]+)+$"},
+        "title": {"type": "string"},
+        "score": {"type": "string", "minLength": 1},
+        "hands": {"enum": ["right", "left", "both"]},
+        "mode": {"enum": ["wait", "live"]},
+        "tempo": {"type": "integer", "minimum": 20, "maximum": 150},
+        "loop": {"type": "boolean"},
+        "bars": {
+          "type": ["object", "null"],
+          "additionalProperties": false,
+          "required": ["from", "to"],
+          "properties": {
+            "from": {"type": "integer", "minimum": 0},
+            "to": {"type": "integer", "minimum": 0}
+          }
+        },
+        "goal": {"type": "string"},
+        "kind": {"enum": ["generated", "segment"]},
+        "ramp": {"type": "boolean"},
+        "target": {"type": "integer", "minimum": 1, "maximum": 300}
+      }
+    },
+    "gate_good": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["accuracy", "timing", "tempo_ratio", "clean_runs", "days", "holds"],
+      "properties": {
+        "accuracy": {"type": "number", "minimum": 0, "maximum": 1},
+        "timing": {"type": "number", "minimum": 0, "maximum": 1},
+        "tempo_ratio": {"type": "number", "minimum": 0, "maximum": 2},
+        "clean_runs": {"type": "integer", "minimum": 1},
+        "days": {"type": "integer", "minimum": 1},
+        "holds": {"type": "boolean"},
+        "evenness": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    },
+    "gate_solid": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["accuracy", "timing", "tempo_ratio", "window", "clean_in_window", "days", "habit_free", "holds"],
+      "properties": {
+        "accuracy": {"type": "number", "minimum": 0, "maximum": 1},
+        "timing": {"type": "number", "minimum": 0, "maximum": 1},
+        "tempo_ratio": {"type": "number", "minimum": 0, "maximum": 2},
+        "window": {"type": "integer", "minimum": 1},
+        "clean_in_window": {"type": "integer", "minimum": 1},
+        "days": {"type": "integer", "minimum": 1},
+        "habit_free": {"type": "boolean"},
+        "holds": {"type": "boolean"},
+        "evenness": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    },
+    "gate_mastered": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["accuracy", "timing", "tempo_ratio", "away_days", "cold_runs", "materials", "holds"],
+      "properties": {
+        "accuracy": {"type": "number", "minimum": 0, "maximum": 1},
+        "timing": {"type": "number", "minimum": 0, "maximum": 1},
+        "tempo_ratio": {"type": "number", "minimum": 0, "maximum": 2},
+        "away_days": {"type": "integer", "minimum": 1},
+        "cold_runs": {"type": "integer", "minimum": 1},
+        "cold_runs_per_drill": {"type": "integer", "minimum": 1},
+        "materials": {"type": "integer", "minimum": 1},
+        "holds": {"type": "boolean"},
+        "evenness": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    }
+  }
+}

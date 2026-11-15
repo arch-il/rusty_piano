@@ -1,0 +1,8 @@
+[
+{"name": "generated drill", "score": "gen:r2-steps", "params": {"drill": "r2.steps", "hands": "right", "tempo": 100, "mode": "wait", "loop": false}, "hash": "#gen:r2-steps?drill=r2.steps&hands=R&tempo=100&mode=wait&loop=0"},
+{"name": "segment drill with plan", "score": "pdmx:QmAbc123", "params": {"drill": "piece.ode-lh", "plan": "2026-11-05", "hands": "left", "bars": {"from": 5, "to": 8}, "tempo": 60, "mode": "wait", "loop": true}, "hash": "#pdmx:QmAbc123?drill=piece.ode-lh&plan=2026-11-05&hands=L&bars=5-8&tempo=60&mode=wait&loop=1"},
+{"name": "ramp drill", "score": "gen:r2-steps", "params": {"drill": "r2.steps", "hands": "right", "tempo": 60, "mode": "live", "loop": true, "ramp": true, "target": 90}, "hash": "#gen:r2-steps?drill=r2.steps&hands=R&tempo=60&mode=live&loop=1&ramp=1&target=90"},
+{"name": "fun tag only", "score": "local:0123456789abcdef", "params": {"tags": ["fun"]}, "hash": "#local:0123456789abcdef?tag=fun"},
+{"name": "single bar, two tags", "score": "gen:k1-c5-rh", "params": {"bars": {"from": 3, "to": 3}, "tags": ["fun", "warm-up"]}, "hash": "#gen:k1-c5-rh?bars=3&tag=fun,warm-up"},
+{"name": "no params", "score": "local:a b", "params": {}, "hash": "#local:a%20b"}
+]

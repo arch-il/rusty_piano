@@ -1,0 +1,1 @@
+"""Will turn a MusicXML score from the sheet music library (rusty_piano_coach.library; files under coach/data/scores/files/) and later generated exercises into a list of expected notes per part and bar. Not implemented yet."""

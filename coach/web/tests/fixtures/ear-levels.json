@@ -1,0 +1,31 @@
+{
+  "levels": [
+    {"level": "echo-1", "type": "echo", "node": "E1", "drill": "ear.echo-1", "kind": "note", "items": 10, "given": "none", "title": "Echo one note, C to G"},
+    {"level": "echo-2", "type": "echo", "node": "E1", "drill": "ear.echo-2", "kind": "note", "items": 10, "given": "none", "title": "Echo one note, C to C"},
+    {"level": "echo-3", "type": "echo", "node": "E1", "drill": "ear.echo-3", "kind": "note", "items": 10, "given": "none", "title": "Echo one note, black keys too"},
+    {"level": "updown-1", "type": "updown", "node": "E1", "drill": "ear.updown-1", "kind": "note", "items": 10, "given": "first", "title": "Higher or lower"},
+    {"level": "updown-2", "type": "updown", "node": "E1", "drill": "ear.updown-2", "kind": "note", "items": 10, "given": "first", "title": "Step or skip"},
+    {"level": "interval-1", "type": "interval", "node": "E2", "drill": "ear.interval-1", "kind": "note", "items": 10, "given": "first", "title": "Intervals: 2nd, 3rd, 5th, octave"},
+    {"level": "interval-2", "type": "interval", "node": "E2", "drill": "ear.interval-2", "kind": "note", "items": 10, "given": "first", "title": "Intervals: add minor 3rd, 4th, 6th"},
+    {"level": "interval-3", "type": "interval", "node": "E2", "drill": "ear.interval-3", "kind": "note", "items": 10, "given": "first", "title": "Intervals: all, upward"},
+    {"level": "interval-4", "type": "interval", "node": "E2", "drill": "ear.interval-4", "kind": "note", "items": 10, "given": "first", "title": "Intervals: all, up, down and together"},
+    {"level": "chord-1", "type": "chord", "node": "E3", "drill": "ear.chord-1", "kind": "chord", "items": 10, "given": "root", "title": "Chords: major or minor, roots C to G"},
+    {"level": "chord-2", "type": "chord", "node": "E3", "drill": "ear.chord-2", "kind": "chord", "items": 10, "given": "root", "title": "Chords: major or minor, any root"},
+    {"level": "chord-3", "type": "chord", "node": "E3", "drill": "ear.chord-3", "kind": "chord", "items": 10, "given": "root", "title": "Chords: major, minor, diminished, augmented"},
+    {"level": "echo-4", "type": "echo", "node": "E4", "drill": "ear.echo-4", "kind": "phrase", "items": 8, "given": "first", "title": "Echo 2-3 note phrases"},
+    {"level": "echo-5", "type": "echo", "node": "E4", "drill": "ear.echo-5", "kind": "phrase", "items": 8, "given": "first", "title": "Echo 4-5 note phrases"},
+    {"level": "tune-1", "type": "tune", "node": "E4", "drill": "ear.tune-1", "kind": "phrase", "items": 6, "given": "first", "title": "Tunes by ear: easy tunes in C"},
+    {"level": "tune-2", "type": "tune", "node": "E4", "drill": "ear.tune-2", "kind": "phrase", "items": 6, "given": "first", "title": "Tunes by ear: all tunes in C"},
+    {"level": "tune-3", "type": "tune", "node": "E4", "drill": "ear.tune-3", "kind": "phrase", "items": 6, "given": "first", "title": "Tunes by ear: any key"},
+    {"level": "bass-1", "type": "bass", "node": "E5", "drill": "ear.bass-1", "kind": "phrase", "items": 6, "given": "tonic", "title": "Bass of I, IV, V in C"},
+    {"level": "bass-2", "type": "bass", "node": "E5", "drill": "ear.bass-2", "kind": "phrase", "items": 6, "given": "tonic", "title": "Bass of I, IV, V in any key"},
+    {"level": "bass-3", "type": "bass", "node": "E5", "drill": "ear.bass-3", "kind": "phrase", "items": 6, "given": "tonic", "title": "Bass of I, ii, IV, V, vi"},
+    {"level": "chord-4", "type": "chord", "node": "E6", "drill": "ear.chord-4", "kind": "chord", "items": 10, "given": "root", "title": "Seventh chords: maj7, 7, m7, m7b5, dim7"},
+    {"level": "bass-4", "type": "bass", "node": "E6", "drill": "ear.bass-4", "kind": "phrase", "items": 6, "given": "tonic", "title": "Bass of ii-V-I with 7th chords"}
+  ],
+  "targets_ms": {
+    "note": {"good": 5000, "solid": 3000, "mastered": 2000},
+    "chord": {"good": 8000, "solid": 5000, "mastered": 3500},
+    "phrase": {"good": 2500, "solid": 1800, "mastered": 1200}
+  }
+}

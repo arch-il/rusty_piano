@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>rusty_piano coach</title>
+  </head>
+  <body>
+    <header id="topbar" class="topbar">
+      <button type="button" id="library-toggle" class="btn" aria-controls="library" aria-expanded="false">Library</button>
+      <nav class="topnav" aria-label="Pages">
+        <a id="skills-link" class="btn btn-ghost" href="#/skills">Skills</a>
+        <a id="log-link" class="btn btn-ghost" href="#/log">Log</a>
+        <a id="sight-link" class="btn btn-ghost" href="#/sight">Sight</a>
+        <a id="ear-link" class="btn btn-ghost" href="#/ear">Ear</a>
+      </nav>
+      <div class="piece">
+        <span id="piece-title" class="piece-title">No piece open</span>
+        <span id="piece-composer" class="piece-composer"></span>
+      </div>
+      <div class="info">
+        <button type="button" id="info-toggle" class="btn btn-icon" aria-label="Piece details" aria-expanded="false" disabled>i</button>
+        <div id="info-popover" class="popover" role="dialog" aria-label="Piece details" hidden>
+          <dl id="info-list"></dl>
+        </div>
+      </div>
+      <div class="replay">
+        <button type="button" id="replay-toggle" class="btn" aria-controls="replay-menu" aria-expanded="false" disabled>Replay</button>
+        <div id="replay-menu" class="popover replay-menu" role="dialog" aria-label="Replay a run" hidden>
+          <div id="replay-menu-status" class="replay-menu-status" aria-live="polite"></div>
+          <h3 class="replay-menu-title">Runs of this piece</h3>
+          <ul id="replay-attempts" class="replay-list"></ul>
+          <h3 class="replay-menu-title">Recordings (session .mid)</h3>
+          <ul id="replay-sessions" class="replay-list"></ul>
+        </div>
+      </div>
+      <div class="zoom segmented" role="group" aria-label="Zoom">
+        <button type="button" id="zoom-out" class="btn btn-icon" aria-label="Zoom out">−</button>
+        <button type="button" id="zoom-reset" class="btn zoom-reset" aria-label="Reset zoom">100%</button>
+        <button type="button" id="zoom-in" class="btn btn-icon" aria-label="Zoom in">+</button>
+      </div>
+      <button type="button" id="fingering-toggle" class="btn" aria-pressed="true" title="Show fingering on the piano strip">Fingering</button>
+      <span id="engine-status" class="engine-dot" role="img" aria-label="Engine: connecting" title="Engine: connecting"></span>
+      <div class="cursor-controls segmented" role="group" aria-label="Playhead">
+        <button type="button" id="cursor-start" class="btn">Start</button>
+        <button type="button" id="cursor-prev" class="btn btn-icon" aria-label="Playhead back">‹</button>
+        <button type="button" id="cursor-next" class="btn btn-icon" aria-label="Playhead forward">›</button>
+        <span id="cursor-status">Bar - / -</span>
+      </div>
+      <div class="mode-switch segmented" role="group" aria-label="Practice mode">
+        <button type="button" id="mode-wait" class="btn" aria-pressed="true">Wait</button>
+        <button type="button" id="mode-live" class="btn" aria-pressed="false">Live</button>
+      </div>
+      <div class="follow-controls" role="group" aria-label="Score follower">
+        <button type="button" id="follow-toggle" class="btn btn-primary" disabled>Follow</button>
+        <span id="follow-status" class="follow-status" aria-live="polite"></span>
+      </div>
+      <div class="practice">
+        <button type="button" id="practice-toggle" class="btn practice-toggle" aria-controls="practice-options" aria-expanded="false">Options</button>
+        <div id="practice-options" class="practice-options" role="group" aria-label="Practice options">
+          <label class="tempo">Tempo <input type="range" id="tempo" class="tempo-range" min="20" max="150" step="5" value="60" /> <span id="tempo-value" class="tempo-value">60%</span></label>
+          <label class="hands">Hands <select id="hands"><option value="both">Both hands</option><option value="right">Right hand</option><option value="left">Left hand</option></select></label>
+          <div class="practice-more">
+            <button type="button" id="loop-toggle" class="btn" aria-pressed="false">Loop</button>
+            <button type="button" id="ramp-toggle" class="btn" aria-pressed="false" title="Speed up after each clean loop">Ramp</button>
+            <button type="button" id="autoplay-toggle" class="btn" aria-pressed="false">Auto-play</button>
+          </div>
+        </div>
+      </div>
+      <div class="metrics" aria-label="Practice metrics">
+        <div class="metric"><span class="metric-label">Accuracy</span><span class="metric-value" id="metric-accuracy">-</span></div>
+        <div class="metric"><span class="metric-label">Tempo</span><span class="metric-value" id="metric-tempo">-</span></div>
+        <div class="metric"><span class="metric-label">Wrong</span><span class="metric-value" id="metric-wrong">-</span></div>
+        <div class="metric"><span class="metric-label">Missed</span><span class="metric-value" id="metric-missed">-</span></div>
+        <div class="metric" title="Timing score, 0-100: how close to the beat the notes were"><span class="metric-label">Timing</span><span class="metric-value" id="metric-timing">-</span></div>
+      </div>
+    </header>
+    <div id="summary-panel" class="summary-panel" role="dialog" aria-label="Practice summary" hidden>
+      <h2 id="summary-title" class="summary-title">Practice summary</h2>
+      <dl id="summary-list"></dl>
+      <div class="summary-actions">
+        <button type="button" id="summary-replay" class="btn" hidden>Replay this run</button>
+        <button type="button" id="summary-again" class="btn btn-primary">Again</button>
+        <button type="button" id="summary-close" class="btn">Close</button>
+      </div>
+    </div>
+    <aside id="library" class="sidebar" aria-label="Library" inert>
+      <input type="search" id="library-search" class="library-search" placeholder="Search title or composer" aria-label="Search title or composer" />
+      <div id="library-tabs" class="library-tabs" role="tablist" aria-label="Library sections">
+        <button type="button" role="tab" id="tab-pieces" data-tab="pieces" aria-controls="library-list" aria-selected="true" class="active">Pieces</button>
+        <button type="button" role="tab" id="tab-drills" data-tab="drills" aria-controls="library-list" aria-selected="false">Drills</button>
+      </div>
+      <div class="filters">
+        <select id="filter-difficulty" aria-label="Difficulty"></select>
+        <select id="filter-key" aria-label="Key"></select>
+        <select id="filter-time" aria-label="Time signature"></select>
+      </div>
+      <div id="library-sources" class="library-sources" aria-live="polite"></div>
+      <div id="library-status" class="library-status"></div>
+      <ul id="library-list" class="library-list"></ul>
+    </aside>
+    <main id="score-area" class="score-area">
+      <div id="score-message" class="score-message"></div>
+      <div id="score" class="score"></div>
+    </main>
+    <section id="skills-view" class="skills-view" aria-label="Skills" hidden>
+      <div class="skills-head">
+        <button type="button" id="skills-back" class="btn">Back</button>
+        <h2 class="skills-title">Skills</h2>
+        <div id="skills-status" class="skills-status" aria-live="polite"></div>
+      </div>
+      <div id="skills-graph" class="skills-graph"></div>
+      <aside id="skills-panel" class="skills-panel" aria-label="Skill details" hidden></aside>
+    </section>
+    <section id="log-view" class="log-view" aria-label="Practice log" hidden>
+      <div class="log-head">
+        <button type="button" id="log-back" class="btn">Back</button>
+        <h2 class="log-title">Practice log</h2>
+        <div id="log-status" class="log-status" aria-live="polite"></div>
+      </div>
+      <dl id="log-summary" class="log-summary"></dl>
+      <div id="log-chart" class="log-chart"></div>
+      <h3 class="log-subtitle">Pieces</h3>
+      <ul id="log-pieces" class="log-pieces"></ul>
+    </section>
+    <section id="sight-view" class="sight-view" aria-label="Sight-reading" hidden>
+      <div class="sight-head">
+        <button type="button" id="sight-back" class="btn">Back</button>
+        <h2 class="sight-title">Sight-reading</h2>
+        <div id="sight-status" class="sight-status" aria-live="polite"></div>
+      </div>
+      <div id="sight-levels" class="sight-levels"></div>
+      <div class="sight-stage">
+        <div id="sight-stats" class="sight-stats" aria-live="polite"></div>
+        <div id="sight-staff" class="sight-staff"></div>
+        <div id="sight-keys" class="sight-keys" aria-hidden="true"></div>
+        <div class="sight-actions">
+          <button type="button" id="sight-start" class="btn btn-primary">Start</button>
+          <button type="button" id="sight-stop" class="btn" disabled>Stop</button>
+        </div>
+      </div>
+      <div id="sight-summary" class="sight-summary" hidden></div>
+      <div id="sight-history" class="sight-history"></div>
+    </section>
+    <section id="ear-view" class="ear-view" aria-label="Ear training" hidden>
+      <div class="ear-head">
+        <button type="button" id="ear-back" class="btn">Back</button>
+        <h2 class="ear-title">Ear training</h2>
+        <div id="ear-status" class="ear-status" aria-live="polite"></div>
+      </div>
+      <div id="ear-levels" class="ear-levels"></div>
+      <details id="ear-settings" class="ear-settings">
+        <summary>Settings</summary>
+        <div id="ear-settings-body"></div>
+      </details>
+      <div class="ear-stage">
+        <div id="ear-sound" class="ear-sound"></div>
+        <div id="ear-prompt" class="ear-prompt" aria-live="polite"></div>
+        <div id="ear-answer" class="ear-answer" hidden></div>
+        <div id="ear-stats" class="ear-stats" aria-live="polite"></div>
+        <div id="ear-keys" class="ear-keys" aria-hidden="true"></div>
+        <div class="ear-actions">
+          <button type="button" id="ear-start" class="btn btn-primary">Start</button>
+          <button type="button" id="ear-replay" class="btn" disabled>Replay</button>
+          <button type="button" id="ear-reveal" class="btn" disabled>Show answer</button>
+          <button type="button" id="ear-next" class="btn" disabled>Next</button>
+          <button type="button" id="ear-stop" class="btn" disabled>Stop</button>
+        </div>
+      </div>
+      <div id="ear-summary" class="ear-summary" hidden></div>
+      <div id="ear-history" class="ear-history"></div>
+    </section>
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+    <div id="replay-bar" class="replay-bar" role="group" aria-label="Replay" hidden>
+      <span id="replay-label" class="replay-label"></span>
+      <span id="replay-time" class="replay-time">0:00 / 0:00</span>
+      <button type="button" id="replay-pause" class="btn">Pause</button>
+      <button type="button" id="replay-stop" class="btn">Stop</button>
+      <label class="replay-speed">Speed <select id="replay-speed"><option value="0.5">0.5x</option><option value="1" selected>1x</option></select></label>
+      <button type="button" id="replay-mute" class="btn" aria-pressed="false">Mute</button>
+    </div>
+    <footer id="piano-view" class="piano-view" aria-label="Piano keyboard"></footer>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

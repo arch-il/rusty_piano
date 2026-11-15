@@ -1,0 +1,45 @@
+// rusty_piano setup: copy this file to engine/setup.ron and edit it, or pick the values in the setup window (cargo run -- --setup).
+// It is read at startup only, so restart the engine to apply changes.
+// The setup window rewrites engine/setup.ron in this layout (comments you added by hand are lost) and keeps the old file as setup.ron.bak.
+// The flags --port, --audio-device, --buffer, --profile, --transpose, --octave, --metronome, --backend, --ws-port, --no-record, --record-wav and --record-dir override it.
+// A missing setup.ron means the built-in defaults; a plain live start then opens the setup window.
+(
+    // MIDI input port: port index or part of its name, any case, as shown by --list.
+    // None = first port containing SL990. Example: Some("USB MIDI Interface").
+    midi_port: None,
+    // Audio output device for the selected backend: index or part of its name, as shown by --list. None = default.
+    audio_device: None,
+    // Audio buffer size in frames, 16 - 8192. None = device default. Example: Some(128).
+    buffer_frames: None,
+    // Audio backend: "wasapi" (shared, default), "asio" (an ASIO driver such as FlexASIO; needs a build
+    // with --features asio, see README.md) or "wasapi-exclusive" (low latency, locks the device for other apps).
+    // None = wasapi. Example: Some("asio").
+    backend: None,
+    // Sound profile: name of engine/profiles/<name>.ron. None = default. Example: Some("sl990").
+    profile: None,
+    // Transpose: shift the sound by semitones, -12 to 12 (like --transpose). Recordings and live events keep the keys you pressed.
+    // None = 0. Example: Some(-2).
+    transpose: None,
+    // Octave shift: -2 to 2, added to transpose (like --octave). None = 0. Example: Some(1).
+    octave: None,
+    // Metronome click in live sessions: Some(true) = on at start (like --metronome <bpm>). None = off; it can still be
+    // switched on while playing, in the setup window or by the coach page over the live event WebSocket.
+    metronome: None,
+    // Metronome tempo in beats per minute, 30 - 300. None = 100. Example: Some(72).
+    metronome_bpm: None,
+    // Beats per bar, 1 - 12; beat 1 gets a higher click. None = 4. Example: Some(3).
+    metronome_beats_per_bar: None,
+    // Click volume in percent, 0 - 100. None = 50. The click is never recorded.
+    metronome_volume: None,
+    // Live event WebSocket for the coach page: port on 127.0.0.1. None = off. Example: Some(8790) (the coach page connects to 8790 by default).
+    // Clients get hello, note_on, note_off, sustain and pedal, plus the metronome's beat and state messages, as JSON, and can start and stop the metronome (see README.md, Live events).
+    ws_port: None,
+    // Session recording: Some(false) = do not record live sessions (like --no-record). None = record every live session.
+    record: None,
+    // Also save each live session's audio as a .wav next to its .mid (16-bit stereo at the device rate, like --record-wav).
+    // Some(true) = on. None = off. The metronome click is never in it; --no-record or record: Some(false) turns it off too.
+    record_wav: None,
+    // Folder for session recordings; a relative path is relative to the engine folder. None = coach/data/sessions in the repo.
+    // Example: Some("D:/piano/takes").
+    record_dir: None,
+)

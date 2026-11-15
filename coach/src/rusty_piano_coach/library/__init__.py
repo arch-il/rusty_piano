@@ -1,0 +1,1 @@
+"""Sheet music library: find, download, store and search MusicXML scores. Modules: paths (data dir), index (SQLite + full-text search), analyse (music21), difficulty, fetch (downloads), sources (source interface), local (import your own files), pdmx (PDMX dataset), cli (`coach scores ...`)."""
