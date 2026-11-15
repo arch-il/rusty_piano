@@ -1,9 +1,14 @@
+import json
 import xml.etree.ElementTree as ET
+from urllib.parse import quote
 
 import pytest
 
+from rusty_piano_coach.cli import main
+from rusty_piano_coach.fingering_jobs import FingeringWorker
 from rusty_piano_coach.library import fingering, scale_fingering, scales
 from rusty_piano_coach.library.index import Library
+from rusty_piano_coach.server import handle_request
 
 BLACK = {1, 3, 6, 8, 10}
 THUMB_OK = {("arp-major", 6), ("arp-minor", 3)}
@@ -15,7 +20,8 @@ GOLDEN = [
     ("c-major-2oct-rh", "rh", "1 2 3 1 2 3 4 1 2 3 1 2 3 4 5 4 3 2 1 3 2 1 4 3 2 1 3 2 1"),
     ("f-major-1oct-rh", "rh", "1 2 3 4 1 2 3 4 3 2 1 4 3 2 1"),
     ("bb-major-1oct-lh", "lh", "3 2 1 4 3 2 1 3 1 2 3 4 1 2 3"),
-    ("fs-minor-melodic-1oct-rh", "rh", "2 3 1 2 3 4 1 3 2 1 3 2 1 4 2"),
+    ("fs-minor-melodic-1oct-rh", "rh", "2 3 1 2 3 4 1 3 2 1 3 2 1 4 3"),
+    ("cs-minor-melodic-1oct-rh", "rh", "2 3 1 2 3 4 1 3 2 1 3 2 1 4 3"),
     ("gs-minor-natural-1oct-lh", "lh", "3 2 1 3 2 1 4 3 4 1 2 3 1 2 3"),
     ("c-arp-major-2oct-lh", "lh", "5 4 2 1 4 2 1 2 4 1 2 4 5"),
     ("db-arp-major-1oct-rh", "rh", "2 1 2 4 2 1 2"),
@@ -72,6 +78,18 @@ def test_golden(runs, key, hand, expected):
     assert " ".join(map(str, got)) == expected
 
 
+def test_melodic_minor_ends_on_table_bottom(runs):
+    for sc in scales.CATALOGUE:
+        if sc.kind != "minor-melodic":
+            continue
+        for hand, notes, fs in runs[sc.key]:
+            assert fs[-1] == scale_fingering.MINOR_FINGERS[sc.pc][hand][1], sc.key
+            if (sc.pc, hand) in scale_fingering.MELODIC_UP_OVERRIDE:
+                assert fs[0] == scale_fingering.MELODIC_UP_OVERRIDE[(sc.pc, hand)][1], sc.key
+            else:
+                assert fs[0] == scale_fingering.MINOR_FINGERS[sc.pc][hand][1], sc.key
+
+
 @pytest.fixture(scope="module")
 def parsed():
     return {sc.key: fingering.score_notes(ET.fromstring(scales.musicxml(sc).encode("utf-8"))) for sc in scales.CATALOGUE}
@@ -104,3 +122,37 @@ def test_generate_writes_sidecars(tmp_path):
     for key in keys:
         assert fingering.sidecar_path(out / f"{key}.musicxml").stat().st_mtime_ns == mtimes[key]
     lib.close()
+
+
+def _stale_setup(tmp_path):
+    lib = Library(tmp_path / "lib")
+    scales.generate(lib, keys={"fs-minor-melodic-1oct-rh"})
+    lib.close()
+    sc = scales.BY_KEY["fs-minor-melodic-1oct-rh"]
+    path = tmp_path / "lib" / "files" / "scales" / "fs-minor-melodic-1oct-rh.musicxml"
+    stale = scale_fingering.scale_notes(sc)
+    last_rh = max((n for n in stale if n["s"] == 0), key=lambda n: (n["m"], n["q"]))
+    last_rh["f"] = "2"
+    fingering.write_sidecar(path, source="textbook", tool=scale_fingering.TEXTBOOK_TOOL, notes=stale)
+    return sc, path
+
+
+def test_stale_textbook_sidecar_refreshed_by_cli(tmp_path, capsys):
+    sc, path = _stale_setup(tmp_path)
+    assert main(["fingering", "--data-dir", str(tmp_path / "lib"), "--source", "scales"]) == 0
+    out = capsys.readouterr().out
+    assert "textbook (15 fingers)" in out
+    assert "Fingering: 1 made, 0 cached, 0 failed" in out
+    st = fingering.read_status(path)
+    assert st["notes"] == scale_fingering.scale_notes(sc)
+    assert st["notes"][-1]["f"] == "3"
+    assert main(["fingering", "--data-dir", str(tmp_path / "lib"), "--source", "scales"]) == 0
+    assert "Fingering: 0 made, 1 cached, 0 failed" in capsys.readouterr().out
+
+
+def test_stale_textbook_sidecar_refreshed_by_post(tmp_path):
+    sc, path = _stale_setup(tmp_path)
+    r = handle_request(tmp_path / "lib", f"/api/scores/{quote('scales:fs-minor-melodic-1oct-rh', safe='')}/fingering",
+                       "POST", None, fingering=FingeringWorker())
+    assert r.status == 200
+    assert json.loads(r.body)["notes"] == scale_fingering.scale_notes(sc)

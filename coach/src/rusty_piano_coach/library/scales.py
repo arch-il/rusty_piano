@@ -40,6 +40,7 @@ RH_LOW = {1: 55, 2: 50, 4: 41}
 TREBLE_WINDOW = (50, 88)
 BASS_WINDOW = (31, 71)
 WINDOWS = {1: TREBLE_WINDOW, 2: BASS_WINDOW}
+MIN_SHIFT_RUN = 4
 KIND_TITLE = {"major": "{t} major scale", "minor-natural": "{t} natural minor scale",
               "minor-harmonic": "{t} harmonic minor scale", "minor-melodic": "{t} melodic minor scale",
               "arp-major": "{t} major arpeggio", "arp-minor": "{t} minor arpeggio",
@@ -211,19 +212,37 @@ def hand_notes(sc, hand):
 
 def octave_shifts(midis, window):
     lo, hi = window
-    cur = 0
-    out = []
-    for m in midis:
-        if lo <= m <= hi:
-            s = 0
-        elif lo <= m + cur <= hi:
-            s = cur
-        else:
-            s = next((c for c in (-12, 12, -24, 24) if lo <= m + c <= hi), None)
-            if s is None:
-                raise ValueError(f"pitch {m} does not fit the staff")
-        out.append(s)
-        cur = s
+
+    def fits(m, s):
+        return lo <= m + s <= hi
+
+    n = len(midis)
+    out = [0] * n
+    used = [False] * n
+    i = 0
+    while i < n:
+        if fits(midis[i], 0):
+            i += 1
+            continue
+        end = i
+        while end < n and not fits(midis[end], 0):
+            end += 1
+        run = midis[i:end]
+        shift = next((c for c in (-12, 12, -24, 24) if all(fits(m, c) for m in run)), None)
+        if shift is None:
+            raise ValueError(f"pitches {run} do not fit the staff")
+        start = i
+        while end - start < MIN_SHIFT_RUN:
+            if end < n and not used[end] and fits(midis[end], 0) and fits(midis[end], shift):
+                end += 1
+            elif start > 0 and not used[start - 1] and fits(midis[start - 1], shift):
+                start -= 1
+            else:
+                break
+        for k in range(start, end):
+            out[k] = shift
+            used[k] = True
+        i = end
     return out
 
 

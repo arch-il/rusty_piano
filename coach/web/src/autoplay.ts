@@ -97,7 +97,11 @@ export interface Autoplayer {
     notes: readonly ScheduledNote[],
     t0: number,
     loopMs: number | null,
-    opts?: { shiftToNow?: boolean; cycleTiming?: (cycle: number) => { start: number; scale: number } | null },
+    opts?: {
+      shiftToNow?: boolean;
+      cycleTiming?: (cycle: number) => { start: number; scale: number } | null;
+      cycleScale?: (cycle: number) => number | null;
+    },
   ): void;
   stop(): void;
   playing(): boolean;
@@ -124,17 +128,25 @@ export function createAutoplayer(deps: AutoplayerDeps): Autoplayer {
   let loopMs: number | null = null;
   let stopped = false;
   let cycleTiming: ((cycle: number) => { start: number; scale: number } | null) | undefined;
+  let cycleScale: ((cycle: number) => number | null) | undefined;
   let timings = new Map<number, { start: number; scale: number }>();
 
   const timingOf = (c: number): { start: number; scale: number } => {
-    if (c === 0 || loopMs === null || !cycleTiming) return { start: t0 + c * (loopMs ?? 0), scale: 1 };
+    if (c === 0 || loopMs === null || (!cycleTiming && !cycleScale)) return { start: t0 + c * (loopMs ?? 0), scale: 1 };
     let v = timings.get(c);
     if (v === undefined) {
-      const r = cycleTiming(c);
-      v =
-        r && Number.isFinite(r.start) && Number.isFinite(r.scale) && r.scale > 0
-          ? { start: r.start, scale: r.scale }
-          : { start: t0 + c * loopMs, scale: 1 };
+      if (cycleTiming) {
+        const r = cycleTiming(c);
+        v =
+          r && Number.isFinite(r.start) && Number.isFinite(r.scale) && r.scale > 0
+            ? { start: r.start, scale: r.scale }
+            : { start: t0 + c * loopMs, scale: 1 };
+      } else {
+        const prev = timingOf(c - 1);
+        const r = cycleScale!(c);
+        const scale = r !== null && Number.isFinite(r) && r > 0 ? r : prev.scale;
+        v = { start: prev.start + loopMs / prev.scale, scale };
+      }
       timings.set(c, v);
     }
     return v;
@@ -214,6 +226,7 @@ export function createAutoplayer(deps: AutoplayerDeps): Autoplayer {
       t0 = start;
       loopMs = loop;
       cycleTiming = opts?.cycleTiming;
+      cycleScale = opts?.cycleTiming ? undefined : opts?.cycleScale;
       timings = new Map();
       cycle = 0;
       idx = 0;

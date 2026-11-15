@@ -111,10 +111,10 @@ test('layout of an empty tree is just the padding', () => {
 
 test('layout edges run from each prerequisite to the node that requires it', () => {
   assert.deepEqual(layout(tree).edges, [
-    { from: 'pulse-1', to: 'pulse-2', d: 'M 258 38 C 278 38, 266 38, 286 38' },
-    { from: 'read-1', to: 'read-2', d: 'M 258 114 C 278 114, 266 114, 286 114' },
-    { from: 'pulse-2', to: 'read-2', d: 'M 418 38 C 438 38, 266 114, 286 114' },
-    { from: 'read-2', to: 'hands-1', d: 'M 418 114 C 438 114, 106 190, 126 190' },
+    { from: 'pulse-1', to: 'pulse-2', d: 'M 258 38 H 286' },
+    { from: 'read-1', to: 'read-2', d: 'M 258 114 H 286' },
+    { from: 'pulse-2', to: 'read-2', d: 'M 418 38 H 432 V 76 H 272 V 114 H 286' },
+    { from: 'read-2', to: 'hands-1', d: 'M 418 114 H 432 V 152 H 112 V 190 H 126' },
   ]);
 });
 

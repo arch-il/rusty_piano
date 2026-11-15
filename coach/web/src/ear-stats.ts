@@ -2,6 +2,7 @@
 // breakdown, the clean-run text, the summary model and the trend chart geometry.
 // Pure, no DOM.
 
+import { ApiError } from './api.ts';
 import { EAR_TARGETS_MS } from './ear-levels.ts';
 import type { EarLevelDef, EarRound, EarRoundItem, SpeedKind } from './ear-levels.ts';
 import { formatSeconds, median } from './sight-levels.ts';
@@ -49,8 +50,46 @@ export interface EarTrend {
   maxMs: number;
 }
 
-function pct(v: number | null): string {
-  return Math.round((v ?? 0) * 100) + '%';
+export function percentText(v: number | null): string {
+  return Math.floor((v ?? 0) * 100 + 1e-9) + '%';
+}
+
+export const NO_DRILLS_TEXT = 'Rounds are saved, but they only count toward skills after you run: uv run coach ear add-drills';
+export const NO_TREE_TEXT =
+  'No skill tree yet: rounds are saved, but they only count toward skills once you set up your plan with /coach in Claude Code and add the ear drills (uv run coach ear add-drills).';
+
+export type PlanTreeState = { kind: 'unknown' } | { kind: 'missing' } | { kind: 'tree'; tree: PlanTree };
+
+export function planErrorState(e: unknown): PlanTreeState {
+  return e instanceof ApiError && e.status === 404 ? { kind: 'missing' } : { kind: 'unknown' };
+}
+
+export function drillsNotice(p: PlanTreeState): string | null {
+  if (p.kind === 'unknown') return null;
+  if (p.kind === 'missing') return NO_TREE_TEXT;
+  return earTreeHasDrills(p.tree) ? null : NO_DRILLS_TEXT;
+}
+
+export interface EarHistoryModel {
+  shown: EarRound[];
+  emptyText: string | null;
+  stoppedText: string | null;
+}
+
+export function historyModel(rounds: readonly EarRound[], level: string): EarHistoryModel {
+  const mine = roundsOfLevel(rounds, level);
+  const shown = mine.filter((r) => r.end === 'done' && r.items.length > 0);
+  const stopped = mine.length - shown.length;
+  let emptyText: string | null = null;
+  if (shown.length === 0) {
+    emptyText =
+      stopped === 0
+        ? 'No rounds yet on this level.'
+        : `No finished rounds yet on this level (${stopped} stopped early).`;
+  }
+  const stoppedText =
+    shown.length > 0 && stopped > 0 ? `${stopped} stopped round${stopped === 1 ? '' : 's'} not shown.` : null;
+  return { shown, emptyText, stoppedText };
 }
 
 function mean(values: readonly (number | null)[]): number | null {
@@ -117,7 +156,7 @@ export function cleanText(stats: EarRoundStats, kind: SpeedKind, complete: boole
   if (!counted) return 'Changed settings: this round does not count toward a drill.';
   const t = EAR_TARGETS_MS[kind];
   const accuracy = stats.accuracy ?? 0;
-  if (accuracy < 0.9) return `First try ${Math.round(accuracy * 100)}%: Good enough needs 90%.`;
+  if (accuracy < 0.9) return `First try ${percentText(accuracy)}: Good enough needs 90%.`;
   if (stats.medianStepMs !== null && stats.medianStepMs > t.good) {
     return `Median ${formatSeconds(stats.medianStepMs)} per answer: Good enough needs ${formatSeconds(t.good)} or less.`;
   }
@@ -145,7 +184,7 @@ export function summaryModel(
   const lastText = cmp.rounds === 1 ? 'last round' : `last ${cmp.rounds} rounds`;
   return {
     rows: [
-      ['First try', `${s.firstTry} of ${s.items} (${pct(s.accuracy)})`],
+      ['First try', `${s.firstTry} of ${s.items} (${percentText(s.accuracy)})`],
       ['Median time per answer', formatSeconds(s.medianStepMs)],
       ['Replays', String(s.replays)],
       ['Revealed', String(s.revealed)],
@@ -153,7 +192,7 @@ export function summaryModel(
     compare:
       cmp.rounds === 0
         ? 'First round on this level.'
-        : `First try ${pct(cmp.accuracy)} vs ${pct(s.accuracy)}, median ${formatSeconds(cmp.medianStepMs)} vs ${formatSeconds(s.medianStepMs)} over the ${lastText}.`,
+        : `First try ${percentText(cmp.accuracy)} vs ${percentText(s.accuracy)}, median ${formatSeconds(cmp.medianStepMs)} vs ${formatSeconds(s.medianStepMs)} over the ${lastText}.`,
     clean: cleanText(s, level.kind, complete, counted),
   };
 }

@@ -1,0 +1,1570 @@
+{
+ "drills": {
+  "ear.echo-1": {
+   "best_accuracy": 0.833,
+   "clean_good": 0,
+   "clean_solid": 0,
+   "complete_runs": 3,
+   "days": 3,
+   "ear": {
+    "categories": {
+     "high": {
+      "first_try": 4,
+      "items": 7
+     },
+     "low": {
+      "first_try": 9,
+      "items": 9
+     }
+    },
+    "first_try_share": 0.812,
+    "items": 16,
+    "median_step_ms": 1245.0,
+    "replays_per_item": 0.0,
+    "revealed": 0,
+    "rounds": 3
+   },
+   "last_at": "2026-11-12T10:00:00+00:00",
+   "max_tempo_percent": 100,
+   "mean_accuracy": 0.811,
+   "node": null,
+   "offset_sd_ms": null,
+   "runs": 3,
+   "score": "ear:echo-1",
+   "timing_score": null,
+   "velocity_spread": null
+  },
+  "sc.c1": {
+   "best_accuracy": 1.0,
+   "clean_good": 0,
+   "clean_solid": 0,
+   "complete_runs": 3,
+   "days": 3,
+   "evenness": 45,
+   "hands_alignment": null,
+   "last_at": "2026-11-12T09:00:00+00:00",
+   "max_tempo_percent": 100,
+   "mean_accuracy": 1.0,
+   "node": null,
+   "offset_sd_ms": 0.0,
+   "runs": 3,
+   "score": "scales:c-major-1oct-rh",
+   "timing_score": 100,
+   "velocity_spread": null
+  },
+  "sr.r2-treble": {
+   "best_accuracy": 0.667,
+   "clean_good": 0,
+   "clean_solid": 0,
+   "complete_runs": 3,
+   "days": 3,
+   "last_at": "2026-11-12T20:00:00+00:00",
+   "max_tempo_percent": 100,
+   "mean_accuracy": 0.667,
+   "node": null,
+   "offset_sd_ms": null,
+   "runs": 3,
+   "score": "sight:r2-treble",
+   "sight": {
+    "best_accuracy": 0.667,
+    "cards": 9,
+    "mean_accuracy": 0.667,
+    "mean_ms": 1050.0,
+    "recent_accuracy": 0.667,
+    "rounds": 3,
+    "target_ms": {
+     "good": 2000,
+     "mastered": 800,
+     "solid": 1200
+    }
+   },
+   "timing_score": null,
+   "velocity_spread": null
+  }
+ },
+ "features": {
+  "accuracy": {
+   "mean": 0.946
+  },
+  "holds": {
+   "checked": 21,
+   "short": 21,
+   "short_share": 1.0
+  },
+  "timing": {
+   "early_share": 0.06,
+   "late_share": 0.073,
+   "mean_abs_offset_ms": 25.9,
+   "mean_offset_ms": -0.5,
+   "on_time_share": 0.866,
+   "steps": 1457
+  },
+  "velocity": {
+   "notes": 900,
+   "p10": 46,
+   "p90": 93,
+   "spread": 47
+  }
+ },
+ "habits": [
+  {
+   "count": 1,
+   "detail": {
+    "attempts": 6,
+    "full_share": 1.0
+   },
+   "id": "plays_through_mistakes",
+   "title": "Plays through mistakes instead of fixing the hard bars",
+   "where": {
+    "bars": [
+     6
+    ],
+    "drill": null,
+    "node": null,
+    "score": "piece-b"
+   }
+  },
+  {
+   "count": 1,
+   "detail": {
+    "jumps": [
+     {
+      "control_error_rate": 0.024,
+      "failed": 4,
+      "from_bar": 5,
+      "reached": 6,
+      "to_bar": 2
+     }
+    ]
+   },
+   "id": "repeats_not_followed",
+   "title": "Does not follow repeats or jumps",
+   "where": {
+    "bars": [
+     2
+    ],
+    "drill": null,
+    "node": null,
+    "score": "gen:r1-all-cs"
+   }
+  },
+  {
+   "count": 1,
+   "detail": {
+    "jumps": [
+     {
+      "control_error_rate": 0.04,
+      "failed": 4,
+      "from_bar": 5,
+      "reached": 5,
+      "to_bar": 2
+     }
+    ]
+   },
+   "id": "repeats_not_followed",
+   "title": "Does not follow repeats or jumps",
+   "where": {
+    "bars": [
+     2
+    ],
+    "drill": null,
+    "node": null,
+    "score": "gen:t1-quarters-rh"
+   }
+  },
+  {
+   "count": 1,
+   "detail": {
+    "jumps": [
+     {
+      "control_error_rate": 0.047,
+      "failed": 4,
+      "from_bar": 5,
+      "reached": 6,
+      "to_bar": 2
+     }
+    ]
+   },
+   "id": "repeats_not_followed",
+   "title": "Does not follow repeats or jumps",
+   "where": {
+    "bars": [
+     2
+    ],
+    "drill": null,
+    "node": null,
+    "score": "piece-a"
+   }
+  },
+  {
+   "count": 1,
+   "detail": {
+    "jumps": [
+     {
+      "control_error_rate": 0.06,
+      "failed": 3,
+      "from_bar": 5,
+      "reached": 5,
+      "to_bar": 2
+     }
+    ]
+   },
+   "id": "repeats_not_followed",
+   "title": "Does not follow repeats or jumps",
+   "where": {
+    "bars": [
+     2
+    ],
+    "drill": null,
+    "node": null,
+    "score": "piece-b"
+   }
+  },
+  {
+   "count": 1,
+   "detail": {
+    "jumps": [
+     {
+      "control_error_rate": 0.04,
+      "failed": 4,
+      "from_bar": 5,
+      "reached": 5,
+      "to_bar": 2
+     }
+    ]
+   },
+   "id": "repeats_not_followed",
+   "title": "Does not follow repeats or jumps",
+   "where": {
+    "bars": [
+     2
+    ],
+    "drill": null,
+    "node": null,
+    "score": "piece-c"
+   }
+  },
+  {
+   "count": 15,
+   "detail": {
+    "after_rest_mean_ms": -102.9,
+    "basis": "gap",
+    "other_mean_ms": 2.7,
+    "samples": 15
+   },
+   "id": "rests_not_counted",
+   "title": "Does not count rests (comes in early after a rest)",
+   "where": {
+    "bars": [
+     3,
+     4,
+     11
+    ],
+    "drill": null,
+    "node": null,
+    "score": "gen:t1-quarters-rh"
+   }
+  },
+  {
+   "count": 14,
+   "detail": {
+    "after_rest_mean_ms": -100.4,
+    "basis": "gap",
+    "other_mean_ms": 2.4,
+    "samples": 14
+   },
+   "id": "rests_not_counted",
+   "title": "Does not count rests (comes in early after a rest)",
+   "where": {
+    "bars": [
+     2,
+     4,
+     7
+    ],
+    "drill": null,
+    "node": null,
+    "score": "piece-a"
+   }
+  },
+  {
+   "count": 18,
+   "detail": {
+    "after_rest_mean_ms": -98.1,
+    "basis": "gap",
+    "other_mean_ms": 7.8,
+    "samples": 18
+   },
+   "id": "rests_not_counted",
+   "title": "Does not count rests (comes in early after a rest)",
+   "where": {
+    "bars": [
+     2,
+     3,
+     4,
+     10
+    ],
+    "drill": null,
+    "node": null,
+    "score": "piece-b"
+   }
+  },
+  {
+   "count": 11,
+   "detail": {
+    "after_rest_mean_ms": -98.2,
+    "basis": "gap",
+    "other_mean_ms": 2.9,
+    "samples": 11
+   },
+   "id": "rests_not_counted",
+   "title": "Does not count rests (comes in early after a rest)",
+   "where": {
+    "bars": [
+     2,
+     4,
+     9
+    ],
+    "drill": null,
+    "node": null,
+    "score": "piece-c"
+   }
+  },
+  {
+   "count": 1,
+   "detail": {
+    "spot_count": 1,
+    "spots": [
+     {
+      "bar": 2,
+      "beat": 1,
+      "mean_ms": -111.0,
+      "runs": 6
+     }
+    ]
+   },
+   "id": "rhythm_consistently_wrong",
+   "title": "Plays the same rhythm wrong in the same place",
+   "where": {
+    "bars": [
+     2
+    ],
+    "drill": null,
+    "node": null,
+    "score": "gen:t1-quarters-rh"
+   }
+  },
+  {
+   "count": 2,
+   "detail": {
+    "spot_count": 2,
+    "spots": [
+     {
+      "bar": 8,
+      "beat": 0,
+      "mean_ms": 143.1,
+      "runs": 5
+     },
+     {
+      "bar": 10,
+      "beat": 1,
+      "mean_ms": -154.6,
+      "runs": 6
+     }
+    ]
+   },
+   "id": "rhythm_consistently_wrong",
+   "title": "Plays the same rhythm wrong in the same place",
+   "where": {
+    "bars": [
+     8,
+     10
+    ],
+    "drill": null,
+    "node": null,
+    "score": "piece-a"
+   }
+  },
+  {
+   "count": 1,
+   "detail": {
+    "spot_count": 1,
+    "spots": [
+     {
+      "bar": 11,
+      "beat": 1,
+      "mean_ms": 135.8,
+      "runs": 5
+     }
+    ]
+   },
+   "id": "rhythm_consistently_wrong",
+   "title": "Plays the same rhythm wrong in the same place",
+   "where": {
+    "bars": [
+     11
+    ],
+    "drill": null,
+    "node": null,
+    "score": "piece-b"
+   }
+  },
+  {
+   "count": 40,
+   "detail": {
+    "hard_mean_ms": 43.5,
+    "other_mean_ms": -8.0,
+    "samples": 40
+   },
+   "id": "slows_at_hard_bars",
+   "title": "Slows down at hard bars instead of keeping the pulse",
+   "where": {
+    "bars": [
+     5
+    ],
+    "drill": null,
+    "node": null,
+    "score": "gen:t1-quarters-rh"
+   }
+  },
+  {
+   "count": 17,
+   "detail": {
+    "hard_mean_ms": 56.6,
+    "other_mean_ms": -4.7,
+    "samples": 17
+   },
+   "id": "slows_at_hard_bars",
+   "title": "Slows down at hard bars instead of keeping the pulse",
+   "where": {
+    "bars": [
+     9
+    ],
+    "drill": null,
+    "node": null,
+    "score": "piece-a"
+   }
+  },
+  {
+   "count": 20,
+   "detail": {
+    "hard_mean_ms": 43.3,
+    "other_mean_ms": -0.4,
+    "samples": 20
+   },
+   "id": "slows_at_hard_bars",
+   "title": "Slows down at hard bars instead of keeping the pulse",
+   "where": {
+    "bars": [
+     6
+    ],
+    "drill": null,
+    "node": null,
+    "score": "piece-b"
+   }
+  },
+  {
+   "count": 7,
+   "detail": {
+    "attempts": 7,
+    "first_half_accuracy": 0.964,
+    "second_half_accuracy": 0.917,
+    "share": 1.0
+   },
+   "id": "start_at_bar_1",
+   "title": "Always starts at the top of the piece",
+   "where": {
+    "bars": [],
+    "drill": null,
+    "node": null,
+    "score": "piece-a"
+   }
+  },
+  {
+   "count": 6,
+   "detail": {
+    "attempts": 6,
+    "first_half_accuracy": 0.946,
+    "second_half_accuracy": 1.0,
+    "share": 1.0
+   },
+   "id": "start_at_bar_1",
+   "title": "Always starts at the top of the piece",
+   "where": {
+    "bars": [],
+    "drill": null,
+    "node": null,
+    "score": "piece-b"
+   }
+  },
+  {
+   "count": 6,
+   "detail": {
+    "attempts": 6,
+    "first_half_accuracy": 0.938,
+    "second_half_accuracy": 0.98,
+    "share": 1.0
+   },
+   "id": "start_at_bar_1",
+   "title": "Always starts at the top of the piece",
+   "where": {
+    "bars": [],
+    "drill": null,
+    "node": null,
+    "score": "piece-c"
+   }
+  }
+ ],
+ "inputs": {
+  "attempts": 40,
+  "autoplay_runs": 0,
+  "counted_runs": 46,
+  "fun_runs": 0,
+  "reports": 0,
+  "runs": 46,
+  "sessions": 0,
+  "skipped": []
+ },
+ "kind": "rusty_piano.evidence",
+ "nodes": {
+  "R1": {
+   "drills": {
+    "r1.c": {
+     "good": {
+      "clean_runs": 0,
+      "days": 0,
+      "met": false,
+      "need_days": 2,
+      "need_runs": 3
+     },
+     "level": 0,
+     "mastered": {
+      "cold_runs": 0,
+      "met": false,
+      "need_cold": 2
+     },
+     "runs": 0,
+     "solid": {
+      "clean_in_window": 0,
+      "days": 0,
+      "met": false,
+      "need_clean": 5,
+      "need_days": 3,
+      "window": 7
+     }
+    }
+   },
+   "gates": {
+    "good": {
+     "drills_met": 0,
+     "drills_total": 1,
+     "met": false,
+     "missing": [
+      "r1.c"
+     ],
+     "need_days": 2,
+     "need_runs": 3
+    },
+    "mastered": {
+     "away_days": 7,
+     "drills_met": 0,
+     "drills_total": 1,
+     "met": false,
+     "missing": [
+      "r1.c"
+     ],
+     "need_cold": 2
+    },
+    "solid": {
+     "drills_met": 0,
+     "drills_total": 1,
+     "habit_free": true,
+     "met": false,
+     "missing": [
+      "r1.c"
+     ],
+     "need_clean": 5,
+     "need_days": 3,
+     "window": 7
+    }
+   },
+   "kind": "skill",
+   "last_clean": null,
+   "last_seen": null,
+   "locked": false,
+   "max_level": 0,
+   "runs": 0,
+   "rusty": false,
+   "state_level": 0,
+   "track": "reading"
+  },
+  "T1": {
+   "drills": {
+    "t1.q": {
+     "good": {
+      "clean_runs": 0,
+      "days": 0,
+      "met": false,
+      "need_days": 2,
+      "need_runs": 3
+     },
+     "level": 0,
+     "mastered": {
+      "cold_runs": 0,
+      "met": false,
+      "need_cold": 2
+     },
+     "runs": 0,
+     "solid": {
+      "clean_in_window": 0,
+      "days": 0,
+      "met": false,
+      "need_clean": 5,
+      "need_days": 3,
+      "window": 7
+     }
+    }
+   },
+   "gates": {
+    "good": {
+     "drills_met": 0,
+     "drills_total": 1,
+     "met": false,
+     "missing": [
+      "t1.q"
+     ],
+     "need_days": 2,
+     "need_runs": 3
+    },
+    "mastered": {
+     "away_days": 7,
+     "drills_met": 0,
+     "drills_total": 1,
+     "met": false,
+     "missing": [
+      "t1.q"
+     ],
+     "need_cold": 2
+    },
+    "solid": {
+     "drills_met": 0,
+     "drills_total": 1,
+     "habit_free": true,
+     "met": false,
+     "missing": [
+      "t1.q"
+     ],
+     "need_clean": 5,
+     "need_days": 3,
+     "window": 7
+    }
+   },
+   "kind": "skill",
+   "last_clean": null,
+   "last_seen": null,
+   "locked": false,
+   "max_level": 0,
+   "runs": 0,
+   "rusty": false,
+   "state_level": 0,
+   "track": "rhythm"
+  },
+  "T2": {
+   "drills": {
+    "t2.h": {
+     "good": {
+      "clean_runs": 0,
+      "days": 0,
+      "met": false,
+      "need_days": 2,
+      "need_runs": 3
+     },
+     "level": 0,
+     "mastered": {
+      "cold_runs": 0,
+      "met": false,
+      "need_cold": 2
+     },
+     "runs": 0,
+     "solid": {
+      "clean_in_window": 0,
+      "days": 0,
+      "met": false,
+      "need_clean": 5,
+      "need_days": 3,
+      "window": 7
+     }
+    }
+   },
+   "gates": {
+    "good": {
+     "drills_met": 0,
+     "drills_total": 1,
+     "met": false,
+     "missing": [
+      "t2.h"
+     ],
+     "need_days": 2,
+     "need_runs": 3
+    },
+    "mastered": {
+     "away_days": 7,
+     "drills_met": 0,
+     "drills_total": 1,
+     "met": false,
+     "missing": [
+      "t2.h"
+     ],
+     "need_cold": 2
+    },
+    "solid": {
+     "drills_met": 0,
+     "drills_total": 1,
+     "habit_free": true,
+     "met": false,
+     "missing": [
+      "t2.h"
+     ],
+     "need_clean": 5,
+     "need_days": 3,
+     "window": 7
+    }
+   },
+   "kind": "skill",
+   "last_clean": null,
+   "last_seen": null,
+   "locked": true,
+   "max_level": 0,
+   "runs": 0,
+   "rusty": false,
+   "state_level": 0,
+   "track": "rhythm"
+  }
+ },
+ "pending_analysis": [
+  "attempt-20261001-000000",
+  "attempt-20261001-000001",
+  "attempt-20261001-000002",
+  "attempt-20261001-000003",
+  "attempt-20261001-000004",
+  "attempt-20261001-000005",
+  "attempt-20261001-000006",
+  "attempt-20261001-000007",
+  "attempt-20261001-000008",
+  "attempt-20261001-000009",
+  "attempt-20261001-000010",
+  "attempt-20261001-000011",
+  "attempt-20261001-000012",
+  "attempt-20261001-000013",
+  "attempt-20261001-000014",
+  "attempt-20261001-000015",
+  "attempt-20261001-000016",
+  "attempt-20261001-000017",
+  "attempt-20261001-000018",
+  "attempt-20261001-000019",
+  "attempt-20261001-000020",
+  "attempt-20261001-000021",
+  "attempt-20261001-000022",
+  "attempt-20261001-000023",
+  "attempt-20261001-000024",
+  "attempt-20261001-000025",
+  "attempt-20261001-000026",
+  "attempt-20261001-000027",
+  "attempt-20261001-000028",
+  "attempt-20261001-000029",
+  "attempt-20261110-090000-scale00",
+  "attempt-20261111-090000-scale01",
+  "attempt-20261112-090000-scale02",
+  "attempt-20261112-110000-odd001"
+ ],
+ "pieces": {
+  "gen:r1-all-cs": {
+   "bars": {
+    "1": {
+     "dragged": 0,
+     "error_rate": 0.0,
+     "errors": 0,
+     "mean_offset_ms": null,
+     "missed": 0,
+     "runs": 6,
+     "rushed": 0,
+     "short": 0,
+     "steps": 24,
+     "wrong": 0
+    },
+    "10": {
+     "dragged": 0,
+     "error_rate": 0.0,
+     "errors": 0,
+     "mean_offset_ms": null,
+     "missed": 0,
+     "runs": 6,
+     "rushed": 0,
+     "short": 0,
+     "steps": 24,
+     "wrong": 0
+    },
+    "11": {
+     "dragged": 0,
+     "error_rate": 0.0,
+     "errors": 0,
+     "mean_offset_ms": null,
+     "missed": 0,
+     "runs": 6,
+     "rushed": 0,
+     "short": 0,
+     "steps": 24,
+     "wrong": 0
+    },
+    "2": {
+     "dragged": 0,
+     "error_rate": 0.104,
+     "errors": 5,
+     "mean_offset_ms": null,
+     "missed": 4,
+     "runs": 6,
+     "rushed": 0,
+     "short": 0,
+     "steps": 48,
+     "wrong": 1
+    },
+    "3": {
+     "dragged": 0,
+     "error_rate": 0.042,
+     "errors": 2,
+     "mean_offset_ms": null,
+     "missed": 0,
+     "runs": 6,
+     "rushed": 0,
+     "short": 0,
+     "steps": 48,
+     "wrong": 2
+    },
+    "4": {
+     "dragged": 0,
+     "error_rate": 0.042,
+     "errors": 2,
+     "mean_offset_ms": null,
+     "missed": 0,
+     "runs": 6,
+     "rushed": 0,
+     "short": 0,
+     "steps": 48,
+     "wrong": 2
+    },
+    "5": {
+     "dragged": 0,
+     "error_rate": 0.021,
+     "errors": 1,
+     "mean_offset_ms": null,
+     "missed": 0,
+     "runs": 6,
+     "rushed": 0,
+     "short": 0,
+     "steps": 48,
+     "wrong": 1
+    },
+    "6": {
+     "dragged": 0,
+     "error_rate": 0.0,
+     "errors": 0,
+     "mean_offset_ms": null,
+     "missed": 0,
+     "runs": 6,
+     "rushed": 0,
+     "short": 0,
+     "steps": 24,
+     "wrong": 0
+    },
+    "7": {
+     "dragged": 0,
+     "error_rate": 0.0,
+     "errors": 0,
+     "mean_offset_ms": null,
+     "missed": 0,
+     "runs": 6,
+     "rushed": 0,
+     "short": 0,
+     "steps": 24,
+     "wrong": 0
+    },
+    "8": {
+     "dragged": 0,
+     "error_rate": 0.042,
+     "errors": 1,
+     "mean_offset_ms": null,
+     "missed": 0,
+     "runs": 6,
+     "rushed": 0,
+     "short": 0,
+     "steps": 24,
+     "wrong": 1
+    },
+    "9": {
+     "dragged": 0,
+     "error_rate": 0.417,
+     "errors": 10,
+     "mean_offset_ms": null,
+     "missed": 3,
+     "runs": 6,
+     "rushed": 0,
+     "short": 5,
+     "steps": 24,
+     "wrong": 2
+    }
+   },
+   "hard_bars": [
+    9
+   ],
+   "last_at": "2026-10-01T12:40:00+00:00",
+   "mean_accuracy": 0.956,
+   "minutes": 6.0,
+   "runs": 6,
+   "title": "Quarters"
+  },
+  "gen:t1-quarters-rh": {
+   "bars": {
+    "1": {
+     "dragged": 0,
+     "error_rate": 0.0,
+     "errors": 0,
+     "mean_offset_ms": 0.4,
+     "missed": 0,
+     "runs": 8,
+     "rushed": 0,
+     "short": 0,
+     "steps": 32,
+     "wrong": 0
+    },
+    "10": {
+     "dragged": 0,
+     "error_rate": 0.0,
+     "errors": 0,
+     "mean_offset_ms": -1.7,
+     "missed": 0,
+     "runs": 5,
+     "rushed": 0,
+     "short": 0,
+     "steps": 20,
+     "wrong": 0
+    },
+    "11": {
+     "dragged": 0,
+     "error_rate": 0.0,
+     "errors": 0,
+     "mean_offset_ms": -29.8,
+     "missed": 0,
+     "runs": 5,
+     "rushed": 0,
+     "short": 0,
+     "steps": 20,
+     "wrong": 0
+    },
+    "2": {
+     "dragged": 0,
+     "error_rate": 0.103,
+     "errors": 6,
+     "mean_offset_ms": -23.8,
+     "missed": 6,
+     "runs": 8,
+     "rushed": 0,
+     "short": 0,
+     "steps": 58,
+     "wrong": 0
+    },
+    "3": {
+     "dragged": 0,
+     "error_rate": 0.038,
+     "errors": 2,
+     "mean_offset_ms": -11.9,
+     "missed": 0,
+     "runs": 8,
+     "rushed": 0,
+     "short": 0,
+     "steps": 52,
+     "wrong": 2
+    },
+    "4": {
+     "dragged": 0,
+     "error_rate": 0.0,
+     "errors": 0,
+     "mean_offset_ms": 6.7,
+     "missed": 0,
+     "runs": 8,
+     "rushed": 0,
+     "short": 0,
+     "steps": 52,
+     "wrong": 0
+    },
+    "5": {
+     "dragged": 0,
+     "error_rate": 0.413,
+     "errors": 19,
+     "mean_offset_ms": 43.5,
+     "missed": 6,
+     "runs": 8,
+     "rushed": 0,
+     "short": 4,
+     "steps": 46,
+     "wrong": 9
+    },
+    "6": {
+     "dragged": 0,
+     "error_rate": 0.05,
+     "errors": 1,
+     "mean_offset_ms": 3.4,
+     "missed": 0,
+     "runs": 5,
+     "rushed": 0,
+     "short": 0,
+     "steps": 20,
+     "wrong": 1
+    },
+    "7": {
+     "dragged": 0,
+     "error_rate": 0.0,
+     "errors": 0,
+     "mean_offset_ms": -7.6,
+     "missed": 0,
+     "runs": 5,
+     "rushed": 0,
+     "short": 0,
+     "steps": 20,
+     "wrong": 0
+    },
+    "8": {
+     "dragged": 0,
+     "error_rate": 0.0,
+     "errors": 0,
+     "mean_offset_ms": -9.3,
+     "missed": 0,
+     "runs": 5,
+     "rushed": 0,
+     "short": 0,
+     "steps": 20,
+     "wrong": 0
+    },
+    "9": {
+     "dragged": 0,
+     "error_rate": 0.05,
+     "errors": 1,
+     "mean_offset_ms": -2.8,
+     "missed": 0,
+     "runs": 5,
+     "rushed": 0,
+     "short": 0,
+     "steps": 20,
+     "wrong": 1
+    }
+   },
+   "hard_bars": [
+    5
+   ],
+   "last_at": "2026-10-01T12:10:00+00:00",
+   "mean_accuracy": 0.927,
+   "minutes": 6.0,
+   "runs": 8,
+   "title": "Quarters"
+  },
+  "piece-a": {
+   "bars": {
+    "1": {
+     "dragged": 0,
+     "error_rate": 0.071,
+     "errors": 2,
+     "mean_offset_ms": 4.8,
+     "missed": 1,
+     "runs": 7,
+     "rushed": 0,
+     "short": 0,
+     "steps": 28,
+     "wrong": 1
+    },
+    "10": {
+     "dragged": 0,
+     "error_rate": 0.0,
+     "errors": 0,
+     "mean_offset_ms": -37.9,
+     "missed": 0,
+     "runs": 6,
+     "rushed": 0,
+     "short": 0,
+     "steps": 24,
+     "wrong": 0
+    },
+    "11": {
+     "dragged": 0,
+     "error_rate": 0.0,
+     "errors": 0,
+     "mean_offset_ms": 0.2,
+     "missed": 0,
+     "runs": 6,
+     "rushed": 0,
+     "short": 0,
+     "steps": 24,
+     "wrong": 0
+    },
+    "2": {
+     "dragged": 0,
+     "error_rate": 0.115,
+     "errors": 6,
+     "mean_offset_ms": -9.1,
+     "missed": 4,
+     "runs": 7,
+     "rushed": 0,
+     "short": 0,
+     "steps": 52,
+     "wrong": 2
+    },
+    "3": {
+     "dragged": 0,
+     "error_rate": 0.0,
+     "errors": 0,
+     "mean_offset_ms": -1.3,
+     "missed": 0,
+     "runs": 6,
+     "rushed": 0,
+     "short": 0,
+     "steps": 48,
+     "wrong": 0
+    },
+    "4": {
+     "dragged": 0,
+     "error_rate": 0.0,
+     "errors": 0,
+     "mean_offset_ms": -11.4,
+     "missed": 0,
+     "runs": 6,
+     "rushed": 0,
+     "short": 0,
+     "steps": 48,
+     "wrong": 0
+    },
+    "5": {
+     "dragged": 0,
+     "error_rate": 0.021,
+     "errors": 1,
+     "mean_offset_ms": 1.2,
+     "missed": 0,
+     "runs": 6,
+     "rushed": 0,
+     "short": 0,
+     "steps": 48,
+     "wrong": 1
+    },
+    "6": {
+     "dragged": 0,
+     "error_rate": 0.0,
+     "errors": 0,
+     "mean_offset_ms": 2.8,
+     "missed": 0,
+     "runs": 6,
+     "rushed": 0,
+     "short": 0,
+     "steps": 24,
+     "wrong": 0
+    },
+    "7": {
+     "dragged": 0,
+     "error_rate": 0.042,
+     "errors": 1,
+     "mean_offset_ms": -22.1,
+     "missed": 0,
+     "runs": 6,
+     "rushed": 0,
+     "short": 0,
+     "steps": 24,
+     "wrong": 1
+    },
+    "8": {
+     "dragged": 0,
+     "error_rate": 0.042,
+     "errors": 1,
+     "mean_offset_ms": 26.4,
+     "missed": 0,
+     "runs": 6,
+     "rushed": 0,
+     "short": 0,
+     "steps": 24,
+     "wrong": 1
+    },
+    "9": {
+     "dragged": 0,
+     "error_rate": 0.417,
+     "errors": 10,
+     "mean_offset_ms": 56.6,
+     "missed": 7,
+     "runs": 6,
+     "rushed": 0,
+     "short": 2,
+     "steps": 24,
+     "wrong": 1
+    }
+   },
+   "hard_bars": [
+    9
+   ],
+   "last_at": "2026-11-12T11:00:00+00:00",
+   "mean_accuracy": 0.924,
+   "minutes": 7.0,
+   "runs": 7,
+   "title": "Quarters"
+  },
+  "piece-b": {
+   "bars": {
+    "1": {
+     "dragged": 0,
+     "error_rate": 0.0,
+     "errors": 0,
+     "mean_offset_ms": -3.4,
+     "missed": 0,
+     "runs": 8,
+     "rushed": 0,
+     "short": 0,
+     "steps": 32,
+     "wrong": 0
+    },
+    "10": {
+     "dragged": 0,
+     "error_rate": 0.0,
+     "errors": 0,
+     "mean_offset_ms": -20.0,
+     "missed": 0,
+     "runs": 5,
+     "rushed": 0,
+     "short": 0,
+     "steps": 20,
+     "wrong": 0
+    },
+    "11": {
+     "dragged": 0,
+     "error_rate": 0.0,
+     "errors": 0,
+     "mean_offset_ms": 38.7,
+     "missed": 0,
+     "runs": 5,
+     "rushed": 0,
+     "short": 0,
+     "steps": 20,
+     "wrong": 0
+    },
+    "2": {
+     "dragged": 0,
+     "error_rate": 0.103,
+     "errors": 6,
+     "mean_offset_ms": -0.9,
+     "missed": 6,
+     "runs": 8,
+     "rushed": 0,
+     "short": 0,
+     "steps": 58,
+     "wrong": 0
+    },
+    "3": {
+     "dragged": 0,
+     "error_rate": 0.019,
+     "errors": 1,
+     "mean_offset_ms": 9.0,
+     "missed": 0,
+     "runs": 8,
+     "rushed": 0,
+     "short": 0,
+     "steps": 52,
+     "wrong": 1
+    },
+    "4": {
+     "dragged": 0,
+     "error_rate": 0.038,
+     "errors": 2,
+     "mean_offset_ms": -11.9,
+     "missed": 0,
+     "runs": 8,
+     "rushed": 0,
+     "short": 0,
+     "steps": 52,
+     "wrong": 2
+    },
+    "5": {
+     "dragged": 0,
+     "error_rate": 0.065,
+     "errors": 3,
+     "mean_offset_ms": -6.5,
+     "missed": 0,
+     "runs": 8,
+     "rushed": 0,
+     "short": 0,
+     "steps": 46,
+     "wrong": 3
+    },
+    "6": {
+     "dragged": 0,
+     "error_rate": 0.4,
+     "errors": 8,
+     "mean_offset_ms": 43.3,
+     "missed": 0,
+     "runs": 5,
+     "rushed": 0,
+     "short": 6,
+     "steps": 20,
+     "wrong": 2
+    },
+    "7": {
+     "dragged": 0,
+     "error_rate": 0.0,
+     "errors": 0,
+     "mean_offset_ms": 0.8,
+     "missed": 0,
+     "runs": 5,
+     "rushed": 0,
+     "short": 0,
+     "steps": 20,
+     "wrong": 0
+    },
+    "8": {
+     "dragged": 0,
+     "error_rate": 0.0,
+     "errors": 0,
+     "mean_offset_ms": 6.5,
+     "missed": 0,
+     "runs": 5,
+     "rushed": 0,
+     "short": 0,
+     "steps": 20,
+     "wrong": 0
+    },
+    "9": {
+     "dragged": 0,
+     "error_rate": 0.0,
+     "errors": 0,
+     "mean_offset_ms": -2.7,
+     "missed": 0,
+     "runs": 5,
+     "rushed": 0,
+     "short": 0,
+     "steps": 20,
+     "wrong": 0
+    }
+   },
+   "hard_bars": [
+    6
+   ],
+   "last_at": "2026-10-01T12:30:00+00:00",
+   "mean_accuracy": 0.958,
+   "minutes": 6.0,
+   "runs": 8,
+   "title": "Quarters"
+  },
+  "piece-c": {
+   "bars": {
+    "1": {
+     "dragged": 0,
+     "error_rate": 0.0,
+     "errors": 0,
+     "mean_offset_ms": 1.6,
+     "missed": 0,
+     "runs": 8,
+     "rushed": 0,
+     "short": 0,
+     "steps": 32,
+     "wrong": 0
+    },
+    "10": {
+     "dragged": 0,
+     "error_rate": 0.05,
+     "errors": 1,
+     "mean_offset_ms": -2.3,
+     "missed": 0,
+     "runs": 5,
+     "rushed": 0,
+     "short": 0,
+     "steps": 20,
+     "wrong": 1
+    },
+    "11": {
+     "dragged": 0,
+     "error_rate": 0.05,
+     "errors": 1,
+     "mean_offset_ms": 8.4,
+     "missed": 0,
+     "runs": 5,
+     "rushed": 0,
+     "short": 0,
+     "steps": 20,
+     "wrong": 1
+    },
+    "2": {
+     "dragged": 0,
+     "error_rate": 0.103,
+     "errors": 6,
+     "mean_offset_ms": -3.4,
+     "missed": 6,
+     "runs": 8,
+     "rushed": 0,
+     "short": 0,
+     "steps": 58,
+     "wrong": 0
+    },
+    "3": {
+     "dragged": 0,
+     "error_rate": 0.019,
+     "errors": 1,
+     "mean_offset_ms": -0.8,
+     "missed": 0,
+     "runs": 8,
+     "rushed": 0,
+     "short": 0,
+     "steps": 52,
+     "wrong": 1
+    },
+    "4": {
+     "dragged": 0,
+     "error_rate": 0.0,
+     "errors": 0,
+     "mean_offset_ms": -37.1,
+     "missed": 0,
+     "runs": 8,
+     "rushed": 0,
+     "short": 0,
+     "steps": 52,
+     "wrong": 0
+    },
+    "5": {
+     "dragged": 0,
+     "error_rate": 0.283,
+     "errors": 13,
+     "mean_offset_ms": 58.0,
+     "missed": 3,
+     "runs": 8,
+     "rushed": 0,
+     "short": 4,
+     "steps": 46,
+     "wrong": 6
+    },
+    "6": {
+     "dragged": 0,
+     "error_rate": 0.0,
+     "errors": 0,
+     "mean_offset_ms": 1.8,
+     "missed": 0,
+     "runs": 5,
+     "rushed": 0,
+     "short": 0,
+     "steps": 20,
+     "wrong": 0
+    },
+    "7": {
+     "dragged": 0,
+     "error_rate": 0.0,
+     "errors": 0,
+     "mean_offset_ms": -8.0,
+     "missed": 0,
+     "runs": 5,
+     "rushed": 0,
+     "short": 0,
+     "steps": 20,
+     "wrong": 0
+    },
+    "8": {
+     "dragged": 0,
+     "error_rate": 0.0,
+     "errors": 0,
+     "mean_offset_ms": -1.9,
+     "missed": 0,
+     "runs": 5,
+     "rushed": 0,
+     "short": 0,
+     "steps": 20,
+     "wrong": 0
+    },
+    "9": {
+     "dragged": 0,
+     "error_rate": 0.0,
+     "errors": 0,
+     "mean_offset_ms": -26.7,
+     "missed": 0,
+     "runs": 5,
+     "rushed": 0,
+     "short": 0,
+     "steps": 20,
+     "wrong": 0
+    }
+   },
+   "hard_bars": [],
+   "last_at": "2026-10-01T12:50:00+00:00",
+   "mean_accuracy": 0.946,
+   "minutes": 6.0,
+   "runs": 8,
+   "title": "Quarters"
+  },
+  "scales:c-major-1oct-rh": {
+   "bars": {
+    "1": {
+     "dragged": 0,
+     "error_rate": 0.0,
+     "errors": 0,
+     "mean_offset_ms": 0.0,
+     "missed": 0,
+     "runs": 3,
+     "rushed": 0,
+     "short": 0,
+     "steps": 12,
+     "wrong": 0
+    },
+    "2": {
+     "dragged": 0,
+     "error_rate": 0.0,
+     "errors": 0,
+     "mean_offset_ms": 0.0,
+     "missed": 0,
+     "runs": 3,
+     "rushed": 0,
+     "short": 0,
+     "steps": 12,
+     "wrong": 0
+    },
+    "3": {
+     "dragged": 0,
+     "error_rate": 0.0,
+     "errors": 0,
+     "mean_offset_ms": 0.0,
+     "missed": 0,
+     "runs": 3,
+     "rushed": 0,
+     "short": 0,
+     "steps": 12,
+     "wrong": 0
+    },
+    "4": {
+     "dragged": 0,
+     "error_rate": 0.0,
+     "errors": 0,
+     "mean_offset_ms": 0.0,
+     "missed": 0,
+     "runs": 3,
+     "rushed": 0,
+     "short": 0,
+     "steps": 12,
+     "wrong": 0
+    }
+   },
+   "hard_bars": [],
+   "last_at": "2026-11-12T09:00:00+00:00",
+   "mean_accuracy": 1.0,
+   "minutes": 3.0,
+   "runs": 3,
+   "title": "Quarters"
+  }
+ },
+ "plans": {},
+ "sessions": {
+  "files": 0,
+  "minutes": 0,
+  "unanalysed": [],
+  "unanalysed_count": 0
+ },
+ "score_notes": {},
+ "since": null,
+ "today": "2026-12-01",
+ "tz": "utc",
+ "version": 1,
+ "warnings": []
+}

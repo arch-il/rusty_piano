@@ -150,7 +150,10 @@ export function createEarSession(items: readonly EarItem[], opts: { revealAfter?
     handle(ev, pageMs) {
       if (stopped) return [];
       log.push(toAttemptEvent(ev, pageMs));
-      if (phase !== 'answering') return [];
+      if (phase !== 'answering') {
+        if (ev.type === 'note_off' || (ev.type === 'note_on' && ev.velocity === 0)) matcher.handle(ev);
+        return [];
+      }
       const out: EarEffect[] = [];
       for (const r of matcher.handle(ev)) {
         if (r.kind === 'accepted') {

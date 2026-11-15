@@ -115,6 +115,7 @@ fn main() {
         for line in handles.save_now(Duration::from_secs(3)) {
             print_line(&line);
         }
+        handles.stop_audio();
         println!("Closed.");
     }) {
         eprintln!("warning: Ctrl-C will not save the recording ({e}); press Enter to quit.");

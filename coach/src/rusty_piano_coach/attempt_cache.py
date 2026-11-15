@@ -1,15 +1,20 @@
-"""Cache of parsed attempts for coach evidence: <attempts_dir>/.cache/attempts-v1.json keeps each attempt without its events (plus its engine velocities), re-read only when the file's size or modification time changes."""
+"""Cache of parsed attempts for coach evidence: <attempts_dir>/.cache/attempts-v2.marshal (a marshal file, rebuilt when the Python version changes) keeps each attempt without its events (plus its engine velocities), re-read only when the file's size or modification time changes. Step `played` is kept only for scale scores (only evenness reads it). The old attempts-v1.json is deleted."""
 
 import gc
 import json
+import marshal
 import os
+import sys
 from pathlib import Path
 
 from . import attempts as attempts_mod
+from . import evenness
 
 CACHE_DIR = ".cache"
-CACHE_FILE = "attempts-v1.json"
-CACHE_VERSION = 1
+CACHE_FILE = "attempts-v2.marshal"
+CACHE_VERSION = 2
+OLD_CACHE_FILES = ("attempts-v1.json", "attempts-v1.json.tmp")
+PYTHON = f"{sys.version_info[0]}.{sys.version_info[1]}"
 
 
 def _read_json(path: Path):
@@ -24,11 +29,13 @@ def _velocities(events) -> list:
     ]
 
 
-def _slim_step(step):
+def _slim_step(step, keep_played):
     if not isinstance(step, dict):
         return step
     out = {}
     for key, value in step.items():
+        if key == "played" and not keep_played:
+            continue
         if key != "timing_score" and (value is None or value == []):
             continue
         if key == "played" and isinstance(value, list):
@@ -44,17 +51,25 @@ def _slim_step(step):
 def slim(obj: dict) -> dict:
     out = {k: v for k, v in obj.items() if k != "events"}
     if isinstance(out.get("steps"), list):
-        out["steps"] = [_slim_step(s) for s in out["steps"]]
+        score = obj.get("score")
+        score_id = score.get("id") if isinstance(score, dict) else None
+        keep_played = evenness.is_scale_score(score_id)
+        out["steps"] = [_slim_step(s, keep_played) for s in out["steps"]]
     out["_engine_velocities"] = _velocities(obj.get("events"))
     return out
 
 
 def _load_cache(path: Path) -> dict:
     try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, ValueError):
+        data = marshal.loads(path.read_bytes())
+    except Exception:
         return {}
-    if isinstance(data, dict) and data.get("version") == CACHE_VERSION and isinstance(data.get("files"), dict):
+    if (
+        isinstance(data, dict)
+        and data.get("version") == CACHE_VERSION
+        and data.get("python") == PYTHON
+        and isinstance(data.get("files"), dict)
+    ):
         return data["files"]
     return {}
 
@@ -63,10 +78,7 @@ def _write_cache(path: Path, files: dict) -> None:
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
         tmp = path.with_name(path.name + ".tmp")
-        tmp.write_text(
-            json.dumps({"version": CACHE_VERSION, "files": files}, ensure_ascii=False, separators=(",", ":")),
-            encoding="utf-8",
-        )
+        tmp.write_bytes(marshal.dumps({"version": CACHE_VERSION, "python": PYTHON, "files": files}))
         os.replace(tmp, path)
     except OSError:
         pass
@@ -75,6 +87,13 @@ def _write_cache(path: Path, files: dict) -> None:
 def read_attempts(folder: Path) -> tuple[list[dict], list[str]]:
     if not folder.is_dir():
         return [], []
+    for name in OLD_CACHE_FILES:
+        p = folder / CACHE_DIR / name
+        try:
+            if p.exists():
+                p.unlink()
+        except OSError:
+            pass
     cache_path = folder / CACHE_DIR / CACHE_FILE
     was_enabled = gc.isenabled()
     gc.disable()

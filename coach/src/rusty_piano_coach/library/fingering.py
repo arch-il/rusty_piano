@@ -19,6 +19,8 @@ from pathlib import Path
 SIDECAR_SUFFIX = ".fingering.json"
 SIDECAR_VERSION = 1
 PIANOPLAYER_TIMEOUT_S = 900
+ERROR_RETRY_S = 7 * 24 * 3600
+TMP_MAX_AGE_S = 3600
 
 _CIRCLED = {chr(0x2460 + i): str(i + 1) for i in range(5)}
 _STEPS = {"C": 0, "D": 2, "E": 4, "F": 5, "G": 7, "A": 9, "B": 11}
@@ -78,44 +80,60 @@ def _midi(pitch: ET.Element) -> int:
     return 12 * (octave + 1) + _STEPS[step] + alter
 
 
+def _number(text) -> Fraction:
+    try:
+        value = Fraction((text or "").strip())
+    except (ValueError, ZeroDivisionError, TypeError):
+        return Fraction(0)
+    return value if value > 0 else Fraction(0)
+
+
+def _count(text, default: int) -> int:
+    value = _number(text)
+    return int(value) if value > 0 else default
+
+
 def score_notes(root: ET.Element) -> list[dict]:
     if root.tag != "score-partwise":
         raise ValueError("only score-partwise MusicXML is supported")
     found: dict[tuple, dict] = {}
     staff_offset = 0
     for part in root.findall("part"):
-        divisions = 1
+        divisions = Fraction(1)
         part_staves = 1
         for m_index, measure in enumerate(part.findall("measure")):
             pos = Fraction(0)
             last_onset = Fraction(0)
             for el in measure:
                 if el.tag == "attributes":
-                    d = el.findtext("divisions")
-                    if d and int(d) > 0:
-                        divisions = int(d)
-                    s = el.findtext("staves")
-                    if s:
-                        part_staves = max(part_staves, int(s))
+                    d = _number(el.findtext("divisions"))
+                    if d > 0:
+                        divisions = d
+                    part_staves = max(part_staves, _count(el.findtext("staves"), 1))
                 elif el.tag == "backup":
-                    pos = max(Fraction(0), pos - Fraction(int(el.findtext("duration") or 0), divisions))
+                    pos = max(Fraction(0), pos - _number(el.findtext("duration")) / divisions)
                 elif el.tag == "forward":
-                    pos += Fraction(int(el.findtext("duration") or 0), divisions)
+                    pos += _number(el.findtext("duration")) / divisions
                 elif el.tag == "note":
                     chord = el.find("chord") is not None
                     grace = el.find("grace") is not None
-                    dur = Fraction(int(el.findtext("duration") or 0), divisions)
+                    dur = _number(el.findtext("duration")) / divisions
                     onset = last_onset if chord else pos
                     if not chord:
                         last_onset = onset
                     if not grace:
                         pos = onset + dur
-                    if grace or el.find("cue") is not None or el.find("rest") is not None:
+                    if (
+                        grace
+                        or el.get("print-object") == "no"
+                        or el.find("cue") is not None
+                        or el.find("rest") is not None
+                    ):
                         continue
                     pitch = el.find("pitch")
                     if pitch is None:
                         continue
-                    staff = int(el.findtext("staff") or 1)
+                    staff = _count(el.findtext("staff"), 1)
                     part_staves = max(part_staves, staff)
                     f = None
                     for fe in el.findall("notations/technical/fingering"):
@@ -160,6 +178,8 @@ def write_sidecar(
         "error": error,
         "notes": notes if error is None else [],
     }
+    if error is not None:
+        obj = {**obj, "failed_at": int(time.time())}
     text = json.dumps(obj, ensure_ascii=False, separators=(",", ":")) + "\n"
     target = sidecar_path(score_path)
     try:
@@ -209,6 +229,64 @@ def pianoplayer_tool() -> str:
         return "pianoplayer " + importlib.metadata.version("pianoplayer")
     except importlib.metadata.PackageNotFoundError:
         return "pianoplayer"
+
+
+def error_retry_due(score_path: Path, now: float | None = None) -> bool:
+    if read_status(score_path)["status"] != "error":
+        return False
+    try:
+        target = sidecar_path(score_path)
+        obj = json.loads(target.read_text(encoding="utf-8"))
+        if obj.get("source") != "pianoplayer":
+            return False
+        if obj.get("tool") != pianoplayer_tool():
+            return True
+        failed_at = obj.get("failed_at")
+        if not isinstance(failed_at, (int, float)) or isinstance(failed_at, bool):
+            failed_at = target.stat().st_mtime
+        return (now if now is not None else time.time()) - failed_at >= ERROR_RETRY_S
+    except (OSError, ValueError):
+        return False
+
+
+def remove_sidecar(score_path: Path) -> int:
+    target = sidecar_path(score_path)
+    removed = 0
+    for p in (target, target.with_name(target.name + ".tmp")):
+        try:
+            p.unlink()
+            removed += 1
+        except OSError:
+            pass
+    return removed
+
+
+def sweep_sidecars(data_dir: Path, now: float | None = None) -> tuple[int, int]:
+    root = Path(data_dir) / "files"
+    if not root.is_dir():
+        return 0, 0
+    now = time.time() if now is None else now
+    orphans = tmps = 0
+    for dirpath, _dirs, names in os.walk(root):
+        for name in names:
+            p = Path(dirpath) / name
+            try:
+                if name.endswith(SIDECAR_SUFFIX):
+                    if not p.is_file():
+                        continue
+                    score = p.with_name(name[: -len(SIDECAR_SUFFIX)])
+                    if not score.exists() and not score.with_name(score.name + ".removing").exists():
+                        p.unlink()
+                        orphans += 1
+                elif name.endswith(SIDECAR_SUFFIX + ".tmp"):
+                    if not p.is_file():
+                        continue
+                    if now - p.stat().st_mtime > TMP_MAX_AGE_S:
+                        p.unlink()
+                        tmps += 1
+            except OSError:
+                continue
+    return orphans, tmps
 
 
 def _last_line(text: str) -> str:
@@ -263,7 +341,7 @@ def generate(score_path: Path, runner=None, force: bool = False) -> dict:
     runner = runner or run_pianoplayer
     if not force:
         st = read_status(score_path)
-        if st["status"] in ("ready", "error"):
+        if st["status"] == "ready" or (st["status"] == "error" and not error_retry_due(score_path)):
             return st
     sha = file_sha256(score_path)
     try:

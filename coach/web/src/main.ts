@@ -28,6 +28,7 @@ import {
   barsText,
   countInClicks,
   followOptions,
+  rampedWaitTiming,
   rangeText,
   shiftedMsAt,
 } from "./practice-config";
@@ -36,7 +37,7 @@ import { createSidebar } from "./sidebar";
 import { createSkillsView } from "./skills-view";
 import { createLogView } from "./log-view";
 import { createReplayView } from "./replay-view";
-import { ApiError, fetchAttempt, fetchLog, fetchPlan, fetchScore, postAttempt } from "./api";
+import { ApiError, fetchAttempt, fetchLog, fetchPlan, fetchScore, fetchScoreNotes, postAttempt, saveScoreNotes } from "./api";
 import type { ReplayAttempt } from "./replay-logic";
 import { createSightView } from "./sight-view";
 import { fetchSightHistory } from "./api";
@@ -52,10 +53,12 @@ import { drillHash, keepsPage, linkDrill, linkUi, parseRoute, replayHash } from 
 import type { DrillParams } from "./drill-link";
 import { initFingeringToggle } from "./fingering-toggle";
 import { loadGeneratedFingering } from "./generated-fingering";
+import { createScoreNotes } from "./score-notes-view";
+import { createFreePlayView } from "./free-play-view";
+import { isFreeHash } from "./free-play-slots";
 import {
   EMPTY_LIBRARY,
   NOT_IN_LIBRARY_MESSAGE,
-  NO_PIECE_MESSAGE,
   scoreHash,
 } from "./library-logic";
 
@@ -149,7 +152,7 @@ const topbar = createTopBar({
       if (ui.autoplay) startAutoplay();
       else {
         follower.dropHolds();
-        autoplayer.stop();
+        stopAutoplay();
       }
     }
     if (!ui.autoplay) sound.stopNotes();
@@ -184,6 +187,7 @@ try {
 }
 initFingeringToggle(byId<HTMLButtonElement>("fingering-toggle"), fingeringStore, (on) => piano.setFingering(on));
 const liveKeys = createLiveKeys();
+const freePlay = createFreePlayView({ host: byId<HTMLElement>("free-play"), store: fingeringStore, keyboardHint: import.meta.env.DEV });
 
 const view = new ScoreView(
   scoreEl,
@@ -196,6 +200,8 @@ const view = new ScoreView(
       if (follower.status().state === "done") follower.stop();
       renderFollow();
     },
+    onBarContextMenu: (info) => scoreNotes.contextMenu(info),
+    onLayout: () => scoreNotes.layout(),
   },
   {
     followRepeats: settings.followRepeats,
@@ -263,9 +269,29 @@ const replay = createReplayView({
   showError: (text) => showToast(text),
 });
 
+const scoreNotes = createScoreNotes({
+  view,
+  fetchNotes: (id) => fetchScoreNotes(id),
+  saveNotes: (id, payload) => saveScoreNotes(id, payload),
+  showError: (text) => showToast(text),
+  store: fingeringStore,
+  onPractise: (r) => {
+    if (!scoreReady || running() || sightShown()) return;
+    view.selectRange(r);
+    view.goToBar(r.from);
+    ui.loop = true;
+    renderFollow();
+  },
+});
+
 function renderKeys(): void {
   const held = [...new Set([...liveKeys.held(), ...replay.held()])].sort((a, b) => a - b);
   piano.showLive(held, liveKeys.sustain() || replay.sustain());
+}
+
+function stopAutoplay(): void {
+  autoplayer.stop();
+  if (liveKeys.releaseSource("autoplay")) renderKeys();
 }
 
 function running(): boolean {
@@ -296,6 +322,7 @@ function renderFollow(): void {
     startOff: sightShown(),
   });
   replay.setEnabled(scoreReady && !running() && !sightShown());
+  scoreNotes.setEnabled(scoreReady && !running() && !sightShown());
 }
 
 let sightOpen = false;
@@ -342,13 +369,17 @@ function startAutoplay(): void {
     const from = follower.status().step;
     const sl = autoplaySlice(plan, from);
     const fromQ = plan.steps[from]?.time ?? 0;
-    const msAt = shiftedMsAt((q) => tempo.msAt(q), fromQ);
-    const len = msAt(sl.lengthQuarters);
+    const rw = rampedWaitTiming(
+      shiftedMsAt((q) => tempo.msAt(q), fromQ),
+      (c) => follower.waitCycleScale(c),
+      follower.status().cycle,
+    );
+    const len = rw.msAt(sl.lengthQuarters);
     autoplayer.play(
-      autoplaySchedule(sl.steps, 60000 / tempo.bpmAt(fromQ), knobs, sl.lengthQuarters, msAt),
+      autoplaySchedule(sl.steps, 60000 / tempo.bpmAt(fromQ), knobs, sl.lengthQuarters, rw.msAt),
       performance.now() + settings.autoplay.waitLeadMs,
       lastOpts.loop && from === 0 && len > 0 ? len : null,
-      { shiftToNow: true },
+      { shiftToNow: true, ...(lastOpts.loop && lastOpts.ramp ? { cycleScale: rw.cycleScale } : {}) },
     );
   }
 }
@@ -389,7 +420,7 @@ function saveAttempt(end: "done" | "stop" | "interrupted"): void {
     try {
       const ev = attachEvenness(attempt as AttemptWithEvenness);
       lastEvenness = ev;
-      if (ev) view.markUneven(ev.weak_spots.map((w) => ({ step: w.source_step, title: unevenTitle(w) })));
+      if (ev) view.markUneven(ev.weak_spots.map((w) => ({ step: w.source_step, title: unevenTitle(w), hand: w.hand })));
     } catch (err) {
       console.error(err);
     }
@@ -413,7 +444,7 @@ function startRun(): void {
   lastEvenness = null;
   sound.resume();
   topbar.hideSummary();
-  autoplayer.stop();
+  stopAutoplay();
   sound.stopAll();
   cancelFrames();
   const info = view.scoreInfo();
@@ -476,7 +507,7 @@ function stopRun(): void {
   const was = running();
   follower.stop();
   if (was) saveAttempt("stop");
-  autoplayer.stop();
+  stopAutoplay();
   sound.stopAll();
   cancelFrames();
   keyboard?.resetOctave();
@@ -493,7 +524,7 @@ function stopFollowing(): void {
   }
   lastEvenness = null;
   replay.setLastAttempt(null);
-  autoplayer.stop();
+  stopAutoplay();
   sound.stopAll();
   cancelFrames();
   follower.reset();
@@ -507,7 +538,7 @@ function stopFollowing(): void {
 follower.onStatus((s) => {
   if (prevState !== "done" && s.state === "done") {
     saveAttempt("done");
-    autoplayer.stop();
+    stopAutoplay();
     cancelFrames();
     keyboard?.resetOctave();
     renderEngine();
@@ -524,7 +555,7 @@ const sidebar = createSidebar({
     if (state !== "idle") return;
     if (error) showMessage(error);
     else if (list && list.total === 0) showEmptyLibrary();
-    else showMessage(NO_PIECE_MESSAGE);
+    else hideMessage();
   },
 });
 
@@ -604,6 +635,7 @@ function applyLink(link: DrillParams): void {
 
 async function openScore(score: Score, link: DrillParams | null = null): Promise<void> {
   stopFollowing();
+  scoreNotes.close();
   ear.hide();
   earOpen = false;
   sight.hide();
@@ -615,6 +647,7 @@ async function openScore(score: Score, link: DrillParams | null = null): Promise
   const mine = ++token;
   currentId = score.id;
   state = "opening";
+  syncFreePlay();
   sidebar.close();
   sidebar.setCurrent(score.id);
   topbar.setScore(score);
@@ -636,6 +669,7 @@ async function openScore(score: Score, link: DrillParams | null = null): Promise
       isCurrent: () => mine === token && currentId === score.id,
       onReady: (map) => view.setGeneratedFingering(map),
     });
+    scoreNotes.open(score.id);
   } catch (e) {
     if (mine !== token) return;
     state = "open";
@@ -649,6 +683,7 @@ async function openFromHash(id: string, link: DrillParams | null = null): Promis
   const mine = ++token;
   currentId = id;
   state = "opening";
+  syncFreePlay();
   showMessage("Loading…");
   let score: Score;
   try {
@@ -656,6 +691,7 @@ async function openFromHash(id: string, link: DrillParams | null = null): Promis
   } catch (e) {
     if (mine !== token) return;
     state = "hashError";
+    syncFreePlay();
     currentId = null;
     if (e instanceof ApiError && e.status === 404) showMessage(NOT_IN_LIBRARY_MESSAGE);
     else showMessage(e instanceof Error ? e.message : String(e));
@@ -663,6 +699,36 @@ async function openFromHash(id: string, link: DrillParams | null = null): Promis
   }
   if (mine !== token) return;
   await openScore(score, link);
+}
+
+function syncFreePlay(): void {
+  freePlay.setActive(
+    (state === "idle" || state === "hashError") &&
+      !sightShown() &&
+      !skills.visible() &&
+      !logView.visible() &&
+      !running() &&
+      !replay.active(),
+  );
+}
+
+function closeScore(): void {
+  stopFollowing();
+  topbar.closeInfo();
+  token++;
+  view.clearMarks();
+  view.clear();
+  currentId = null;
+  currentScore = null;
+  activeDrill = null;
+  activeLink = null;
+  ui.rampTarget = null;
+  state = "idle";
+  sidebar.setCurrent(null);
+  topbar.setScore(null);
+  hideMessage();
+  renderFollow();
+  syncFreePlay();
 }
 
 async function replayFromRoute(attemptId: string): Promise<void> {
@@ -722,6 +788,10 @@ function applyRoute(hash: string): void {
   const fromSkills = skills.visible();
   skills.hide();
   logView.hide();
+  if (isFreeHash(hash)) {
+    if (state !== "idle") closeScore();
+    return;
+  }
   if (route.kind !== "score") return;
   if (route.id !== currentId || !scoreReady) {
     void openFromHash(route.id, route.link);
@@ -758,6 +828,7 @@ document.addEventListener("keydown", (e) => {
       else leaveSkills();
       return;
     }
+    if (scoreNotes.closeMenus()) return;
     replay.closeMenu();
     if (replay.active()) {
       replay.stop();
@@ -780,7 +851,10 @@ document.addEventListener("keydown", (e) => {
   else view.cursorNext();
 });
 
-window.addEventListener("hashchange", () => applyRoute(location.hash));
+window.addEventListener("hashchange", () => {
+  applyRoute(location.hash);
+  syncFreePlay();
+});
 
 topbar.setZoom(view.zoom);
 topbar.setTempoRange(settings.tempo.minPercent, settings.tempo.maxPercent, settings.tempo.stepPercent);
@@ -799,6 +873,10 @@ function renderEngine(): void {
   topbar.setEngine(s.state, statusTooltip(s, lastNote, hint));
 }
 
+// keys first: follower.handle may stop auto-play re-entrantly and its note_off must come after the note_on is applied
+engine.onEvent((ev) => {
+  if (liveKeys.apply(ev)) renderKeys();
+});
 engine.onEvent((ev) => {
   recorder.event(ev, performance.now());
   follower.handle(ev);
@@ -809,9 +887,7 @@ engine.onEvent((ev) => {
   topbar.pulseEngine();
   renderEngine();
 });
-engine.onEvent((ev) => {
-  if (liveKeys.apply(ev)) renderKeys();
-});
+engine.onEvent((ev) => freePlay.handle(ev));
 engine.onStatus((s) => {
   if (s.state !== "connected" && liveKeys.releaseSource("engine")) renderKeys();
   if (keyboard && s.state === "connected") {
@@ -855,6 +931,7 @@ const startRoute = parseRoute(location.hash).route;
 if (startRoute.kind === "score") state = "opening";
 void sidebar.refresh();
 applyRoute(location.hash);
+syncFreePlay();
 
 renderEngine();
 renderFollow();

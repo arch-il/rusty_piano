@@ -97,6 +97,7 @@ def fingers(sc, hand, notes) -> list[int]:
         cycle, bottom, top_finger = MAJOR_FINGERS[sc.pc][hand]
     else:
         cycle, bottom, top_finger = MINOR_FINGERS[sc.pc][hand]
+    first_bottom = last_bottom = bottom
     up_cycle = down_cycle = cycle
     nat = NATURAL_CYCLE_OVERRIDE.get((sc.pc, hand), cycle)
     if sc.kind == "minor-natural":
@@ -104,13 +105,15 @@ def fingers(sc, hand, notes) -> list[int]:
     elif sc.kind == "minor-melodic":
         down_cycle = nat
         if (sc.pc, hand) in MELODIC_UP_OVERRIDE:
-            up_cycle, bottom = MELODIC_UP_OVERRIDE[(sc.pc, hand)]
+            up_cycle, first_bottom = MELODIC_UP_OVERRIDE[(sc.pc, hand)]
     tonic_index = scales.LETTERS.index(sc.tonic[0])
     out = []
     for i, note in enumerate(notes):
         degree = (scales.LETTERS.index(note.step) - tonic_index) % 7
-        if i == 0 or i == last:
-            out.append(bottom)
+        if i == 0:
+            out.append(first_bottom)
+        elif i == last:
+            out.append(last_bottom)
         elif i == top:
             out.append(top_finger)
         elif i < top:

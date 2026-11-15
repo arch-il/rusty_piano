@@ -3,6 +3,7 @@ import type { LogResponse } from './log-logic';
 import type { ReplayAttempt, ReplayAttemptItem, ReplaySessionItem, SessionReplay } from './replay-logic';
 import type { SightHistory } from './sight-levels';
 import type { EarHistory } from './ear-levels';
+import type { ScoreNotesDoc, ScoreNotesPayload } from "./score-notes";
 
 export interface Score {
   id: string;
@@ -202,6 +203,26 @@ export function fetchFingering(id: string, fetchFn: FetchLike = (u, i) => fetch(
 
 export function startFingering(id: string, fetchFn: FetchLike = (u, i) => fetch(u, i)): Promise<FingeringStatus> {
   return request<FingeringStatus>(fingeringUrl(id), fetchFn, { method: "POST" });
+}
+
+export function notesUrl(id: string): string {
+  return scoreUrl(id) + "/notes";
+}
+
+export function fetchScoreNotes(id: string, fetchFn: FetchLike = (u, i) => fetch(u, i)): Promise<ScoreNotesDoc> {
+  return request<ScoreNotesDoc>(notesUrl(id), fetchFn);
+}
+
+export function saveScoreNotes(
+  id: string,
+  payload: ScoreNotesPayload,
+  fetchFn: FetchLike = (u, i) => fetch(u, i),
+): Promise<ScoreNotesDoc> {
+  return request<ScoreNotesDoc>(notesUrl(id), fetchFn, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
 }
 
 export function removeScore(id: string, fetchFn: FetchLike = (u, i) => fetch(u, i)): Promise<RemoveResult> {

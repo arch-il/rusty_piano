@@ -2,8 +2,10 @@
 
 import argparse
 import json
+import os
 import re
 import shutil
+import tempfile
 import urllib.parse
 from datetime import datetime, timezone
 from pathlib import Path
@@ -150,6 +152,57 @@ def load_json(path):
         return json.loads(path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as e:
         raise ValueError(f"{path.name} is not valid JSON: {e}")
+
+
+_S1_OLD = re.compile(r'("id"\s*:\s*"S1"\s*,[^{}\[\]]*?"requires"\s*:\s*)\[\s*"K1"\s*\]')
+
+
+def migrate_tree(plan_dir) -> bool:
+    """One-off fix for plans made before S1 lost its K1 prerequisite."""
+    try:
+        tree_path = Path(plan_dir) / TREE_FILE
+        try:
+            text = tree_path.read_bytes().decode("utf-8")
+            tree = json.loads(text)
+        except (OSError, UnicodeDecodeError, ValueError):
+            return False
+        if not isinstance(tree, dict) or not isinstance(tree.get("nodes"), list):
+            return False
+        s1 = [n for n in tree["nodes"] if isinstance(n, dict) and n.get("id") == "S1"]
+        if len(s1) != 1 or s1[0].get("requires") != ["K1"]:
+            return False
+        s1[0]["requires"] = []
+        fixed = tree
+        new_text, count = _S1_OLD.subn(r"\1[]", text)
+        ok = False
+        if count == 1:
+            try:
+                ok = json.loads(new_text) == fixed
+            except ValueError:
+                ok = False
+        if not ok:
+            nl = "\r\n" if "\r\n" in text else "\n"
+            new_text = json.dumps(fixed, indent=2, ensure_ascii=False).replace("\n", nl) + nl
+        tmp = None
+        try:
+            fd, tmp = tempfile.mkstemp(dir=tree_path.parent, prefix=".tree.json.", suffix=".tmp")
+            with os.fdopen(fd, "wb") as f:
+                f.write(new_text.encode("utf-8"))
+            try:
+                shutil.copymode(tree_path, tmp)
+            except OSError:
+                pass
+            os.replace(tmp, tree_path)
+            return True
+        except OSError:
+            if tmp is not None and os.path.exists(tmp):
+                try:
+                    os.remove(tmp)
+                except OSError:
+                    pass
+            return False
+    except Exception:
+        return False
 
 
 def merged_gates(tree, node) -> dict:
@@ -579,6 +632,8 @@ def _run_link(args, plan_dir) -> int:
 def run_plan(args) -> int:
     plan_dir = data_paths.plan_dir(args.plan_dir)
     if args.plan_command == "check":
+        if migrate_tree(plan_dir):
+            print("fixed: tree.json: S1 no longer requires K1")
         errors, warnings = check_plan(plan_dir)
         for e in errors:
             print(f"error: {e}")

@@ -4,6 +4,7 @@
   "today": "2026-12-01",
   "since": null,
   "tz": "utc",
+  "score_notes": {},
   "inputs": {
     "attempts": 80,
     "runs": 96,

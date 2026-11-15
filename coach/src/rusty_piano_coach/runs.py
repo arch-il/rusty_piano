@@ -1,5 +1,7 @@
 """Pure helpers that turn saved attempts into runs (one run per attempt, or per full loop cycle; a ramped loop takes its own tempo from practice.tempo.ramp) and judge them: clean-run check, per-bar stats and percentiles. Attempts where no step was ever judged (stopped before any note was due) are skipped as empty, and attempts are read through attempt_cache, which re-reads a file only when its size or modification time changes."""
 
+import threading
+from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import date, datetime, tzinfo
 from pathlib import Path
@@ -150,6 +152,61 @@ def load_runs(attempts, tz: tzinfo) -> list[Run]:
     return sorted(runs, key=lambda r: (r.started_at, r.cycle or 0))
 
 
+_LOCAL = threading.local()
+
+
+@contextmanager
+def memoised():
+    """Inside this block run_accuracy, run_timing, holds_kept, run_evenness_detail and bar_stats remember results per Run object (and bar_stats per exact list of runs). Callers must not mutate the returned values."""
+    if getattr(_LOCAL, "memo", None) is not None:
+        yield
+        return
+    _LOCAL.memo = {}
+    try:
+        yield
+    finally:
+        _LOCAL.memo = None
+
+
+def _cached(kind, run, compute):
+    memo = getattr(_LOCAL, "memo", None)
+    if memo is None:
+        return compute(run)
+    key = (kind, id(run))
+    hit = memo.get(key)
+    if hit is None:
+        hit = memo[key] = (run, compute(run))
+    return hit[1]
+
+
+def run_accuracy(run) -> float | None:
+    return _cached("accuracy", run, _run_accuracy)
+
+
+def run_timing(run) -> float | None:
+    return _cached("timing", run, _run_timing)
+
+
+def holds_kept(run) -> bool:
+    return _cached("holds", run, _holds_kept)
+
+
+def run_evenness_detail(run) -> dict | None:
+    return _cached("evenness", run, _run_evenness_detail)
+
+
+def bar_stats(runs) -> dict[int, dict]:
+    runs = list(runs)
+    memo = getattr(_LOCAL, "memo", None)
+    if memo is None:
+        return _bar_stats(runs)
+    key = ("bars", tuple(id(r) for r in runs))
+    hit = memo.get(key)
+    if hit is None:
+        hit = memo[key] = (tuple(runs), _bar_stats(runs))
+    return hit[1]
+
+
 def timing_ok(step) -> bool | None:
     # Descriptive only (on-time share, offset filtering); not used for clean runs or gates.
     # Wait-mode steps have no offset, so they give None.
@@ -158,7 +215,7 @@ def timing_ok(step) -> bool | None:
     return step["outcome"] == "hit"
 
 
-def run_accuracy(run) -> float | None:
+def _run_accuracy(run) -> float | None:
     total = 0
     correct = 0
     for s in run.steps:
@@ -178,7 +235,7 @@ def step_timing(step, curve=None) -> float | None:
     return None if score is None else score / 100
 
 
-def run_timing(run) -> float | None:
+def _run_timing(run) -> float | None:
     if run.mode != "live":
         return None
     values = [v for v in (step_timing(s, run.curve) for s in run.steps) if v is not None]
@@ -187,11 +244,11 @@ def run_timing(run) -> float | None:
     return sum(values) / len(values)
 
 
-def holds_kept(run) -> bool:
+def _holds_kept(run) -> bool:
     return not any(h.get("short") for s in run.steps for h in s.get("holds") or [])
 
 
-def run_evenness_detail(run) -> dict | None:
+def _run_evenness_detail(run) -> dict | None:
     if not evenness.is_scale_score(run.score_id):
         return None
     return evenness.compute(run.steps, score_id=run.score_id, hands=run.hands or "both")
@@ -240,7 +297,7 @@ def is_clean(run, gate, drill=None, piece=False) -> bool:
     return True
 
 
-def bar_stats(runs) -> dict[int, dict]:
+def _bar_stats(runs) -> dict[int, dict]:
     acc: dict = {}
     for run in runs:
         key = (run.attempt_id, run.cycle)

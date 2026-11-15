@@ -1,4 +1,4 @@
-"""Sight-reading drill rounds (score ids sight:<level>): per-level speed targets for clean runs and a compact round history for the page."""
+"""Sight-reading drill rounds (score ids sight:<level>): per-level speed targets for clean runs, drill stats for coach evidence and a compact round history for the page."""
 
 import math
 import statistics
@@ -10,6 +10,7 @@ from . import attempt_cache
 SCORE_PREFIX = "sight:"
 SIGHT_TAG = "sight-reading"
 HISTORY_LIMIT = 200
+RECENT_ROUNDS = 5
 LEVEL_RE = r"[a-z0-9-]{1,30}"
 LEVEL_KINDS = {
     "r2-treble": "notes",
@@ -128,3 +129,31 @@ def history(attempts_dir, level=None, limit=HISTORY_LIMIT) -> dict:
     rows.sort(key=lambda r: (r[0], r[1]))
     rounds = [_round(a) for _, _, a in rows]
     return {"rounds": rounds[max(0, len(rounds) - limit):]}
+
+
+def _cards(steps):
+    return [s for s in steps if isinstance(s, dict) and isinstance(s.get("notes"), list) and s.get("result") != "pending"]
+
+
+def drill_stats(runs) -> dict:
+    rounds = []
+    cards = 0
+    for r in runs:
+        steps = _cards(r.steps)
+        cards += len(steps)
+        acc = sum(1 for s in steps if s.get("first_try") is True) / len(steps) if steps else None
+        rounds.append((acc, median_reaction_ms(steps)))
+    accs = [a for a, _ in rounds if a is not None]
+    recent = [a for a, _ in rounds[-RECENT_ROUNDS:] if a is not None]
+    meds = [m for _, m in rounds if m is not None]
+    kind = LEVEL_KINDS.get(level_of(runs[0].score_id) if runs else None, "notes")
+    mean_ms = sum(meds) / len(meds) if meds else None
+    return {
+        "rounds": len(runs),
+        "cards": cards,
+        "mean_accuracy": round(sum(accs) / len(accs), 3) if accs else None,
+        "best_accuracy": round(max(accs), 3) if accs else None,
+        "recent_accuracy": round(sum(recent) / len(recent), 3) if recent else None,
+        "mean_ms": round(mean_ms, 1) if mean_ms is not None else None,
+        "target_ms": dict(TARGETS_MS[kind]),
+    }

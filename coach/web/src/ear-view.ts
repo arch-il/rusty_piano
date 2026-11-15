@@ -14,12 +14,13 @@ import {
   levelById,
   normalizeSettings,
 } from './ear-levels.ts';
-import type { EarHistory, EarLevelDef, EarNodeId, EarRound, EarSettings, EarStepRecord } from './ear-levels.ts';
+import type { AnswerStep, EarHistory, EarLevelDef, EarNodeId, EarRound, EarSettings, EarStepRecord } from './ear-levels.ts';
 import { createEarPlayer } from './ear-player.ts';
 import { createEarController } from './ear-controller.ts';
 import type { EarControllerStatus, EarEnd } from './ear-controller.ts';
 import type { EarEffect, EarPhase } from './ear-session.ts';
-import { earTreeHasDrills, liveStatsText, summaryModel } from './ear-stats.ts';
+import { drillsNotice, liveStatsText, planErrorState, summaryModel } from './ear-stats.ts';
+import type { PlanTreeState } from './ear-stats.ts';
 import { renderEarHistory } from './ear-history-view.ts';
 import { createEarSettings } from './ear-settings-view.ts';
 
@@ -82,7 +83,6 @@ const DEFAULT_LEVEL = 'echo-1';
 const WRONG_FLASH_MS = 600;
 const IDLE_HINT =
   'Pick a level and press Start. No piano connected? On the dev page the keys A to K play C4 to C5, Z and X shift the octave.';
-const NO_DRILLS_TEXT = 'Rounds are saved, but they only count toward skills after you run: uv run coach ear add-drills';
 
 function messageOf(e: unknown): string {
   return e instanceof Error ? e.message : String(e);
@@ -146,11 +146,17 @@ export function repeatParams(
   return p;
 }
 
-function promptText(level: EarLevelDef, st: { item: number; total: number; lastEffect: EarEffect | null }): string {
+export function promptText(level: EarLevelDef, st: { item: number; total: number; lastEffect: EarEffect | null; currentItem: { answer: readonly AnswerStep[] } | null }): string {
   const e = st.lastEffect;
   let text = instructionText(level);
   if (e && e.kind === 'correct') text = e.firstTry ? 'Right!' : 'Right (not first try)';
   else if (e && e.kind === 'wrong') text = 'Not that one';
+  else if (e && e.kind === 'revealed') text = 'Answer shown. Press Next.';
+  else if (e && e.kind === 'accepted') {
+    const steps = st.currentItem?.answer ?? [];
+    if (steps[e.step]?.kind === 'chord') text = 'Yes, that note is in the chord.';
+    else if (steps.length > 1) text = `Yes: ${e.step + 1} of ${steps.length}`;
+  }
   return `${st.item + 1}/${st.total} ${text}`;
 }
 
@@ -185,7 +191,7 @@ export function createEarView(opts: EarViewOptions): {
   let drillId: string | null = null;
   let autoNext = true;
   let rounds: EarRound[] = [];
-  let planTree: PlanResponse['tree'] | null = null;
+  let planState: PlanTreeState = { kind: 'unknown' };
   let historyToken = 0;
   let lastRun: { level: EarLevelDef; settings: EarSettings; drillId: string | null; seed: number } | null = null;
 
@@ -346,11 +352,11 @@ export function createEarView(opts: EarViewOptions): {
   // History
   function clearHistory(): void {
     rounds = [];
-    renderEarHistory(historyEl, { rounds: [], level: currentLevel(), hasDrills: hasDrills() });
+    renderEarHistory(historyEl, { rounds: [], level: currentLevel(), notice: notice() });
   }
 
-  function hasDrills(): boolean {
-    return planTree === null || earTreeHasDrills(planTree);
+  function notice(): string | null {
+    return drillsNotice(planState);
   }
 
   function paintLadder(plan: PlanResponse): void {
@@ -367,7 +373,8 @@ export function createEarView(opts: EarViewOptions): {
   }
 
   function ladderNotice(): void {
-    if (planTree && !earTreeHasDrills(planTree)) setStatus(NO_DRILLS_TEXT);
+    const n = notice();
+    if (n) setStatus(n);
   }
 
   function loadPlan(): void {
@@ -375,12 +382,18 @@ export function createEarView(opts: EarViewOptions): {
     opts
       .fetchPlan()
       .then((plan) => {
-        planTree = plan.tree;
+        planState = { kind: 'tree', tree: plan.tree };
         paintLadder(plan);
         ladderNotice();
-        renderEarHistory(historyEl, { rounds, level: currentLevel(), hasDrills: hasDrills() });
+        renderEarHistory(historyEl, { rounds, level: currentLevel(), notice: notice() });
       })
-      .catch(() => undefined);
+      .catch((e: unknown) => {
+        planState = planErrorState(e);
+        if (planState.kind === 'missing') {
+          ladderNotice();
+          renderEarHistory(historyEl, { rounds, level: currentLevel(), notice: notice() });
+        }
+      });
   }
 
   function reloadHistory(): void {
@@ -390,7 +403,7 @@ export function createEarView(opts: EarViewOptions): {
       .then((h) => {
         if (mine !== historyToken) return;
         rounds = h.rounds;
-        renderEarHistory(historyEl, { rounds, level: currentLevel(), hasDrills: hasDrills() });
+        renderEarHistory(historyEl, { rounds, level: currentLevel(), notice: notice() });
       })
       .catch((e: unknown) => {
         if (mine === historyToken) setStatus('History not available: ' + messageOf(e));

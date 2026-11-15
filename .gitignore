@@ -66,5 +66,5 @@ coach/data/plan/journal/*
 coach/data/plan/pieces/*
 !coach/data/plan/pieces/README.md
 
-# Claude Code
-.claude/
+# Claude Code: commit .claude/commands/, never the worktrees
+.claude/worktrees/

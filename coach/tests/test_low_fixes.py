@@ -1,4 +1,3 @@
-import json
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
@@ -36,9 +35,9 @@ def test_cache_entry_with_garbage_attempt_is_reread(tmp_path):
     a = make_attempt(id="attempt-20261101-100000-aaaaa1")
     write_attempts(tmp_path, [a])
     first, _ = attempt_cache.read_attempts(tmp_path)
-    cache_file = tmp_path / ".cache" / "attempts-v1.json"
-    data = json.loads(cache_file.read_text(encoding="utf-8"))
-    data["files"][f"{a['id']}.json"]["attempt"] = {"x": 1}
-    cache_file.write_text(json.dumps(data), encoding="utf-8")
+    cache_file = tmp_path / ".cache" / "attempts-v2.marshal"
+    files = attempt_cache._load_cache(cache_file)
+    files[f"{a['id']}.json"]["attempt"] = {"x": 1}
+    attempt_cache._write_cache(cache_file, files)
     again, _ = attempt_cache.read_attempts(tmp_path)
     assert [x["id"] for x in again] == [a["id"]]

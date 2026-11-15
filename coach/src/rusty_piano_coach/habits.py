@@ -154,11 +154,7 @@ class _Prep:
         return got
 
     def bar_stats(self, kind, sid, group):
-        key = (kind, sid)
-        got = self._stats.get(key)
-        if got is None:
-            got = self._stats[key] = runs_mod.bar_stats(group)
-        return got
+        return runs_mod.bar_stats(group)
 
 
 def _attempt_range(a):
@@ -569,7 +565,14 @@ def _num(v):
 
 
 def _ordered(steps):
-    return sorted((s for s in steps if isinstance(s, dict)), key=lambda s: (s.get("cycle") or 0, s.get("step") or 0))
+    kept = [s for s in steps if isinstance(s, dict)]
+    prev = None
+    for s in kept:
+        k = (s.get("cycle") or 0, s.get("step") or 0)
+        if prev is not None and k < prev:
+            return sorted(kept, key=lambda s: (s.get("cycle") or 0, s.get("step") or 0))
+        prev = k
+    return kept
 
 
 def _run_pairs(steps):
@@ -590,10 +593,10 @@ def _run_pairs(steps):
         pc, ps, pq, pl, _, pshort = rows[0]
         for row in rows[1:]:
             cc, cs, cq, _, off, short = row
-            if pc == cc and _num(ps) and cs == ps + 1:
+            if pc == cc and (type(ps) is float or type(ps) is int) and cs == ps + 1:
                 basis = None
-                if _num(pq) and _num(cq) and cq > pq:
-                    if _num(pl):
+                if (type(pq) is float or type(pq) is int) and (type(cq) is float or type(cq) is int) and cq > pq:
+                    if type(pl) is float or type(pl) is int:
                         if cq - pq - pl >= REST_MIN_Q:
                             basis = "note_length"
                     elif cq - pq >= REST_GAP_Q:
@@ -643,8 +646,21 @@ def _rests_not_counted(prep):
 
 
 def _median(values):
+    if type(values) is not list:
+        values = list(values)
+    n = len(values)
+    if n == 2:
+        return (values[0] + values[1]) / 2
+    if n == 3:
+        a, b, c = values
+        if a <= b:
+            if b <= c:
+                return b
+            return c if a <= c else a
+        if a <= c:
+            return a
+        return c if b <= c else b
     ordered = sorted(values)
-    n = len(ordered)
     if n % 2:
         return ordered[n // 2]
     return (ordered[n // 2 - 1] + ordered[n // 2]) / 2
@@ -666,10 +682,22 @@ def _rhythm_consistently_wrong(prep):
             for i, (s, off) in enumerate(timed):
                 before = offs[max(0, i - RHYTHM_NEIGHBOURS) : i]
                 after = offs[i + 1 : i + 1 + RHYTHM_NEIGHBOURS]
-                if len(before) < 2 or len(after) < 2:
+                # at the edges of a run the side with fewer than 2 neighbours is replaced by the nearest single neighbour
+                if len(before) >= 2 and len(after) >= 2:
+                    db = off - _median(before)
+                    da = off - _median(after)
+                elif len(after) >= 2:  # first 2 timed steps of the run
+                    if not before and max(after) - min(after) > RHYTHM_MS / 2:
+                        continue
+                    da = off - _median(after)
+                    db = off - (before[-1] if before else after[0])
+                elif len(before) >= 2:  # last 2 timed steps of the run
+                    if not after and max(before) - min(before) > RHYTHM_MS / 2:
+                        continue
+                    db = off - _median(before)
+                    da = off - (after[0] if after else before[-1])
+                else:
                     continue
-                db = off - _median(before)
-                da = off - _median(after)
                 if (db > 0 and da > 0) or (db < 0 and da < 0):
                     per_run.setdefault((s[1], s[2]), []).append(db if abs(db) <= abs(da) else da)
             for spot, vals in per_run.items():
@@ -712,7 +740,7 @@ def _repeats_not_followed(prep):
                     continue
                 failed = cur[0] in ("wrong", "missed")
                 pb, cb = prev[1], cur[1]
-                if _num(pb) and _num(cb) and (cb < pb or (cb == pb and _num(cur[2]) and _num(prev[2]) and cur[2] <= prev[2]) or (cb > pb + 1 and any(b in run_bars for b in range(pb + 1, cb)))):
+                if (type(pb) is float or type(pb) is int) and (type(cb) is float or type(cb) is int) and (cb < pb or (cb == pb and (type(cur[2]) is float or type(cur[2]) is int) and (type(prev[2]) is float or type(prev[2]) is int) and cur[2] <= prev[2]) or (cb > pb + 1 and any(b in run_bars for b in range(pb + 1, cb)))):
                     rec = jumps.setdefault((pb, cb), {"cycles": {}})
                     c = rec["cycles"].setdefault(r.attempt_id, [0, 0])
                     c[0] += int(failed)

@@ -7,6 +7,7 @@ import type { EarHistory } from "../src/ear-levels.ts";
 
 const read = (p: string) => readFileSync(new URL(p, import.meta.url), "utf8");
 const hist = read("../src/ear-history-view.ts");
+const stats = read("../src/ear-stats.ts");
 const api = read("../src/api.ts");
 
 const sample: EarHistory = {
@@ -27,9 +28,10 @@ const sample: EarHistory = {
 
 test("ear-history-view.ts uses plain DOM, the trend chart and the category table", () => {
   assert.ok(!hist.includes("innerHTML"));
-  for (const s of ["createElementNS(", "trendChart(", "categoryStats(", "uv run coach ear add-drills"]) {
+  for (const s of ["createElementNS(", "trendChart(", "categoryStats(", "historyModel("]) {
     assert.ok(hist.includes(s), `missing ${s}`);
   }
+  assert.ok(stats.includes("uv run coach ear add-drills"));
 });
 
 test("api.ts exposes the ear history fetch on the history url", () => {

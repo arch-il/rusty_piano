@@ -22,6 +22,7 @@ import {
   jobFinished,
   listHint,
   listState,
+  loadingStatus,
   progressText,
   removeAskLabel,
   removeLabel,
@@ -427,7 +428,9 @@ export function createSidebar(handlers: SidebarHandlers): Sidebar {
   async function refresh(keepScroll = false): Promise<void> {
     const mine = ++counter;
     loading = true;
-    status.textContent = "Loading…";
+    const ls = loadingStatus(listEl.childElementCount);
+    if (ls.text !== null) status.textContent = ls.text;
+    if (ls.busy) listEl.setAttribute("aria-busy", "true");
     try {
       const list = await fetchScores({
         q: search.value,
@@ -437,6 +440,7 @@ export function createSidebar(handlers: SidebarHandlers): Sidebar {
       });
       if (mine !== counter) return;
       loading = false;
+      listEl.removeAttribute("aria-busy");
       const opts = filterOptions(list.facets);
       fillSelect(selDifficulty, opts.difficulty);
       fillSelect(selKey, opts.key);
@@ -447,6 +451,7 @@ export function createSidebar(handlers: SidebarHandlers): Sidebar {
     } catch (e) {
       if (mine !== counter) return;
       loading = false;
+      listEl.removeAttribute("aria-busy");
       const message = errText(e);
       listEl.textContent = "";
       status.textContent = message;

@@ -145,6 +145,7 @@ test("cleanText reports stopped and unchanged-settings rounds first", () => {
 
 test("cleanText checks the 90% first-try edge", () => {
   assert.equal(cleanText(stats(0.85, 1000), "note", true, true), "First try 85%: Good enough needs 90%.");
+  assert.equal(cleanText(stats(0.895, 1000), "note", true, true), "First try 89%: Good enough needs 90%.");
   assert.equal(cleanText(stats(0.9, 5000), "note", true, true), "Counts toward Good enough.");
 });
 

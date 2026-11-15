@@ -138,6 +138,64 @@ export function liveStatsText(card: number, total: number, s: RoundStats, lastMs
   ].join(' | ');
 }
 
+export type ChipTone = 'neutral' | 'good' | 'warn' | 'bad';
+
+export interface StatChip {
+  label: string;
+  value: string;
+  tone: ChipTone;
+}
+
+export interface StageModel {
+  progress: string;
+  done: number;
+  total: number;
+  percent: number;
+  chips: StatChip[];
+  hint: string;
+}
+
+export function stageModel(
+  card: number | null,
+  total: number,
+  s: RoundStats,
+  lastMs: number | null,
+  kind: LevelKind,
+  idleHint: string,
+): StageModel {
+  if (card === null) return { progress: '', done: 0, total, percent: 0, chips: [], hint: idleHint };
+  const done = clamp(card - 1, 0, total);
+  const base = {
+    progress: (kind === 'bars' ? 'Phrase ' : 'Card ') + card + ' of ' + total,
+    done,
+    total,
+    percent: total > 0 ? Math.round((100 * done) / total) : 0,
+  };
+  if (s.steps === 0) {
+    return { ...base, chips: [], hint: kind === 'bars' ? 'Play the notes you see' : 'Play the note you see' };
+  }
+  const acc = s.accuracy ?? 0;
+  const good = SPEED_TARGETS_MS[kind].good;
+  const med = s.medianMs;
+  return {
+    ...base,
+    hint: '',
+    chips: [
+      {
+        label: 'First try',
+        value: `${s.firstTry}/${s.steps} ${pct(s.accuracy)}`,
+        tone: acc >= 0.95 ? 'good' : acc >= 0.8 ? 'warn' : 'bad',
+      },
+      {
+        label: 'Median',
+        value: formatSeconds(med),
+        tone: med === null ? 'neutral' : med <= good ? 'good' : med <= 1.5 * good ? 'warn' : 'bad',
+      },
+      { label: 'Last', value: formatSeconds(lastMs), tone: 'neutral' },
+    ],
+  };
+}
+
 export interface SummaryModel {
   rows: [string, string][];
   best: string;

@@ -124,12 +124,12 @@ test("stops reset the octave and the follower", () => {
 test("autoplay off drops open holds before the auto-player stops", () => {
   const body = main.slice(main.indexOf("onAutoplayToggle:"), main.indexOf("onSummaryAgain:"));
   assert.ok(body.includes("follower.dropHolds()"));
-  assert.ok(body.indexOf("follower.dropHolds()") < body.indexOf("autoplayer.stop()"));
+  assert.ok(body.indexOf("follower.dropHolds()") < body.indexOf("stopAutoplay()"));
 });
 
 test("stopRun stops the follower before the auto-player", () => {
   const body = fnBody(main, "function stopRun(");
-  assert.ok(body.indexOf("follower.stop()") < body.indexOf("autoplayer.stop()"));
+  assert.ok(body.indexOf("follower.stop()") < body.indexOf("stopAutoplay()"));
 });
 
 test("summary closes the practice panel and the toggle hides the summary", () => {
@@ -175,10 +175,10 @@ test("main.ts wires the attempt recorder", () => {
 
 test("attempt saves happen before the run is torn down", () => {
   const done = main.slice(main.indexOf('s.state === "done") {'));
-  assert.ok(done.indexOf('saveAttempt("done")') < done.indexOf("autoplayer.stop()"));
+  assert.ok(done.indexOf('saveAttempt("done")') < done.indexOf("stopAutoplay()"));
   const stop = fnBody(main, "function stopRun(");
   assert.ok(stop.indexOf("follower.stop()") < stop.indexOf('saveAttempt("stop")'));
-  assert.ok(stop.indexOf('saveAttempt("stop")') < stop.indexOf("autoplayer.stop()"));
+  assert.ok(stop.indexOf('saveAttempt("stop")') < stop.indexOf("stopAutoplay()"));
   const ff = fnBody(main, "function stopFollowing(");
   assert.ok(ff.indexOf('saveAttempt("interrupted")') < ff.indexOf("follower.reset()"));
 });

@@ -222,6 +222,11 @@ export function tabLabel(tab: LibraryTab, n: number): string {
   return (tab === "pieces" ? "Pieces" : "Drills") + " (" + n + ")";
 }
 
+export function loadingStatus(rowsShown: number): { text: string | null; busy: boolean } {
+  if (rowsShown > 0) return { text: null, busy: true };
+  return { text: "Loading…", busy: false };
+}
+
 export const REMOVE_ASK_MS = 3000;
 export const REMOVE_ARM_MS = 400;
 export const REMOVE_ICON = "✕";

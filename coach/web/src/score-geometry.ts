@@ -5,6 +5,16 @@ export interface Box {
   height: number;
 }
 
+export function unevenMarkPoint(
+  box: Box,
+  prev: Box | null,
+  hand: "right" | "left",
+): { x: number; y: number; side: "above" | "below" } {
+  const x = prev !== null && Math.abs(prev.y - box.y) <= 1 && prev.x < box.x ? (prev.x + box.x) / 2 : box.x;
+  if (hand === "right") return { x, y: box.y, side: "above" };
+  return { x, y: box.y + box.height, side: "below" };
+}
+
 export const ZOOM_STEPS = [0.5, 0.6, 0.75, 0.9, 1, 1.1, 1.25, 1.5, 1.75, 2];
 export const MIN_ZOOM = 0.5;
 export const MAX_ZOOM = 2;

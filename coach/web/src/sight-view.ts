@@ -13,9 +13,9 @@ import { STRIP_SIZE, stripStart, stripXml } from "./sight-strip";
 import { nextShow, paramsAfterPick } from "./sight-route-state";
 import { createSightController } from "./sight-controller";
 import type { SightEnd } from "./sight-controller";
-import { liveStatsText, noteMap, noteWeights, roundsOfLevel, summaryModel } from "./sight-stats";
+import { liveStatsText, noteMap, noteWeights, roundsOfLevel, stageModel, summaryModel } from "./sight-stats";
 import { renderSightHistory, treeHasDrill } from "./sight-history-view";
-import { isLocked, levelText } from "./skills-logic";
+import { isLocked, levelText, lockText } from "./skills-logic";
 
 export interface SightViewOptions {
   engine: { onEvent(fn: (ev: LiveEvent) => void): () => void };
@@ -78,6 +78,10 @@ export function createSightView(opts: SightViewOptions): {
   const summaryEl = byId<HTMLElement>("sight-summary");
   const backBtn = byId<HTMLButtonElement>("sight-back");
   const historyEl = byId<HTMLElement>("sight-history");
+  const levelNameEl = byId<HTMLElement>("sight-level-name");
+  const progressTextEl = byId<HTMLElement>("sight-progress-text");
+  const progressEl = byId<HTMLElement>("sight-progress");
+  const progressFillEl = byId<HTMLElement>("sight-progress-fill");
 
   let selectedId = DEFAULT_LEVEL;
   let custom: CustomRange = { ...DEFAULT_CUSTOM };
@@ -285,6 +289,8 @@ export function createSightView(opts: SightViewOptions): {
         drawPartNames: false,
         drawMeasureNumbers: false,
       });
+      osmd.EngravingRules.PageTopMargin = 1;
+      osmd.EngravingRules.PageBottomMargin = 1;
     }
     const style = getComputedStyle(document.documentElement);
     const colors = {
@@ -390,6 +396,8 @@ export function createSightView(opts: SightViewOptions): {
       span.className = "sight-level-state";
       span.textContent = levelText(plan.tree, level.node, plan.state);
       b.append(" ", span);
+      const lock = lockText(plan.tree, level.node, plan.state);
+      b.title = level.node + " " + level.title + (lock ? " - " + lock : "");
       b.classList.toggle("locked", isLocked(plan.tree, level.node, plan.state));
     }
   }
@@ -436,17 +444,44 @@ export function createSightView(opts: SightViewOptions): {
       b.setAttribute("aria-pressed", String(id === selectedId));
       b.disabled = running;
     }
+    levelNameEl.textContent = (running ? controller.level() ?? currentLevel() : currentLevel()).title;
     customBox.hidden = selectedId !== "custom";
     for (const el of [clefSelect, lowSelect, highSelect, accInput]) el.disabled = running;
   }
 
   function renderStats(): void {
-    if (!controller.running()) {
-      statsEl.textContent = IDLE_HINT;
-      return;
-    }
+    const running = controller.running();
+    const level = running ? controller.level() ?? currentLevel() : currentLevel();
     const st = controller.status();
-    statsEl.textContent = liveStatsText(st.card + 1, controller.cards().length, roundStats(controller.records()), st.lastMs);
+    const total = running ? controller.cards().length : level.cards;
+    const stats = roundStats(controller.records());
+    const m = stageModel(running ? st.card + 1 : null, total, stats, st.lastMs, level.kind, IDLE_HINT);
+    progressTextEl.textContent = m.progress;
+    progressEl.hidden = !running;
+    progressEl.setAttribute("aria-valuemax", String(m.total));
+    progressEl.setAttribute("aria-valuenow", String(m.done));
+    progressFillEl.style.width = `${m.percent}%`;
+    statsEl.title = running ? liveStatsText(st.card + 1, total, stats, st.lastMs) : "";
+    const parts: HTMLElement[] = m.chips.map((chip) => {
+      const el = document.createElement("span");
+      el.className = "sight-chip";
+      el.classList.add("tone-" + chip.tone);
+      const label = document.createElement("span");
+      label.className = "sight-chip-label";
+      label.textContent = chip.label;
+      const value = document.createElement("span");
+      value.className = "sight-chip-value";
+      value.textContent = chip.value;
+      el.append(label, value);
+      return el;
+    });
+    if (m.hint !== "") {
+      const hint = document.createElement("span");
+      hint.className = "sight-hint";
+      hint.textContent = m.hint;
+      parts.push(hint);
+    }
+    statsEl.replaceChildren(...parts);
   }
 
   function onChange(): void {
@@ -502,7 +537,7 @@ export function createSightView(opts: SightViewOptions): {
     });
     const again = document.createElement("button");
     again.type = "button";
-    again.className = "btn";
+    again.className = "btn btn-primary";
     again.textContent = "Again";
     again.addEventListener("click", () => startRound());
     const close = document.createElement("button");
@@ -510,7 +545,10 @@ export function createSightView(opts: SightViewOptions): {
     close.className = "btn";
     close.textContent = "Close";
     close.addEventListener("click", () => hideSummary());
-    summaryEl.replaceChildren(h, dl, ...lines, again, close);
+    const actions = document.createElement("div");
+    actions.className = "sight-summary-actions";
+    actions.append(again, close);
+    summaryEl.replaceChildren(h, dl, ...lines, actions);
     summaryEl.hidden = false;
   }
 

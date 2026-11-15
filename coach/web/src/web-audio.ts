@@ -1,7 +1,10 @@
 import { midiToHz } from "./autoplay.ts";
 
+export type AudioState = 'none' | 'suspended' | 'running' | 'closed' | 'interrupted';
+
 export interface Sound {
   resume(): void;
+  state(): AudioState;
   note(midi: number, velocity: number, durationMs: number, volume: number): void;
   click(atPerfMs: number, accent: boolean, volume: number): void;
   stopAll(): void;
@@ -29,6 +32,9 @@ export function createSound(): Sound {
   return {
     resume() {
       void getCtx()?.resume();
+    },
+    state() {
+      return ctx === null ? 'none' : (ctx.state as AudioState);
     },
     note(midi, velocity, durationMs, volume) {
       const c = getCtx();

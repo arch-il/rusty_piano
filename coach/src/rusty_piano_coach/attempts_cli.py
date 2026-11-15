@@ -141,6 +141,53 @@ def _problem(step: dict, curve: dict | None = None) -> str:
     return line
 
 
+def _is_int(value) -> bool:
+    return isinstance(value, int) and not isinstance(value, bool)
+
+
+def _is_ms(value) -> bool:
+    return isinstance(value, (int, float)) and not isinstance(value, bool) and value >= 0
+
+
+def _step_no(step: dict, key: str, index: int) -> int:
+    value = step.get(key)
+    return value + 1 if _is_int(value) else index + 1
+
+
+def _names(notes) -> str:
+    return " ".join(note_name(x) for x in notes if _is_int(x))
+
+
+def _sight_problem(step: dict, index: int) -> str:
+    n = _step_no(step, "card", index)
+    line = f"  card {n}: {_names(step.get('notes') or []) or '-'} -> {step.get('result')}"
+    played = _names(step.get("wrong_notes") or [])
+    if played:
+        line += " played " + played
+    if step.get("hinted") is True:
+        line += " (hinted)"
+    if _is_ms(step.get("reaction_ms")):
+        line += f" {step['reaction_ms'] / 1000:.1f} s"
+    return line
+
+
+def _ear_problem(step: dict, index: int) -> str:
+    n = _step_no(step, "item", index)
+    label = step["label"] if isinstance(step.get("label"), str) else _names(step.get("answer_notes") or []) or "-"
+    line = f"  item {n}: {label} -> {step.get('result')}"
+    played = _names(step.get("wrong_notes") or [])
+    if played:
+        line += " played " + played
+    if step.get("revealed") is True:
+        line += " (revealed)"
+    replays = step.get("replays")
+    if _is_int(replays) and replays > 0:
+        line += f" replays {replays}"
+    if _is_ms(step.get("response_ms")):
+        line += f" {step['response_ms'] / 1000:.1f} s"
+    return line
+
+
 def _show(args, folder) -> int:
     try:
         a, path = attempts.load_attempt_file(folder, args.id)
@@ -167,8 +214,10 @@ def _render(a, args) -> int:
     counts = Counter(step["result"] for step in steps)
     curve = timing.curve_of(a)
     kind = str(a["score"]["id"]).split(":", 1)[0]
-    if kind in ("ear", "sight"):
-        problems = []
+    if kind == "sight":
+        problems = [_sight_problem(s, i) for i, s in enumerate(steps) if isinstance(s, dict) and (args.all_steps or s.get("first_try") is not True)]
+    elif kind == "ear":
+        problems = [_ear_problem(s, i) for i, s in enumerate(steps) if isinstance(s, dict) and (args.all_steps or s.get("first_try") is not True)]
     else:
         problems = [_problem(step, curve) for step in steps if args.all_steps or step["result"] != "hit"]
     overall = timing.attempt_timing(a)
@@ -194,10 +243,9 @@ def _render(a, args) -> int:
             f" · replays {ear.get('replays', '-')} · revealed {ear.get('revealed', '-')}"
             f" · median {'-' if median is None else f'{median / 1000:.1f} s'} per answer"
         )
-    elif kind != "sight":
-        lines.append("Problems:")
-        if not problems:
-            lines.append("  none")
+    lines.append("Problems:")
+    if not problems:
+        lines.append("  none")
     lines += shown
     if len(problems) > len(shown):
         lines.append(f"  ... {len(problems) - len(shown)} more (use --all-steps)")

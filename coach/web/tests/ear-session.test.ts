@@ -186,6 +186,21 @@ test("records and events are copies", () => {
   assert.equal(s.events()[0].page_ms, 10);
 });
 
+test("a key released during a replay is no longer held by the chord matcher", () => {
+  const answer: AnswerStep[] = [{ kind: "chord", pcs: [0, 4, 7] }];
+  const item: EarItem = { ...single(0, 60, "maj"), answer, answerNotes: [60, 64, 67] };
+  const s = createEarSession([item], {});
+  s.asked(0);
+  assert.deepEqual(s.handle(on(60), 10), [{ kind: "accepted", note: 60, step: 0 }]);
+  s.replayed();
+  assert.deepEqual(s.handle(off(60), 20), []);
+  s.asked(30);
+  assert.deepEqual(s.handle(on(64), 40), [{ kind: "accepted", note: 64, step: 0 }]);
+  assert.deepEqual(s.handle(on(67), 50), [{ kind: "accepted", note: 67, step: 0 }]);
+  const fx = s.handle(on(60), 60);
+  assert.deepEqual(fx[fx.length - 1], { kind: "correct", item: 0, firstTry: true });
+});
+
 function fixtureInput(level: EarLevelDef): EarAttemptInput {
   const s = createEarSession(items(), { revealAfter: 3 });
   const E = (n: number, ms: number, type: "on" | "off") => (type === "on" ? on(n, ms + 1000) : off(n, ms + 1000));

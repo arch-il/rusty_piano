@@ -1,5 +1,6 @@
-"""Evidence for the coach: aggregates saved attempts and reports into per-drill, per-piece, per-bar and per-feature stats (what /coach reads)."""
+"""Evidence for the coach: aggregates saved attempts and reports into per-drill, per-piece, per-bar and per-feature stats, plus the player's own score notes (hard bars and notes) (what /coach reads)."""
 
+import gc
 import json
 import os
 import statistics
@@ -9,6 +10,7 @@ from pathlib import Path
 
 from . import data_paths, ear, gates, habits, plan, practice_log, runs as runs_mod, sessions, sight
 from . import evenness
+from .library import score_notes
 from .library.cli import DATA_DIR_HELP
 from .library.index import Library
 from .library.paths import resolve_data_dir
@@ -148,8 +150,10 @@ def _mean(values):
 
 def _distinct_attempts(rs, by_id):
     seen = []
+    members = set()
     for r in rs:
-        if r.attempt_id not in seen:
+        if r.attempt_id not in members:
+            members.add(r.attempt_id)
             seen.append(r.attempt_id)
     return [by_id[i] for i in seen]
 
@@ -204,6 +208,8 @@ def _drill_entry(drill_id, rs, tree, index, by_id):
         entry["hands_alignment"] = evenness.round_half_up(_mean(align)) if align else None
     if ear.is_ear(rs[0].score_id):
         entry["ear"] = ear.drill_stats(rs)
+    if sight.is_sight(rs[0].score_id):
+        entry["sight"] = sight.drill_stats(rs)
     return entry
 
 
@@ -241,9 +247,23 @@ def _piece_entry(score_id, rs, by_id, reports):
 
 def _features(rs, by_id):
     steps = [s for r in rs for s in r.steps]
-    timed = [s for s in steps if runs_mod.timing_ok(s) is not None]
-    offsets = [s["offset_ms"] for s in timed]
-    holds = [h for s in steps for h in s.get("holds") or []]
+    timed = []
+    offsets = []
+    on_time = early = late = 0
+    holds = []
+    for s in steps:
+        ok = runs_mod.timing_ok(s)
+        if ok is not None:
+            timed.append(s)
+            offsets.append(s["offset_ms"])
+            if ok:
+                on_time += 1
+            outcome = s.get("outcome")
+            if outcome == "early":
+                early += 1
+            elif outcome == "late":
+                late += 1
+        holds.extend(s.get("holds") or [])
     short = sum(1 for h in holds if h.get("short"))
     velocities = [v for a in _distinct_attempts(rs, by_id) for v in runs_mod.engine_velocities(a)]
     p10 = runs_mod.percentile(velocities, 0.1)
@@ -252,11 +272,11 @@ def _features(rs, by_id):
     return {
         "timing": {
             "steps": n,
-            "on_time_share": _r3(sum(1 for s in timed if runs_mod.timing_ok(s)) / n) if n else None,
+            "on_time_share": _r3(on_time / n) if n else None,
             "mean_offset_ms": round(sum(offsets) / n, 1) if n else None,
             "mean_abs_offset_ms": round(sum(abs(o) for o in offsets) / n, 1) if n else None,
-            "early_share": _r3(sum(1 for s in timed if s.get("outcome") == "early") / n) if n else None,
-            "late_share": _r3(sum(1 for s in timed if s.get("outcome") == "late") / n) if n else None,
+            "early_share": _r3(early / n) if n else None,
+            "late_share": _r3(late / n) if n else None,
         },
         "holds": {
             "checked": len(holds),
@@ -274,10 +294,34 @@ def _features(rs, by_id):
 
 
 def build_evidence(*, attempts_dir, reports_dir, plan_dir, scores_dir, since, today, tz, now, habit_days=14, sessions_dir=None) -> dict:
+    was = gc.isenabled()
+    gc.disable()
+    try:
+        with runs_mod.memoised():
+            return _build_evidence(
+                attempts_dir=attempts_dir,
+                reports_dir=reports_dir,
+                plan_dir=plan_dir,
+                scores_dir=scores_dir,
+                since=since,
+                today=today,
+                tz=tz,
+                now=now,
+                habit_days=habit_days,
+                sessions_dir=sessions_dir,
+            )
+    finally:
+        if was:
+            gc.enable()
+
+
+def _build_evidence(*, attempts_dir, reports_dir, plan_dir, scores_dir, since, today, tz, now, habit_days=14, sessions_dir=None) -> dict:
     warnings = []
     plan_dir = Path(plan_dir)
     tree = None
     state = None
+    if plan.migrate_tree(plan_dir):
+        warnings.append("tree.json: S1 no longer requires K1 (one-off fix)")
     try:
         tree = plan.load_json(plan_dir / plan.TREE_FILE)
     except (OSError, ValueError) as e:
@@ -369,6 +413,7 @@ def build_evidence(*, attempts_dir, reports_dir, plan_dir, scores_dir, since, to
         },
         "drills": {did: _drill_entry(did, rs, tree, index, by_id) for did, rs in drill_runs.items()},
         "pieces": {sid: _piece_entry(sid, rs, by_id, window_reports) for sid, rs in piece_runs.items()},
+        "score_notes": score_notes.evidence_block(scores_dir),
         "features": _features([r for r in counted if not (sight.is_sight(r.score_id) or ear.is_ear(r.score_id))], by_id),
         "nodes": gates.node_progress(tree, state, [r for r in all_runs if r.counted], today),
         "habits": habits.detect(habit_runs, habit_attempts, habit_reports, tree, state, keys),

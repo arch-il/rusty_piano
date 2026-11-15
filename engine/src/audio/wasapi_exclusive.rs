@@ -2,7 +2,7 @@
 
 use super::{
     render_interleaved_with, select_output_device, Attach, AudioOutput, Backend, OutputExtras,
-    ATTACH_QUEUE_CAPACITY, EVENT_QUEUE_CAPACITY, MAX_CHUNK_FRAMES, PROFILE_QUEUE_CAPACITY,
+    StreamSlot, ATTACH_QUEUE_CAPACITY, EVENT_QUEUE_CAPACITY, MAX_CHUNK_FRAMES, PROFILE_QUEUE_CAPACITY,
 };
 use crate::config::SoundProfile;
 use crate::midi::MidiEvent;
@@ -485,10 +485,10 @@ where
         return Err(e);
     }
     Ok(AudioOutput {
-        _stream: Box::new(ExclusiveStream {
+        stream: StreamSlot::new(Box::new(ExclusiveStream {
             stop,
             thread: Some(thread),
-        }),
+        })),
         events: tx,
         profiles: ptx,
         attachments: atx,

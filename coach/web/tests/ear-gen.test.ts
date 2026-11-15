@@ -136,6 +136,20 @@ test("every item's category is inside the level set", () => {
   }
 });
 
+test("tune levels pick each tune equally often, whatever its phrase count", () => {
+  let hot = 0;
+  let total = 0;
+  for (let seed = 1; seed <= 200; seed++) {
+    for (const it of round("tune-2", seed, { set: ["hot-cross-buns", "frere-jacques"] })) {
+      total++;
+      if (it.category === "hot-cross-buns") hot++;
+    }
+  }
+  assert.equal(total, 1200);
+  const share = hot / total;
+  assert.ok(share >= 0.4 && share <= 0.55, String(share));
+});
+
 test("interval-3 with set m3,M3 and seed 42 gives only m3/M3", () => {
   const items = round("interval-3", 42, { set: ["m3", "M3"] });
   for (const it of items) assert.ok(["m3", "M3"].includes(it.category), it.category);

@@ -7,6 +7,7 @@ use crate::config::SoundProfile;
 use crate::midi::MidiEvent;
 use crate::sound::SoundEngine;
 use std::sync::mpsc::{sync_channel, Receiver, SyncSender};
+use std::sync::{Arc, Mutex, Weak};
 use std::time::Instant;
 
 #[cfg(feature = "asio")]
@@ -324,8 +325,37 @@ fn render_core<T>(
 }
 
 /// Dropping this stops the sound.
+type StreamBox = Box<dyn std::any::Any + Send>;
+
+/// The running audio stream; dropping it stops the sound.
+pub struct StreamSlot(Arc<Mutex<Option<StreamBox>>>);
+
+impl StreamSlot {
+    pub fn new(stream: StreamBox) -> Self {
+        StreamSlot(Arc::new(Mutex::new(Some(stream))))
+    }
+
+    /// A handle that can stop the stream from another thread without keeping it alive.
+    pub fn stopper(&self) -> AudioStopper {
+        AudioStopper(Arc::downgrade(&self.0))
+    }
+}
+
+/// Stops the audio stream early, e.g. from the Ctrl-C handler before the process exits.
+#[derive(Clone)]
+pub struct AudioStopper(Weak<Mutex<Option<StreamBox>>>);
+
+impl AudioStopper {
+    pub fn stop(&self) {
+        if let Some(slot) = self.0.upgrade() {
+            let stream = slot.lock().unwrap_or_else(|e| e.into_inner()).take();
+            drop(stream);
+        }
+    }
+}
+
 pub struct AudioOutput {
-    _stream: Box<dyn std::any::Any + Send>,
+    stream: StreamSlot,
     events: SyncSender<MidiEvent>,
     profiles: SyncSender<SoundProfile>,
     attachments: SyncSender<Attach>,
@@ -468,7 +498,7 @@ where
         .map_err(|e| format!("cannot start audio stream on {name}: {e}"))?;
     Ok(AudioOutput {
         buffer_frames: stream.buffer_size().ok(),
-        _stream: Box::new(stream),
+        stream: StreamSlot::new(Box::new(stream)),
         events: tx,
         profiles: ptx,
         attachments: atx,
@@ -521,6 +551,10 @@ impl AudioOutput {
 
     pub fn attach(&self, a: Attach) -> bool {
         self.attachments.try_send(a).is_ok()
+    }
+
+    pub fn stopper(&self) -> AudioStopper {
+        self.stream.stopper()
     }
 
     pub fn describe(&self) -> String {
@@ -730,6 +764,7 @@ mod tests {
             volume: 100,
         });
         let (m, notices) = handle.attach(48000);
+        handle.confirm_attached();
         let (atx, arx) = sync_channel(ATTACH_QUEUE_CAPACITY);
         atx.send(Attach::Metronome(Box::new(m))).unwrap();
         let (_tx, rx) = sync_channel::<MidiEvent>(4);
@@ -935,7 +970,7 @@ mod tests {
         let (profiles, _prx) = sync_channel(1);
         let (attachments, _arx) = sync_channel(1);
         let out = AudioOutput {
-            _stream: Box::new(()),
+            stream: StreamSlot::new(Box::new(())),
             events,
             profiles,
             attachments,

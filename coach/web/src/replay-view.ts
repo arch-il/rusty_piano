@@ -5,6 +5,7 @@ import { attemptItemText, attemptScript, clockText, isEmptyScript, sessionItemTe
 import type { ReplayAttempt, ReplayMark, ReplayScript, ReplayStepLike } from './replay-logic';
 import type { StepOutcome } from './note-matcher';
 import type { Hands } from './practice-steps';
+import { soundPromptVisible } from './sound-prompt';
 
 export interface ReplayScoreView {
   timeline(): readonly ReplayStepLike[];
@@ -20,6 +21,7 @@ export interface ReplayScoreView {
 
 export interface ReplaySound {
   resume(): void;
+  state?(): string;
   note(midi: number, velocity: number, durationMs: number, volume: number): void;
   stopAll(): void;
 }
@@ -72,6 +74,7 @@ export function createReplayView(deps: ReplayDeps): ReplayView {
   const stopBtn = byId('replay-stop');
   const speedSel = byId<HTMLSelectElement>('replay-speed');
   const muteBtn = byId('replay-mute');
+  const soundBtn = byId<HTMLButtonElement>('replay-sound');
   const wrap = toggle.parentElement;
 
   const keys = createLiveKeys();
@@ -80,6 +83,16 @@ export function createReplayView(deps: ReplayDeps): ReplayView {
   let current: ReplayScript | null = null;
   let lastAttempt: ReplayAttempt | null = null;
   let menuToken = 0;
+  let lastPos = 0;
+
+  function checkSound(): void {
+    soundBtn.hidden = !soundPromptVisible({
+      audio: deps.sound.state?.() ?? 'running',
+      muted,
+      active: current !== null,
+      posMs: lastPos,
+    });
+  }
 
   function applyMark(m: ReplayMark): void {
     if (m.kind === 'outcome') deps.view.markStep(m.step, m.outcome, m.score);
@@ -96,6 +109,7 @@ export function createReplayView(deps: ReplayDeps): ReplayView {
     deps.showKeys();
     deps.sound.stopAll();
     bar.hidden = true;
+    soundBtn.hidden = true;
     pauseBtn.textContent = 'Pause';
     current = null;
   }
@@ -108,7 +122,7 @@ export function createReplayView(deps: ReplayDeps): ReplayView {
     },
     {
       noteOn(note, velocity, durationMs) {
-        if (!muted) deps.sound.note(note, velocity, durationMs, deps.volume);
+        if (!muted && deps.sound.state?.() !== 'suspended') deps.sound.note(note, velocity, durationMs, deps.volume);
         if (keys.apply({ type: 'note_on', t: 0, note, velocity, source: 'autoplay' })) deps.showKeys();
       },
       noteOff(note) {
@@ -123,6 +137,8 @@ export function createReplayView(deps: ReplayDeps): ReplayView {
       },
       progress(pos, dur) {
         time.textContent = `${clockText(pos)} / ${clockText(dur)}`;
+        lastPos = pos;
+        checkSound();
       },
       end: finish,
     },
@@ -146,6 +162,7 @@ export function createReplayView(deps: ReplayDeps): ReplayView {
     time.textContent = `0:00 / ${clockText(script.durationMs)}`;
     pauseBtn.textContent = 'Pause';
     bar.hidden = false;
+    lastPos = 0;
     player.play(script, speed);
     for (const w of script.warnings) deps.showError(w);
   }
@@ -316,7 +333,20 @@ export function createReplayView(deps: ReplayDeps): ReplayView {
     muted = !muted;
     muteBtn.setAttribute('aria-pressed', String(muted));
     if (muted) deps.sound.stopAll();
+    checkSound();
   });
+  soundBtn.addEventListener('click', () => {
+    deps.sound.resume();
+    window.setTimeout(checkSound, 200);
+  });
+  const unlock = (): void => {
+    if (!soundBtn.hidden) {
+      deps.sound.resume();
+      window.setTimeout(checkSound, 200);
+    }
+  };
+  document.addEventListener('pointerdown', unlock, true);
+  document.addEventListener('keydown', unlock, true);
   summaryBtn.addEventListener('click', () => {
     if (lastAttempt) playAttempt(lastAttempt);
   });

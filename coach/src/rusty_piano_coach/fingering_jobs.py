@@ -17,7 +17,8 @@ def textbook_scale(row: dict):
 def generate_for_row(row: dict, path: Path, *, force: bool = False, runner=None) -> dict:
     sc = textbook_scale(row)
     if sc:
-        if force or fingering.read_status(path)["status"] != "ready":
+        st = fingering.read_status(path)
+        if force or st["status"] != "ready" or st["notes"] != scale_fingering.scale_notes(sc):
             scale_fingering.write_scale_sidecar(sc, path)
         return fingering.read_status(path)
     return fingering.generate(path, runner=runner, force=force)

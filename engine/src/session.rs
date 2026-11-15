@@ -1,6 +1,6 @@
 //! One live session: MIDI input to audio output, recording, live profile reload and the live event WebSocket.
 //! Console live mode (main.rs) and the setup window both use it, so they start and stop the engine the same way.
-use crate::audio::{self, Attach, AudioOutput, Backend};
+use crate::audio::{self, Attach, AudioOutput, AudioStopper, Backend};
 use crate::config;
 use crate::live::{self, LiveServer};
 use crate::metronome::{self, MetronomeHandle, MetronomeSettings, Notice};
@@ -87,9 +87,18 @@ pub fn finish_recordings(midi: Option<SaveResult>, wav: Option<WavResult>) -> St
 pub struct StopHandles {
     pub record: Option<RecordSender>,
     pub wav: Option<WavStopper>,
+    pub audio: Option<AudioStopper>,
 }
 
 impl StopHandles {
+    /// Stops the sound now. The Ctrl-C handler calls this before it exits the process:
+    /// exiting with an ASIO stream still running crashes (0xc0000409).
+    pub fn stop_audio(&self) {
+        if let Some(a) = &self.audio {
+            a.stop();
+        }
+    }
+
     pub fn save_now(&self, timeout: Duration) -> Vec<String> {
         let deadline = Instant::now() + timeout;
         let midi = match self.record.as_ref().map(|r| r.flush(timeout)) {
@@ -115,6 +124,14 @@ impl StopHandles {
         };
         let mut lines = finish_recordings(midi, wav).lines();
         if timed_out {
+            if let Some(s) = &self.wav {
+                if !s.is_discarded() && s.claim_report() {
+                    lines.push(format!(
+                        "Saved audio: {} (not finished in time; the last moments may be missing)",
+                        s.path().display()
+                    ));
+                }
+            }
             lines.push("warning: audio recording did not finish in time".to_string());
         }
         lines
@@ -303,6 +320,7 @@ impl Session {
                 start_live_tuning(startup, &a);
                 let (m, rx) = metronome.attach(a.sample_rate);
                 if a.attach(Attach::Metronome(Box::new(m))) {
+                    metronome.confirm_attached();
                     notices = Some(rx);
                 } else {
                     eprintln!("warning: cannot attach the metronome to the audio output; no click.");
@@ -514,6 +532,7 @@ impl Session {
         StopHandles {
             record: self.record_sender(),
             wav: self.wav.as_ref().map(|w| w.stopper()),
+            audio: self.audio.as_ref().map(|a| a.stopper()),
         }
     }
 
@@ -543,6 +562,49 @@ mod tests {
     use crate::live::{hello_json, Source};
     use tungstenite::stream::MaybeTlsStream;
     use tungstenite::Message;
+
+    struct DropFlag(std::sync::Arc<std::sync::atomic::AtomicBool>);
+    impl Drop for DropFlag {
+        fn drop(&mut self) {
+            self.0.store(true, std::sync::atomic::Ordering::SeqCst);
+        }
+    }
+
+    // Ctrl-C exits the process from the console thread; an ASIO stream still running then
+    // crashed the exit with 0xc0000409, so the stop handles must stop the audio first.
+    #[test]
+    fn stop_audio_drops_the_running_stream() {
+        let dropped = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
+        let slot = crate::audio::StreamSlot::new(Box::new(DropFlag(dropped.clone())));
+        let handles = StopHandles { record: None, wav: None, audio: Some(slot.stopper()) };
+        handles.stop_audio();
+        assert!(dropped.load(std::sync::atomic::Ordering::SeqCst));
+        drop(slot);
+    }
+
+    #[test]
+    fn audio_stopper_does_not_keep_the_stream_alive() {
+        let dropped = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
+        let slot = crate::audio::StreamSlot::new(Box::new(DropFlag(dropped.clone())));
+        let stopper = slot.stopper();
+        drop(slot);
+        assert!(dropped.load(std::sync::atomic::Ordering::SeqCst));
+        stopper.stop();
+    }
+
+    #[test]
+    fn save_now_timeout_names_the_wav_and_takes_the_claim() {
+        let path = std::env::temp_dir().join(format!("rp-savenow-{}.wav", std::process::id()));
+        let (rec, _tap) = crate::wav_record::WavRecorder::start(path.clone(), 48000).unwrap();
+        let handles = StopHandles { record: None, wav: Some(rec.stopper()), audio: None };
+        let lines = handles.save_now(Duration::ZERO);
+        let saved: Vec<_> = lines.iter().filter(|l| l.starts_with("Saved audio: ")).collect();
+        assert_eq!(saved.len(), 1, "{lines:?}");
+        assert!(saved[0].contains(&path.display().to_string()));
+        assert!(!rec.claim_report());
+        let _ = rec.finish();
+        let _ = std::fs::remove_file(&path);
+    }
 
     type Client = tungstenite::WebSocket<MaybeTlsStream<std::net::TcpStream>>;
 
@@ -583,6 +645,7 @@ mod tests {
     fn ws_command_starts_metronome() {
         let handle = MetronomeHandle::new(MetronomeSettings::default());
         let (_m, _notices) = handle.attach(48000);
+        handle.confirm_attached();
         let server = LiveServer::start_with_handler(
             0,
             Source::Live,
@@ -611,6 +674,7 @@ mod tests {
     fn ws_play_notes_acks_and_sends_no_note_events() {
         let handle = MetronomeHandle::new(MetronomeSettings::default());
         let (_m, _notices) = handle.attach(48000);
+        handle.confirm_attached();
         let prompt = PromptHandle::new();
         let server = LiveServer::start_with_handler(
             0,
@@ -652,6 +716,7 @@ mod tests {
     fn bridge_sends_beats_with_engine_time() {
         let handle = MetronomeHandle::new(MetronomeSettings { on: true, bpm: 120, beats_per_bar: 4, volume: 100 });
         let (mut m, rx) = handle.attach(48000);
+        handle.confirm_attached();
         let server = LiveServer::start(0, Source::Live).unwrap();
         let mut ws = ws_connect(&server);
         assert_eq!(read_text(&mut ws), hello_json(Source::Live));
@@ -671,6 +736,7 @@ mod tests {
     fn count_in_stop_marks_metronome_off() {
         let handle = MetronomeHandle::new(MetronomeSettings { on: false, bpm: 300, beats_per_bar: 1, volume: 50 });
         let (mut m, rx) = handle.attach(48000);
+        handle.confirm_attached();
         spawn_bridge(handle.clone(), rx, None, Instant::now());
         handle.count_in(1, false);
         assert!(handle.settings().on);

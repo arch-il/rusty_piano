@@ -2,7 +2,7 @@
 
 use super::{
     build_any, device_name, select_output_device, AudioOutput, Backend, OutputDeviceInfo,
-    ATTACH_QUEUE_CAPACITY, EVENT_QUEUE_CAPACITY, PROFILE_QUEUE_CAPACITY,
+    StreamSlot, ATTACH_QUEUE_CAPACITY, EVENT_QUEUE_CAPACITY, PROFILE_QUEUE_CAPACITY,
 };
 use crate::sound::SoundEngine;
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
@@ -168,7 +168,7 @@ where
         .map_err(|e| format!("cannot start ASIO stream on {name}: {e}"))?;
     Ok(AudioOutput {
         buffer_frames: stream.buffer_size().ok(),
-        _stream: Box::new(stream),
+        stream: StreamSlot::new(Box::new(stream)),
         events: tx,
         profiles: ptx,
         attachments: atx,

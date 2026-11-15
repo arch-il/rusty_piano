@@ -109,7 +109,44 @@ def test_ranges_and_octave_apart():
 
 def test_octave_shifts_c_major_4oct():
     midis = [n.midi for n in hand_notes(BY_KEY["c-major-4oct-rh"], "rh")]
-    assert S.octave_shifts(midis, S.TREBLE_WINDOW) == [12] + [0] * 23 + [-12] * 9 + [0] * 23 + [12]
+    assert S.octave_shifts(midis, S.TREBLE_WINDOW) == [12] * 4 + [0] * 20 + [-12] * 9 + [0] * 20 + [12] * 4
+
+
+def test_octave_shifts_c_major_4oct_lh():
+    midis = [n.midi for n in hand_notes(BY_KEY["c-major-4oct-lh"], "lh")]
+    assert S.octave_shifts(midis, S.BASS_WINDOW) == [0] * 21 + [-24] * 15 + [0] * 21
+
+
+def test_octave_brackets_are_long_and_apart():
+    for sc in CATALOGUE:
+        for hand, window in (("rh", S.TREBLE_WINDOW), ("lh", S.BASS_WINDOW)):
+            if sc.hand not in (hand, "ht"):
+                continue
+            notes = hand_notes(sc, hand)
+            shifts = S.octave_shifts([n.midi for n in notes], window)
+            segs = []
+            for v in shifts:
+                if segs and segs[-1][0] == v:
+                    segs[-1][1] += 1
+                else:
+                    segs.append([v, 1])
+            for k, (v, length) in enumerate(segs):
+                if v == 0:
+                    continue
+                assert length >= min(S.MIN_SHIFT_RUN, len(notes)), (sc.key, hand)
+                if k + 1 < len(segs):
+                    assert segs[k + 1][0] == 0, (sc.key, hand)
+
+
+def test_xml_c_major_4oct_ht_brackets():
+    root = parse(BY_KEY["c-major-4oct-ht"])
+    got = {"1": [], "2": []}
+    for d in root.iter("direction"):
+        oc = d.find("direction-type/octave-shift")
+        if oc is not None and oc.get("type") != "stop":
+            got[d.findtext("staff")].append((oc.get("type"), oc.get("size")))
+    assert got["1"] == [("up", "8"), ("down", "8"), ("up", "8")]
+    assert got["2"] == [("down", "15")]
 
 
 def test_written_notes_fit_staff():

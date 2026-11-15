@@ -1,7 +1,14 @@
 """Benchmark for `coach evidence`: python tests/bench_evidence.py [--attempts 2000] [--steps 400].
 
 Builds a seeded synthetic data dir in a temp folder and prints cold-run and warm-run seconds of build_evidence.
-build_dataset is also used by test_evidence_speed.py for the golden test."""
+build_dataset is also used by test_evidence_speed.py for the golden test.
+
+Measured 2026-11-15 on a busy 16 GB Windows machine (noisy, +-15%):
+- 1000 x 400: before (v1 JSON cache) cold 36.1 s, warm 10.2 s, cache 76 MB;
+  after (v2 marshal cache, run memo, detector fast paths) cold 29.6 s, warm 4.7 s, cache 51 MB (about 2.2x warm).
+- 2000 x 400: before cold 64.5 s, warm 15.3 s, cache 152 MB; after cold 55.1 s, warm 11.8-14.0 s, cache 102 MB
+  (only about 1.1-1.3x warm: the same Python operations cost 2-3x more per call at this size, peak working set 0.9 GB,
+  no paging; detection in habits.py is about 75% of the warm run)."""
 
 import argparse
 import json
@@ -135,13 +142,15 @@ def main():
     ap.add_argument("--attempts", type=int, default=2000)
     ap.add_argument("--steps", type=int, default=400)
     args = ap.parse_args()
+    from rusty_piano_coach import attempt_cache
+
     with tempfile.TemporaryDirectory() as tmp:
         build_dataset(tmp, args.attempts, args.steps)
         for label in ("cold", "warm", "warm"):
             t = time.perf_counter()
             ev = run_evidence(tmp)
             print(f"{label}: {time.perf_counter() - t:.2f}s  habits={len(ev['habits'])}")
-        cache = Path(tmp) / "attempts" / ".cache" / "attempts-v1.json"
+        cache = Path(tmp) / "attempts" / ".cache" / attempt_cache.CACHE_FILE
         print(f"cache size: {cache.stat().st_size / 1e6:.2f} MB")
 
 

@@ -18,7 +18,7 @@ def two(folder):
 
 
 def cache_path(folder):
-    return folder / ".cache" / "attempts-v1.json"
+    return folder / ".cache" / "attempts-v2.marshal"
 
 
 def test_empty_attempts_are_skipped(tmp_path):
@@ -78,17 +78,16 @@ def test_removed_file_leaves_the_cache(tmp_path):
     (tmp_path / f"{a1['id']}.json").unlink()
     kept, _ = runs.load_attempts(tmp_path)
     assert len(kept) == 1
-    data = json.loads(cache_path(tmp_path).read_text(encoding="utf-8"))
-    assert len(data["files"]) == 1
+    assert len(attempt_cache._load_cache(cache_path(tmp_path))) == 1
 
 
 def test_corrupt_cache_is_rebuilt(tmp_path):
     two(tmp_path)
     runs.load_attempts(tmp_path)
-    cache_path(tmp_path).write_text("garbage", encoding="utf-8")
+    cache_path(tmp_path).write_bytes(b"garbage")
     kept, _ = runs.load_attempts(tmp_path)
     assert len(kept) == 2
-    assert json.loads(cache_path(tmp_path).read_text(encoding="utf-8"))["version"] == 1
+    assert len(attempt_cache._load_cache(cache_path(tmp_path))) == 2
 
 
 def test_slim_attempt_keeps_velocities(tmp_path):
@@ -105,7 +104,7 @@ def test_same_problems_as_list_attempts(tmp_path):
     cached = attempt_cache.read_attempts(tmp_path)[1]
     assert cached == attempts.list_attempts(tmp_path)[1]
     assert cache_path(tmp_path).exists()
-    assert not any(".cache" in p or "attempts-v1" in p for p in attempts.list_attempts(tmp_path)[1])
+    assert not any(".cache" in p or "attempts-v2" in p for p in attempts.list_attempts(tmp_path)[1])
 
 
 def test_missing_folder(tmp_path):
@@ -125,8 +124,8 @@ def test_ramped_percents_survive_the_cache(tmp_path):
 def test_bad_cache_entry_does_not_crash(tmp_path):
     a1, a2 = two(tmp_path)
     runs.load_attempts(tmp_path)
-    data = json.loads(cache_path(tmp_path).read_text(encoding="utf-8"))
-    data["files"][f"{a1['id']}.json"] = "x"
-    cache_path(tmp_path).write_text(json.dumps(data), encoding="utf-8")
+    files = attempt_cache._load_cache(cache_path(tmp_path))
+    files[f"{a1['id']}.json"] = "x"
+    attempt_cache._write_cache(cache_path(tmp_path), files)
     kept, _ = runs.load_attempts(tmp_path)
     assert len(kept) == 2

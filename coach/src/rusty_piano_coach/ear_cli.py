@@ -71,6 +71,11 @@ def run_ear(args) -> int:
         if isinstance(n, dict) and n.get("track") == EAR_TRACK and not isinstance(n.get("drills"), list):
             print(f"error: tree.json: node {n.get('id')} has no drills list")
             return 1
+    found = plan.schema_errors(tree, plan.load_schema('tree.schema.json'))
+    if found:
+        for e in found:
+            print(f'error: tree.json: {e}')
+        return 1
     new, added_track, added_nodes, added_drills, errors = merge_ear(tree, plan.load_json(plan.SEED_TREE))
     if errors:
         for e in errors:

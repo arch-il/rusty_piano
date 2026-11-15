@@ -1,104 +1,115 @@
-# 🎹 rusty_piano
+<div align="center">
 
-**A practice room for a beginner pianist: a piano you can tune, and a coach that listens.**
+# rusty_piano
 
-Plug in a MIDI keyboard, open a score in your browser, and play. rusty_piano turns your keystrokes into real piano sound, follows you through the sheet music, and tells you what to fix next, in plain words, the way a good teacher would.
+**A piano engine in Rust and a practice coach that actually listens to you play.**
 
-![The sheet music page, following a piece](assets/screenshots/01-score.png)
+![Rust](https://img.shields.io/badge/engine-Rust-b7410e?logo=rust)
+![TypeScript](https://img.shields.io/badge/web-TypeScript-3178c6?logo=typescript&logoColor=white)
+![Python](https://img.shields.io/badge/coach-Python-3776ab?logo=python&logoColor=white)
+![Windows](https://img.shields.io/badge/platform-Windows-0078d4)
+![MIT](https://img.shields.io/badge/license-MIT-green)
 
-## Why this exists
+<img src="assets/screenshots/replay.png" alt="Replaying a run of Petzold's Minuet in G: green notes were right, red ones were wrong" width="100%">
 
-Learning piano alone is hard in one specific way: nobody tells you *what* you did wrong. You play a piece, it sounds off, and you don't know if it was a wrong note, a rushed bar, or a note you let go of too early.
+<sub>Replaying a run of Petzold's Minuet in G. Green was right, red was wrong, and the keyboard at the bottom shows what was held.</sub>
 
-rusty_piano closes that loop:
+</div>
 
-1. **Play** on your MIDI keyboard. The engine makes the sound, with very low delay.
-2. **Follow** along on the sheet music. Notes light up green, early or late, wrong or missed.
-3. **Review** what happened. The coach finds patterns across your sessions and turns them into a short practice plan.
-4. **Repeat** tomorrow, with a plan that fits where you are.
+---
 
-It was built for one person learning on a Studiologic SL990 (a USB keyboard with no sound of its own), so the engine and coach are made for each other. It works with any MIDI keyboard.
+I'm learning piano on a Studiologic SL990, which is 88 good keys and no sound at all. It needed something to make the noise, and I needed something to tell me what I'd actually done wrong, since playing alone you just hear that it sounded off.
 
-## What's in the box
+So I wrote both. The engine turns MIDI into sound with very little delay. The web page shows the sheet music and follows along as I play. The coach saves every attempt, so next time it can tell me *which* bar I keep rushing instead of just giving me a score.
 
-### 🔊 A piano engine written in Rust
-- Turns MIDI into audio in real time, with WASAPI, ASIO or exclusive-mode output for low latency.
-- Two voices: a light sine-based piano, and a **physical-model piano** built from vibrating strings, hammers, a soundboard, sympathetic resonance and pedal noises.
-- Sound settings live in small, commented text files (`engine/profiles/`) that reload while you play. They're written so an AI assistant can tune them for you, so you don't need to know what "inharmonicity" is.
-- Records every session to `.mid`, plays recordings back, renders offline to WAV, and ships a setup window for picking your MIDI port and speakers.
-- Has a transpose / octave shift and a built-in metronome.
+It's built for one beginner (me), but any MIDI keyboard works.
 
-### 🎼 A sheet music page that follows you
-- Opens MusicXML scores in the browser and draws them with OpenSheetMusicDisplay.
-- **Wait mode** pauses until you play the right notes. **Live mode** moves at the tempo and grades your timing.
-- Practice a single hand, pick a bar range, loop it, and let the **tempo ramp** speed it up by a few percent after each clean pass.
-- Suggests fingerings, and warns when you let go of a note too soon.
-- A built-in library of public-domain scores (via the [PDMX](https://zenodo.org/records/15571083) dataset) that you can search, filter by difficulty and key, and download. You can also bring your own files.
+## What it does
 
-### 🧠 A coach that remembers
-- Saves every attempt and compares it with the score: wrong, missed and extra notes, timing, dynamics, held notes.
-- Keeps a **skill tree** with honest gates, so "I've got this" means three clean runs on different days, not one lucky take.
-- Tracks habits (rushing, ignoring rests, skipping repeats), your streak, and minutes practiced.
-- **Sight-reading** and **ear training** drills, plus a replay view that shows a past attempt note by note.
-- Everything is stored as plain JSON and Markdown on your own disk, so you, or an AI assistant such as [Claude Code](https://claude.com/claude-code), can read your history and plan what to practise next.
+<table>
+<tr>
+<td width="50%" valign="top">
+<img src="assets/screenshots/library.png" alt="Score library next to an open piece">
+<b>Sheet music that follows you.</b> Open any MusicXML file or grab one from the built-in public-domain library (searchable via <a href="https://zenodo.org/records/15571083">PDMX</a>). <i>Wait</i> mode holds until you hit the right notes; <i>Live</i> mode keeps going and grades your timing.
+</td>
+<td width="50%" valign="top">
+<img src="assets/screenshots/skills.png" alt="Skill tree with reading, rhythm, technique and ear rows">
+<b>A skill tree with real gates.</b> Reading, rhythm, technique, scales, ear. A skill unlocks after three clean runs on different days, not one lucky take.
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+<img src="assets/screenshots/log.png" alt="Practice log with streak and minutes per day">
+<b>A log that doesn't lie.</b> Minutes per day, streaks, every run of every piece, and a replay link for each one.
+</td>
+<td width="50%" valign="top">
+<img src="assets/screenshots/ear.png" alt="Ear training levels from single notes to ii-V-I">
+<b>Ear training and sight-reading drills.</b> They go from "echo one note" all the way to seventh chords and ii-V-I bass lines.
+</td>
+</tr>
+</table>
 
-![Ear training: pick a level, listen, play it back](assets/screenshots/02-ear-training.png)
+<img src="assets/screenshots/freeplay.png" alt="Free play: chords written on a staff with their names" width="100%">
 
-## Quick start
+**Free play** just writes down what you play and names the chords. It's handy for noodling, or for finding out what that chord you just found actually is.
 
-> Windows is the supported platform today. The engine uses Windows audio and MIDI APIs.
+### The smaller stuff
 
-You need [Rust](https://rustup.rs) (MSVC toolchain), [uv](https://docs.astral.sh/uv/) for Python, and [Node.js](https://nodejs.org).
+- Practice one hand at a time, loop a few bars, and let the **tempo ramp** speed you up a little after every clean pass.
+- Fingering suggestions, warnings when you let go of a note too early, and a **Hard bars** button that jumps to where you mess up most.
+- Every session gets recorded to `.mid` automatically. You can play it back or render it to WAV.
+- A metronome, transpose and octave shift. No keyboard plugged in? Keys `A`–`K` on your computer keyboard play C4–C5.
+
+## The engine
+
+The Rust half reads MIDI with `midir` and plays sound through WASAPI shared, WASAPI exclusive, or ASIO.
+
+There are two voices:
+
+- a cheap, clean sine-based piano
+- a **physical-model piano** built from strings, hammers, a soundboard, sympathetic resonance and pedal noise. It's not a sample library.
+
+The sound is set in small, commented [RON](https://github.com/ron-rs/ron) files in [`engine/profiles/`](engine/profiles) that reload while you play. Turn a knob, hit a key, hear it. There's also a small `egui` setup window for choosing the MIDI port, the audio device and a profile.
+
+## Running it
+
+Windows only for now, since the engine talks to Windows audio directly. You'll need [Rust](https://rustup.rs) (MSVC), [uv](https://docs.astral.sh/uv/) and [Node.js](https://nodejs.org).
 
 ```bash
-make install     # Python and web dependencies
-make dev         # engine in this window, coach API and web page in the background
+make install   # python + web deps
+make dev       # engine here, coach API + web page in the background
 ```
 
-Then open <http://localhost:5173>.
+Then open <http://localhost:5173>. No keyboard? `make demo`.
 
-No keyboard handy? Run the engine in demo mode with `make demo`. The page also has a computer-keyboard fallback for trying things out.
-
-Other useful commands:
-
-| Command | What it does |
+| | |
 |---|---|
-| `make setup` | Opens the setup window (MIDI port, speakers, sound profile) |
-| `make engine` | Runs the engine alone |
-| `make api` / `make web` | Runs the coach API or the page alone |
-| `make test` | Runs the Rust, Python and web tests |
+| `make setup` | setup window: MIDI port, speakers, sound profile |
+| `make engine` | just the engine |
+| `make api` / `make web` | just the coach API / just the page |
+| `make test` | Rust, Python and web tests |
 
-More detail lives in [`engine/README.md`](engine/README.md) and [`coach/README.md`](coach/README.md).
+There's more in [`engine/README.md`](engine/README.md) and [`coach/README.md`](coach/README.md).
 
-## How it fits together
-
-```
- MIDI keyboard ──▶ engine (Rust) ──▶ speakers
-                      │
-                      ├──▶ session recordings (.mid)
-                      └──▶ live note events (WebSocket)
-                                   │
-                                   ▼
-                    web page (TypeScript) ◀──▶ coach API (Python)
-                                                   │
-                                                   ▼
-                              reports · skill tree · practice plan
-```
-
-The whole thing runs on your own machine. Nothing is sent anywhere, and your recordings and practice history stay in your own `coach/data/` folder, which git ignores.
-
-## A note on how it was built
-
-Most of this project was written together with [Claude Code](https://claude.com/claude-code).
-
-## Project layout
+## How it's wired
 
 ```
-engine/    Rust: MIDI in, piano sound out, recording, setup window
-coach/     Python API and library, plus the TypeScript web page (coach/web)
-assets/    Screenshots for this README
+MIDI keyboard ─▶ engine (Rust) ─▶ speakers
+                   ├─▶ recordings (.mid)
+                   └─▶ note events over WebSocket
+                                │
+                     web page (TS) ◀─▶ coach API (Python)
+                                           └─▶ attempts, skill tree, plan
 ```
 
-## License
+Everything runs locally. Your recordings and history are plain JSON and Markdown in `coach/data/`, which git ignores, so you (or an AI assistant) can read them and plan the next practice.
 
-[MIT](LICENSE). Use it, change it, learn from it.
+```
+engine/   Rust: MIDI in, sound out, recording, setup window
+coach/    Python API + TypeScript web page (coach/web)
+assets/   screenshots
+```
+
+---
+
+Most of the code was written with [Claude Code](https://claude.com/claude-code). [MIT](LICENSE) licensed.

@@ -127,9 +127,18 @@ pub struct WavStopper {
     slot: Slot,
     discard: Arc<AtomicBool>,
     claimed: Arc<AtomicBool>,
+    path: PathBuf,
 }
 
 impl WavStopper {
+    pub fn path(&self) -> &Path {
+        &self.path
+    }
+
+    pub fn is_discarded(&self) -> bool {
+        self.discard.load(Ordering::SeqCst)
+    }
+
     /// Makes the writer thread delete the file when it finishes, even if nobody waits for it.
     pub fn discard(&self) {
         self.discard.store(true, Ordering::SeqCst);
@@ -265,6 +274,7 @@ impl WavRecorder {
             slot: self.slot.clone(),
             discard: self.discard.clone(),
             claimed: self.claimed.clone(),
+            path: self.path.clone(),
         }
     }
 

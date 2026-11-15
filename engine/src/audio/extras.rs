@@ -72,6 +72,7 @@ mod tests {
             volume: 100,
         });
         let (m, _notices) = handle.attach(48000);
+        handle.confirm_attached();
         let (tap, ends) = channels(4);
         let (atx, arx) = sync_channel(ATTACH_QUEUE_CAPACITY);
         atx.send(Attach::Metronome(Box::new(m))).unwrap();

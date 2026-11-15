@@ -71,3 +71,44 @@ test("without cycleTiming the loop timing is unchanged", () => {
   assert.ok(r.events.map(sig).includes("note_on:60@2000"));
   r.player.stop();
 });
+
+test("per-cycle scale from cycleScale chains the cycle starts", () => {
+  const r = rig();
+  const calls: number[][] = [];
+  r.player.play(NOTES, 1000, 1000, {
+    cycleScale: (k) => {
+      calls.push([k, r.now()]);
+      return k === 1 ? 2 : null;
+    },
+  });
+  r.advance(3100);
+  assert.deepEqual(r.events.map(sig), [
+    "note_on:60@1000", "note_off:60@1400", "note_on:62@1500", "note_off:62@1900",
+    "note_on:60@2000", "note_off:60@2200", "note_on:62@2250", "note_off:62@2450",
+    "note_on:60@2500", "note_off:60@2700", "note_on:62@2750", "note_off:62@2950",
+    "note_on:60@3000",
+  ]);
+  assert.deepEqual(calls, [[1, 1900], [2, 2450], [3, 2950]]);
+  assert.deepEqual(r.noteOns[2], [60, 80, 200]);
+  r.player.stop();
+});
+
+test("cycleTiming wins over cycleScale when both are given", () => {
+  const r = rig();
+  let scaleCalls = 0;
+  let timingCalls = 0;
+  r.player.play(NOTES, 1000, 1000, {
+    cycleTiming: () => {
+      timingCalls++;
+      return null;
+    },
+    cycleScale: () => {
+      scaleCalls++;
+      return 2;
+    },
+  });
+  r.advance(2100);
+  assert.ok(timingCalls > 0);
+  assert.equal(scaleCalls, 0);
+  r.player.stop();
+});

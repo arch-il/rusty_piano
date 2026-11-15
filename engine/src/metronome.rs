@@ -247,6 +247,8 @@ pub type Listener = Arc<dyn Fn(&MetronomeSettings) + Send + Sync>;
 struct Inner {
     settings: MetronomeSettings,
     commands: Option<SyncSender<Command>>,
+    pending: Option<SyncSender<Command>>,
+    requested_on: bool,
     listener: Option<Listener>,
     attached: bool,
 }
@@ -260,8 +262,13 @@ impl MetronomeHandle {
     pub fn new(settings: MetronomeSettings) -> Self {
         MetronomeHandle {
             inner: Arc::new(Mutex::new(Inner {
-                settings: settings.clamped(),
+                settings: MetronomeSettings {
+                    on: false,
+                    ..settings.clamped()
+                },
                 commands: None,
+                pending: None,
+                requested_on: settings.on,
                 listener: None,
                 attached: false,
             })),
@@ -276,10 +283,32 @@ impl MetronomeHandle {
         let (ctx, crx) = sync_channel(COMMAND_QUEUE);
         let (ntx, nrx) = sync_channel(NOTICE_QUEUE);
         let mut inner = self.inner.lock().unwrap();
-        inner.commands = Some(ctx);
-        inner.attached = true;
-        let m = Metronome::new(sample_rate, inner.settings, crx, ntx);
+        inner.pending = Some(ctx);
+        let requested = MetronomeSettings {
+            on: inner.requested_on,
+            ..inner.settings
+        };
+        let m = Metronome::new(sample_rate, requested, crx, ntx);
         (m, nrx)
+    }
+
+    pub fn confirm_attached(&self) {
+        let (new, old, listener) = {
+            let mut inner = self.inner.lock().unwrap();
+            if inner.pending.is_none() {
+                return;
+            }
+            let old = inner.settings;
+            inner.commands = inner.pending.take();
+            inner.attached = true;
+            inner.settings.on = inner.requested_on;
+            (inner.settings, old, inner.listener.clone())
+        };
+        if new != old {
+            if let Some(l) = listener {
+                l(&new);
+            }
+        }
     }
 
     pub fn set_listener(&self, f: Listener) {
@@ -294,7 +323,13 @@ impl MetronomeHandle {
         let (new, old, listener) = {
             let mut inner = self.inner.lock().unwrap();
             let old = inner.settings;
+            if !inner.attached {
+                inner.settings.on = inner.requested_on;
+            }
             let command = edit(&mut inner.settings);
+            if !inner.attached {
+                inner.requested_on = inner.settings.on;
+            }
             inner.settings = inner.settings.clamped();
             if !inner.attached {
                 inner.settings.on = false;
@@ -682,6 +717,7 @@ mod tests {
     fn apply_commands() {
         let handle = MetronomeHandle::new(MetronomeSettings::default());
         let (_m, _rx) = handle.attach(SR);
+        handle.confirm_attached();
         handle.apply(ClientCommand::Start {
             bpm: Some(120),
             beats_per_bar: Some(3),
@@ -705,6 +741,87 @@ mod tests {
     }
 
     #[test]
+    fn new_with_on_reports_off_before_attach() {
+        let handle = MetronomeHandle::new(MetronomeSettings {
+            on: true,
+            ..MetronomeSettings::default()
+        });
+        assert!(!handle.settings().on);
+    }
+
+    #[test]
+    fn attach_without_confirm_keeps_start_off() {
+        let handle = MetronomeHandle::new(MetronomeSettings::default());
+        let (_m, _rx) = handle.attach(SR);
+        handle.start();
+        assert!(!handle.settings().on);
+        handle.confirm_attached();
+        handle.start();
+        assert!(handle.settings().on);
+    }
+
+    #[test]
+    fn requested_on_reports_only_after_confirm() {
+        let handle = MetronomeHandle::new(MetronomeSettings {
+            on: true,
+            ..MetronomeSettings::default()
+        });
+        let seen: Arc<Mutex<Vec<MetronomeSettings>>> = Arc::new(Mutex::new(Vec::new()));
+        let s2 = seen.clone();
+        handle.set_listener(Arc::new(move |s| s2.lock().unwrap().push(*s)));
+        let (_m, _rx) = handle.attach(SR);
+        assert!(!handle.settings().on);
+        assert!(seen.lock().unwrap().is_empty());
+        handle.confirm_attached();
+        assert!(handle.settings().on);
+        assert_eq!(seen.lock().unwrap().len(), 1);
+        assert!(seen.lock().unwrap()[0].on);
+    }
+
+    #[test]
+    fn tempo_edit_before_attach_keeps_requested_on() {
+        let handle = MetronomeHandle::new(MetronomeSettings {
+            on: true,
+            ..MetronomeSettings::default()
+        });
+        handle.set_bpm(100);
+        let (_m, _rx) = handle.attach(SR);
+        handle.confirm_attached();
+        assert!(handle.settings().on);
+        assert_eq!(handle.settings().bpm, 100);
+    }
+
+    #[test]
+    fn stop_before_attach_wins_over_new_on() {
+        let handle = MetronomeHandle::new(MetronomeSettings {
+            on: true,
+            ..MetronomeSettings::default()
+        });
+        handle.stop();
+        let (_m, _rx) = handle.attach(SR);
+        handle.confirm_attached();
+        assert!(!handle.settings().on);
+    }
+
+    #[test]
+    fn start_before_attach_applies_on_confirm() {
+        let handle = MetronomeHandle::new(MetronomeSettings::default());
+        handle.start();
+        assert!(!handle.settings().on);
+        let (_m, _rx) = handle.attach(SR);
+        handle.confirm_attached();
+        assert!(handle.settings().on);
+    }
+
+    #[test]
+    fn confirm_without_attach_does_nothing() {
+        let handle = MetronomeHandle::new(MetronomeSettings::default());
+        handle.confirm_attached();
+        handle.start();
+        assert!(!handle.settings().on);
+    }
+
+    #[test]
     fn unattached_handle_never_reports_on() {
         let handle = MetronomeHandle::new(MetronomeSettings::default());
         handle.apply(ClientCommand::Start {
@@ -714,6 +831,7 @@ mod tests {
         assert!(!handle.settings().on);
         assert_eq!(handle.settings().bpm, 120);
         let (_m, _rx) = handle.attach(SR);
+        handle.confirm_attached();
         handle.apply(ClientCommand::Start {
             bpm: None,
             beats_per_bar: None,
@@ -725,6 +843,7 @@ mod tests {
     fn out_of_range_values_never_reach_audio_unclamped() {
         let handle = MetronomeHandle::new(MetronomeSettings::default());
         let (mut m, _rx) = handle.attach(SR);
+        handle.confirm_attached();
         handle.apply(ClientCommand::Start {
             bpm: Some(0),
             beats_per_bar: Some(0),
@@ -805,6 +924,7 @@ mod tests {
     fn clicks_on_every_beat_at_120_bpm() {
         let handle = MetronomeHandle::new(settings(true, 120, 100));
         let (mut m, rx) = handle.attach(SR);
+        handle.confirm_attached();
         let base = Instant::now();
         let mut done = 0;
         let out = run(&mut m, base, &mut done, 3 * SR as usize);
@@ -835,6 +955,7 @@ mod tests {
     fn accent_is_higher_than_other_beats() {
         let handle = MetronomeHandle::new(settings(true, 120, 100));
         let (mut m, _rx) = handle.attach(SR);
+        handle.confirm_attached();
         let base = Instant::now();
         let mut done = 0;
         let out = run(&mut m, base, &mut done, 30000);
@@ -848,6 +969,7 @@ mod tests {
         let base = Instant::now();
         let handle = MetronomeHandle::new(settings(true, 120, 0));
         let (mut m, rx) = handle.attach(SR);
+        handle.confirm_attached();
         let mut done = 0;
         let out = run(&mut m, base, &mut done, 36000);
         assert!(out.iter().all(|s| *s == 0.0));
@@ -856,6 +978,7 @@ mod tests {
         let peak = |v: u8| {
             let handle = MetronomeHandle::new(settings(true, 120, v));
             let (mut m, _rx) = handle.attach(SR);
+            handle.confirm_attached();
             let mut done = 0;
             let out = run(&mut m, base, &mut done, 2000);
             out.iter().fold(0.0f32, |a, s| a.max(s.abs()))
@@ -868,6 +991,7 @@ mod tests {
     fn adds_to_existing_audio() {
         let handle = MetronomeHandle::new(settings(true, 120, 100));
         let (mut m, _rx) = handle.attach(SR);
+        handle.confirm_attached();
         let base = Instant::now();
         let mut l = vec![0.25f32; 2000];
         let mut r = vec![0.25f32; 2000];
@@ -881,6 +1005,7 @@ mod tests {
     fn stop_and_start_commands() {
         let handle = MetronomeHandle::new(settings(false, 120, 100));
         let (mut m, rx) = handle.attach(SR);
+        handle.confirm_attached();
         let base = Instant::now();
         let mut done = 0;
         let out = run(&mut m, base, &mut done, 1024);
@@ -910,6 +1035,7 @@ mod tests {
     fn tempo_change_applies_from_next_beat() {
         let handle = MetronomeHandle::new(settings(true, 120, 100));
         let (mut m, rx) = handle.attach(SR);
+        handle.confirm_attached();
         let base = Instant::now();
         let mut done = 0;
         run(&mut m, base, &mut done, 12000);
@@ -930,6 +1056,7 @@ mod tests {
     fn count_in_then_stop() {
         let handle = MetronomeHandle::new(settings(false, 120, 100));
         let (mut m, rx) = handle.attach(SR);
+        handle.confirm_attached();
         let base = Instant::now();
         let mut done = 0;
         handle.count_in(1, false);
@@ -963,6 +1090,7 @@ mod tests {
     fn count_in_then_keep() {
         let handle = MetronomeHandle::new(settings(false, 120, 100));
         let (mut m, rx) = handle.attach(SR);
+        handle.confirm_attached();
         let base = Instant::now();
         let mut done = 0;
         handle.count_in(1, true);
@@ -1002,6 +1130,7 @@ mod tests {
     fn handle_notifies_listener_on_change() {
         let handle = MetronomeHandle::new(MetronomeSettings::default());
         let (_m, _rx) = handle.attach(SR);
+        handle.confirm_attached();
         let seen: Arc<Mutex<Vec<MetronomeSettings>>> = Arc::new(Mutex::new(Vec::new()));
         let s2 = seen.clone();
         handle.set_listener(Arc::new(move |s| s2.lock().unwrap().push(*s)));

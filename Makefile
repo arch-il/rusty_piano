@@ -1,4 +1,4 @@
-.PHONY: help install engine demo setup api web dev dev-here test
+.PHONY: help install engine demo setup api web dev dev-here test publish
 .DEFAULT_GOAL := help
 
 help: ## show this list
@@ -12,6 +12,7 @@ help: ## show this list
 	@echo "  dev       engine in this terminal, api and web in the background (logs in .dev-logs/); Ctrl+C stops all"
 	@echo "  dev-here  engine, api and web in this terminal, output mixed; Ctrl+C stops all"
 	@echo "  test      run engine, coach and web tests"
+	@echo "  publish   preview copying dev into the public main branch; MSG=\"...\" commits it"
 
 install:
 	uv sync --project coach
@@ -42,3 +43,6 @@ test:
 	cargo test --manifest-path engine/Cargo.toml
 	uv run --project coach pytest
 	cd coach/web && node --test tests/*.test.ts
+
+publish:
+	pwsh -NoProfile -File scripts/publish.ps1 $(if $(MSG),-Commit -Message "$(MSG)")

@@ -109,6 +109,7 @@ export interface Follower {
   dropHolds(): void;
   pedal(source?: LiveSource): boolean;
   cycleTiming(cycle: number): { start: number; scale: number } | null;
+  waitCycleScale(cycle: number): number | null;
 }
 
 function freshCounts(mode: FollowMode, bpm: number | null, startedAt: number): PracticeCounts {
@@ -682,6 +683,11 @@ export function createFollower(o: {
         emit();
       }
       return r;
+    },
+    waitCycleScale(n) {
+      if (!opts || opts.mode !== 'wait' || !ramp) return null;
+      const p = percents.get(n);
+      return p === undefined ? null : p / startPercent;
     },
     dropHolds() {
       holds?.clear();

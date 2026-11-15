@@ -233,6 +233,23 @@ export function shortTitle(t: string, max = 18): string {
   return t.length <= max ? t : t.slice(0, max - 1) + '…';
 }
 
+export function trackLines(title: string, max = 14): string[] {
+  if (title.length <= max) return [title];
+  const words = title.split(' ');
+  if (words[0].length > max) return [shortTitle(title, max)];
+  let line1 = words[0];
+  let i = 1;
+  while (i < words.length && (line1 + ' ' + words[i]).length <= max) {
+    line1 += ' ' + words[i];
+    i++;
+  }
+  if (i >= words.length) return [line1];
+  return [line1, shortTitle(words.slice(i).join(' '), max)];
+}
+
+export const LOCK_PATH =
+  'M4 7V5a4 4 0 0 1 8 0v2h.5A1.5 1.5 0 0 1 14 8.5v5A1.5 1.5 0 0 1 12.5 15h-9A1.5 1.5 0 0 1 2 13.5v-5A1.5 1.5 0 0 1 3.5 7H4zm2 0h4V5a2 2 0 0 0-4 0v2z';
+
 export function nodeClasses(tree: PlanTree, id: string, state: PlanState | null, selected: boolean): string {
   let cls = `skill-node level-${nodeLevel(state, id)}`;
   if (isLocked(tree, id, state)) cls += ' locked';
@@ -245,7 +262,7 @@ export function layout(tree: PlanTree): Layout {
   const rowTracks = tree.tracks.filter((t) => tree.nodes.some((n) => n.track === t.id));
   const tracks: Layout['tracks'] = [];
   const nodes: Layout['nodes'] = [];
-  const pos = new Map<string, { x: number; y: number }>();
+  const pos = new Map<string, { x: number; y: number; row: number }>();
   let width = PAD * 2;
   rowTracks.forEach((t, r) => {
     const y = PAD + r * ROW_H;
@@ -255,7 +272,7 @@ export function layout(tree: PlanTree): Layout {
       .forEach((n, c) => {
         const x = PAD + TRACK_LABEL_W + c * (NODE_W + GAP_X);
         nodes.push({ id: n.id, x, y, w: NODE_W, h: NODE_H });
-        pos.set(n.id, { x, y });
+        pos.set(n.id, { x, y, row: r });
         width = Math.max(width, x + NODE_W + PAD);
       });
   });
@@ -272,7 +289,21 @@ export function layout(tree: PlanTree): Layout {
       const y1 = from.y + NODE_H / 2;
       const x2 = to.x;
       const y2 = to.y + NODE_H / 2;
-      edges.push({ from: r, to: n.id, d: `M ${x1} ${y1} C ${x1 + 20} ${y1}, ${x2 - 20} ${y2}, ${x2} ${y2}` });
+      const GUTTER = GAP_X / 2;
+      const LANE = (ROW_H - NODE_H) / 2;
+      if (from.row === to.row && to.x === x1 + GAP_X) {
+        edges.push({ from: r, to: n.id, d: `M ${x1} ${y1} H ${x2}` });
+        continue;
+      }
+      let lane: number;
+      if (to.row > from.row) lane = to.y - LANE;
+      else if (to.row < from.row) lane = to.y + NODE_H + LANE;
+      else lane = to.row > 0 ? to.y - LANE : to.y + NODE_H + LANE;
+      edges.push({
+        from: r,
+        to: n.id,
+        d: `M ${x1} ${y1} H ${x1 + GUTTER} V ${lane} H ${x2 - GUTTER} V ${y2} H ${x2}`,
+      });
     }
   }
   return { width, height, tracks, nodes, edges };

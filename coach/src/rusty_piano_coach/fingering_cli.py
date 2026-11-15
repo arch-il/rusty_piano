@@ -3,7 +3,7 @@
 import time
 
 from .fingering_jobs import generate_for_row, textbook_scale
-from .library import fingering
+from .library import fingering, scale_fingering
 from .library.cli import DATA_DIR_HELP
 from .library.index import Library
 from .library.paths import resolve_data_dir
@@ -26,6 +26,9 @@ def add_fingering_parser(sub) -> None:
 
 def run_fingering(args) -> int:
     data_dir = resolve_data_dir(args.data_dir)
+    orphans, tmps = fingering.sweep_sidecars(data_dir)
+    if orphans + tmps:
+        print(f"Cleaned up {orphans + tmps} leftover fingering file(s)")
     made = cached = failed = 0
     with Library(data_dir) as lib:
         if args.id:
@@ -53,11 +56,20 @@ def run_fingering(args) -> int:
             label = f"#{row['num']} {row['title']} ({row['id']})"
             before = fingering.read_status(path)
             if not args.force and before["status"] == "ready":
-                if textbook_scale(row) is None:
-                    print(f"{label}: cached")
-                cached += 1
-            elif not args.force and before["status"] == "error":
-                print(f"{label}: cached error: {before['error']} (use --force to try again)")
+                sc = textbook_scale(row)
+                if sc is not None and before["notes"] != scale_fingering.scale_notes(sc):
+                    st = generate_for_row(row, path, force=True)
+                    print(f"{label}: textbook ({len(st['notes'])} fingers)")
+                    made += 1
+                else:
+                    if sc is None:
+                        print(f"{label}: cached")
+                    cached += 1
+            elif not args.force and before["status"] == "error" and not fingering.error_retry_due(path):
+                print(
+                    f"{label}: cached error: {before['error']} "
+                    "(tried again after 7 days or a pianoplayer update; use --force to try now)"
+                )
                 cached += 1
             elif textbook_scale(row):
                 st = generate_for_row(row, path, force=True)

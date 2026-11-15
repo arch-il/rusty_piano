@@ -55,6 +55,11 @@ def run_sight(args) -> int:
     if not (isinstance(tree, dict) and isinstance(tree.get("nodes"), list)):
         print("error: tree.json: no nodes list")
         return 1
+    found = plan.schema_errors(tree, plan.load_schema('tree.schema.json'))
+    if found:
+        for e in found:
+            print(f'error: tree.json: {e}')
+        return 1
     new, added, missing = merge_sight_drills(tree, plan.load_json(plan.SEED_TREE))
     for nid in missing:
         print(f"warning: no node {nid} in tree.json")

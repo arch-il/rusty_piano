@@ -5,6 +5,7 @@
 import { CHORDS, DEFAULT_VELOCITY, DEGREES, INTERVALS, PATTERNS, keyName } from './ear-levels.ts';
 import type { AnswerStep, EarItem, EarLevelDef, EarSettings, PromptNote } from './ear-levels.ts';
 import { tuneById } from './ear-tunes.ts';
+import type { Tune } from './ear-tunes.ts';
 import { noteName } from './engine-socket.ts';
 import { mulberry32 } from './sight-gen.ts';
 import type { Rng } from './sight-gen.ts';
@@ -169,24 +170,21 @@ function genChord(rng: Rng, s: EarSettings, beatMs: number): Draft {
 }
 
 function genTune(rng: Rng, s: EarSettings, beatMs: number): Draft {
-  const all: { id: string; title: string; i: number; n: number; notes: number[]; beats: number[] }[] = [];
-  for (const id of s.set) {
-    const t = tuneById(id);
-    if (!t) continue;
-    t.phrases.forEach((p, i) => all.push({ id: t.id, title: t.title, i, n: t.phrases.length, notes: p.notes, beats: p.beats }));
-  }
-  const ph = pick(rng, all);
+  const tunes = s.set.map((id) => tuneById(id)).filter((t): t is Tune => t !== null);
+  const t = pick(rng, tunes);
+  const i = int(rng, 0, t.phrases.length - 1);
+  const p = t.phrases[i];
   const shift = s.key === null ? int(rng, -5, 6) : s.key <= 6 ? s.key : s.key - 12;
-  const notes = ph.notes.map((n) => n + shift);
+  const notes = p.notes.map((n) => n + shift);
   let at = 0;
-  const prompt = notes.map((n, i) => {
-    const p = pn(n, at, ph.beats[i], beatMs);
-    at += ph.beats[i];
-    return p;
+  const prompt = notes.map((n, k) => {
+    const pn1 = pn(n, at, p.beats[k], beatMs);
+    at += p.beats[k];
+    return pn1;
   });
   return {
-    category: ph.id,
-    label: `${ph.title}, phrase ${ph.i + 1} of ${ph.n}` + (shift !== 0 ? ', in ' + keyName((shift + 12) % 12) : '') + ': ' + names(notes),
+    category: t.id,
+    label: `${t.title}, phrase ${i + 1} of ${t.phrases.length}` + (shift !== 0 ? ', in ' + keyName((shift + 12) % 12) : '') + ': ' + names(notes),
     prompt,
     answerSound: prompt,
     given: [notes[0]],

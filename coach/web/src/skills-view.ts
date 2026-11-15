@@ -1,5 +1,5 @@
 import { drillHash } from './drill-link';
-import { layout, levelText, nodeClasses, nodePanel, shortTitle } from './skills-logic';
+import { LOCK_PATH, layout, levelText, nodeClasses, nodePanel, shortTitle, trackLines } from './skills-logic';
 import type { PlanResponse } from './skills-logic';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -53,7 +53,22 @@ export function createSkillsView(opts: { fetchPlan: () => Promise<PlanResponse>;
       const text = svgEl('text', 'skills-track');
       text.setAttribute('x', String(t.x));
       text.setAttribute('y', String(t.y));
-      text.textContent = t.title;
+      const lines = trackLines(t.title);
+      if (lines.length === 1) {
+        text.textContent = lines[0];
+      } else {
+        const ys = [t.y - 7, t.y + 8];
+        lines.forEach((line, i) => {
+          const span = svgEl('tspan');
+          span.setAttribute('x', String(t.x));
+          span.setAttribute('y', String(ys[i]));
+          span.textContent = line;
+          text.append(span);
+        });
+      }
+      const full = svgEl('title');
+      full.textContent = t.title;
+      text.append(full);
       svg.append(text);
     }
     for (const e of lay.edges) {
@@ -85,12 +100,18 @@ export function createSkillsView(opts: { fetchPlan: () => Promise<PlanResponse>;
       g.append(rect, id, name);
       const locked = cls.split(' ').includes('locked');
       const rusty = cls.split(' ').includes('rusty');
-      if (locked || rusty) {
+      if (locked) {
+        const lock = svgEl('path', 'skill-lock');
+        lock.setAttribute('d', LOCK_PATH);
+        lock.setAttribute('fill-rule', 'evenodd');
+        lock.setAttribute('transform', `translate(${n.w - 20} 6) scale(0.75)`);
+        g.append(lock);
+      } else if (rusty) {
         const mark = svgEl('text', 'skill-mark');
         mark.setAttribute('x', String(n.w - 8));
         mark.setAttribute('y', '16');
         mark.setAttribute('text-anchor', 'end');
-        mark.textContent = locked ? 'locked' : 'rusty';
+        mark.textContent = 'rusty';
         g.append(mark);
       }
       g.addEventListener('click', () => select(n.id));

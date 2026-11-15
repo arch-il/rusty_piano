@@ -108,3 +108,18 @@ export function autoplayKnobs(s: FollowerSettings): AutoplayKnobs {
 export function shiftedMsAt(msAt: (q: number) => number, fromQ: number): (q: number) => number {
   return (q) => msAt(q + fromQ) - msAt(fromQ);
 }
+
+export function rampedWaitTiming(
+  msAt: (q: number) => number,
+  scaleOf: (cycle: number) => number | null,
+  baseCycle: number,
+): { msAt: (q: number) => number; cycleScale: (k: number) => number | null } {
+  const s0 = scaleOf(baseCycle) ?? 1;
+  return {
+    msAt: (q) => msAt(q) / s0,
+    cycleScale: (k) => {
+      const s = scaleOf(baseCycle + k);
+      return s === null ? null : s / s0;
+    },
+  };
+}

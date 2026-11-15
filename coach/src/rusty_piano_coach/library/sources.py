@@ -3,8 +3,10 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from .difficulty import catalogue_difficulty
+from .fingering import remove_sidecar
 from .index import fts_query
 from .paths import library_file
+from .score_notes import remove_sidecar as remove_notes_sidecar
 
 
 class UnsupportedCommand(Exception):
@@ -102,6 +104,8 @@ class Source:
                 parked.unlink()
             except OSError:
                 pass
+        remove_sidecar(full)
+        remove_notes_sidecar(full)
 
     def sync(self, lib, from_file: Path | None) -> int:
         raise UnsupportedCommand(f"source '{self.name}' has no online catalogue to sync")

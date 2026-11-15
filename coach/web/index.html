@@ -13,6 +13,7 @@
         <a id="log-link" class="btn btn-ghost" href="#/log">Log</a>
         <a id="sight-link" class="btn btn-ghost" href="#/sight">Sight</a>
         <a id="ear-link" class="btn btn-ghost" href="#/ear">Ear</a>
+        <a id="free-link" class="btn btn-ghost" href="#/free">Free play</a>
       </nav>
       <div class="piece">
         <span id="piece-title" class="piece-title">No piece open</span>
@@ -22,6 +23,11 @@
         <button type="button" id="info-toggle" class="btn btn-icon" aria-label="Piece details" aria-expanded="false" disabled>i</button>
         <div id="info-popover" class="popover" role="dialog" aria-label="Piece details" hidden>
           <dl id="info-list"></dl>
+          <div class="piece-note">
+            <label for="piece-note-text" class="piece-note-label">Your note on this piece</label>
+            <textarea id="piece-note-text" class="piece-note-text" rows="4" maxlength="2000" placeholder="What to watch, fingering ideas, goals" disabled></textarea>
+            <div class="piece-note-actions"><span id="piece-note-status" class="piece-note-status" aria-live="polite"></span><button type="button" id="piece-note-save" class="btn" disabled>Save note</button></div>
+          </div>
         </div>
       </div>
       <div class="replay">
@@ -34,12 +40,23 @@
           <ul id="replay-sessions" class="replay-list"></ul>
         </div>
       </div>
+      <div class="hardbars">
+        <div class="hardbars-group segmented" role="group" aria-label="Hard bars">
+          <button type="button" id="hardbars-toggle" class="btn" aria-controls="hardbars-menu" aria-expanded="false" title="Practise a hard bar: pick it to select and loop it" disabled><span class="hb-label">Hard bars</span><span class="hb-short" aria-hidden="true">⚑</span></button>
+          <button type="button" id="hardbars-next" class="btn" aria-label="Next hard bar" title="Next hard bar" disabled><span class="hb-label">Next</span><span class="hb-short" aria-hidden="true">⏭</span></button>
+        </div>
+        <div id="hardbars-menu" class="popover hardbars-menu" role="dialog" aria-label="Practise hard bars" hidden>
+          <div id="hardbars-status" class="hardbars-status" aria-live="polite"></div>
+          <ul id="hardbars-list" class="hardbars-list"></ul>
+        </div>
+      </div>
       <div class="zoom segmented" role="group" aria-label="Zoom">
         <button type="button" id="zoom-out" class="btn btn-icon" aria-label="Zoom out">−</button>
         <button type="button" id="zoom-reset" class="btn zoom-reset" aria-label="Reset zoom">100%</button>
         <button type="button" id="zoom-in" class="btn btn-icon" aria-label="Zoom in">+</button>
       </div>
       <button type="button" id="fingering-toggle" class="btn" aria-pressed="true" title="Show fingering on the piano strip">Fingering</button>
+      <button type="button" id="marks-toggle" class="btn marks-toggle" aria-pressed="true" aria-label="Marks" title="Show hard bars and bar notes on the score"><span class="hb-label">Marks</span><span class="hb-short" aria-hidden="true">✎</span></button>
       <span id="engine-status" class="engine-dot" role="img" aria-label="Engine: connecting" title="Engine: connecting"></span>
       <div class="cursor-controls segmented" role="group" aria-label="Playhead">
         <button type="button" id="cursor-start" class="btn">Start</button>
@@ -101,6 +118,7 @@
     </aside>
     <main id="score-area" class="score-area">
       <div id="score-message" class="score-message"></div>
+      <section id="free-play" class="free-play" aria-label="Free play" hidden></section>
       <div id="score" class="score"></div>
     </main>
     <section id="skills-view" class="skills-view" aria-label="Skills" hidden>
@@ -131,12 +149,18 @@
       </div>
       <div id="sight-levels" class="sight-levels"></div>
       <div class="sight-stage">
+        <div class="sight-stage-head">
+          <div class="sight-stage-title"><h3 id="sight-level-name" class="sight-level-name"></h3><span id="sight-progress-text" class="sight-progress-text"></span></div>
+          <div class="sight-actions">
+            <button type="button" id="sight-start" class="btn btn-primary">Start</button>
+            <button type="button" id="sight-stop" class="btn" disabled>Stop</button>
+          </div>
+        </div>
+        <div id="sight-progress" class="sight-progress" role="progressbar" aria-label="Round progress" aria-valuemin="0" aria-valuemax="20" aria-valuenow="0" hidden><div id="sight-progress-fill" class="sight-progress-fill"></div></div>
         <div id="sight-stats" class="sight-stats" aria-live="polite"></div>
-        <div id="sight-staff" class="sight-staff"></div>
-        <div id="sight-keys" class="sight-keys" aria-hidden="true"></div>
-        <div class="sight-actions">
-          <button type="button" id="sight-start" class="btn btn-primary">Start</button>
-          <button type="button" id="sight-stop" class="btn" disabled>Stop</button>
+        <div class="sight-board">
+          <div id="sight-staff" class="sight-staff"></div>
+          <div id="sight-keys" class="sight-keys" aria-hidden="true"></div>
         </div>
       </div>
       <div id="sight-summary" class="sight-summary" hidden></div>
@@ -178,6 +202,7 @@
       <button type="button" id="replay-stop" class="btn">Stop</button>
       <label class="replay-speed">Speed <select id="replay-speed"><option value="0.5">0.5x</option><option value="1" selected>1x</option></select></label>
       <button type="button" id="replay-mute" class="btn" aria-pressed="false">Mute</button>
+      <button type="button" id="replay-sound" class="btn" hidden>Click to enable sound</button>
     </div>
     <footer id="piano-view" class="piano-view" aria-label="Piano keyboard"></footer>
     <script type="module" src="/src/main.ts"></script>

@@ -1,11 +1,10 @@
 import type { EarLevelDef, EarRound } from './ear-levels.ts';
-import { categoryStats, roundsOfLevel, trendChart } from './ear-stats.ts';
+import { categoryStats, historyModel, percentText, trendChart } from './ear-stats.ts';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const WIDTH = 560;
 const HEIGHT = 180;
 const CATEGORY_ROWS = 8;
-const NO_DRILLS_TEXT = 'Rounds are saved, but they only count toward skills after you run: uv run coach ear add-drills';
 
 function svg(tag: string, cls: string, attrs: Record<string, string | number> = {}): SVGElement {
   const e = document.createElementNS(SVG_NS, tag);
@@ -33,15 +32,15 @@ function cell(tag: 'th' | 'td', text: string): HTMLElement {
 
 export function renderEarHistory(
   el: HTMLElement,
-  model: { rounds: EarRound[]; level: EarLevelDef; hasDrills: boolean },
+  model: { rounds: EarRound[]; level: EarLevelDef; notice: string | null },
 ): void {
-  const rounds = roundsOfLevel(model.rounds, model.level.id);
+  const m = historyModel(model.rounds, model.level.id);
   const children: Element[] = [element('h3', 'ear-history-title', 'Progress: ' + model.level.title)];
 
-  if (rounds.length === 0) {
-    children.push(element('p', 'ear-history-empty', 'No rounds yet on this level.'));
+  if (m.emptyText) {
+    children.push(element('p', 'ear-history-empty', m.emptyText));
   } else {
-    const chart = trendChart(rounds, WIDTH, HEIGHT);
+    const chart = trendChart(m.shown, WIDTH, HEIGHT);
     const trend = svg('svg', 'ear-trend', { width: WIDTH, height: HEIGHT, viewBox: `0 0 ${WIDTH} ${HEIGHT}` });
     trend.append(polyline('ear-trend-acc', chart.accuracy), polyline('ear-trend-time', chart.time));
 
@@ -58,16 +57,17 @@ export function renderEarHistory(
     const thead = document.createElement('thead');
     thead.appendChild(headRow);
     const tbody = document.createElement('tbody');
-    for (const c of categoryStats(rounds).slice(0, CATEGORY_ROWS)) {
+    for (const c of categoryStats(m.shown).slice(0, CATEGORY_ROWS)) {
       const row = document.createElement('tr');
-      row.append(cell('td', c.category), cell('td', String(c.items)), cell('td', Math.round(c.share * 100) + '%'));
+      row.append(cell('td', c.category), cell('td', String(c.items)), cell('td', percentText(c.share)));
       tbody.appendChild(row);
     }
     table.append(thead, tbody);
 
     children.push(trend, legend, table);
+    if (m.stoppedText) children.push(element('p', 'ear-trend-legend', m.stoppedText));
   }
 
-  if (!model.hasDrills) children.push(element('p', 'ear-no-drills', NO_DRILLS_TEXT));
+  if (model.notice) children.push(element('p', 'ear-no-drills', model.notice));
   el.replaceChildren(...children);
 }

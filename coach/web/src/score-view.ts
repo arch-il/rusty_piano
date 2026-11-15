@@ -12,6 +12,7 @@ import {
   hitTest,
   slideX,
   stepZoom,
+  unevenMarkPoint,
   type Box,
 } from "./score-geometry";
 import { columnCells, pickCell, type Column, type HoverCell } from "./note-hover";
@@ -28,6 +29,8 @@ export interface ScoreViewEvents {
   onBarSelected?: (range: { from: number; to: number } | null) => void;
   onNoteHover?: (notes: HandNotes | null) => void;
   onNextNotes?: (notes: HandNotes | null) => void;
+  onBarContextMenu?: (info: { bar: number; clientX: number; clientY: number }) => void;
+  onLayout?: () => void;
 }
 
 export interface ScoreViewOptions {
@@ -67,7 +70,9 @@ export class ScoreView {
   private highlights: HTMLDivElement;
   private needle: HTMLDivElement;
   private markLayer: HTMLDivElement;
+  readonly noteMarks: HTMLDivElement;
   private marks = createMarks();
+  private unevenHands = new Map<number, "right" | "left">();
   private steps: Step[] | null = null;
   private needleStep: number | null = null;
   private lastNextStep: number | null = null;
@@ -105,6 +110,10 @@ export class ScoreView {
     const overlay = document.createElement("div");
     overlay.className = "score-overlay";
 
+    this.noteMarks = document.createElement("div");
+    this.noteMarks.className = "score-note-marks";
+    overlay.appendChild(this.noteMarks);
+
     this.highlights = document.createElement("div");
     this.highlights.className = "bar-highlights";
 
@@ -129,6 +138,7 @@ export class ScoreView {
     container.appendChild(this.stage);
 
     this.stage.addEventListener("click", (e) => this.onClick(e));
+    this.stage.addEventListener("contextmenu", (e) => this.onContextMenu(e));
     this.stage.addEventListener("mousemove", (e) => this.onMove(e));
     this.stage.addEventListener("mouseleave", () => this.setHover(null));
     this.stage.addEventListener("mousedown", (e) => {
@@ -162,6 +172,7 @@ export class ScoreView {
   async load(fileUrl: string, format: ScoreFormat): Promise<void> {
     window.clearTimeout(this.zoomTimer);
     this.marks.clear();
+    this.unevenHands.clear();
     this.markLayer.replaceChildren();
     this.boxCache.clear();
     this.hoverCells = null;
@@ -231,6 +242,7 @@ export class ScoreView {
     this.placeHighlight();
     this.events.onBarSelected?.(null);
     this.events.onCursorMoved?.(1, this.barCount());
+    this.events.onLayout?.();
   }
 
   clear(): void {
@@ -251,6 +263,7 @@ export class ScoreView {
     this.anchor = null;
     this.events.onCursorMoved?.(null, 0);
     this.events.onBarSelected?.(null);
+    this.events.onLayout?.();
   }
 
   setZoom(z: number): void {
@@ -442,6 +455,7 @@ export class ScoreView {
   clearMarks(): void {
     const steps = this.marks.outcomes().map(([s]) => s);
     this.marks.clear();
+    this.unevenHands.clear();
     if (this._loaded) for (const s of steps) this.paintStep(s, true);
     this.markLayer.replaceChildren();
   }
@@ -505,11 +519,13 @@ export class ScoreView {
       const box = this.cachedBox(step);
       if (!box) continue;
       const el = document.createElement("div");
+      const p = unevenMarkPoint(box, step > 0 ? this.cachedBox(step - 1) : null, this.unevenHands.get(step) ?? "right");
       el.className = "uneven-marker";
+      el.classList.add(p.side);
       el.textContent = "~";
       el.title = title;
-      el.style.left = `${box.x}px`;
-      el.style.top = `${box.y + box.height}px`;
+      el.style.left = `${p.x}px`;
+      el.style.top = `${p.y}px`;
       this.markLayer.appendChild(el);
     }
   }
@@ -524,8 +540,11 @@ export class ScoreView {
     this.placeMarkers();
   }
 
-  markUneven(spots: readonly { step: number; title: string }[]): void {
-    for (const s of spots) this.marks.setUneven(s.step, s.title);
+  markUneven(spots: readonly { step: number; title: string; hand?: "right" | "left" }[]): void {
+    for (const s of spots) {
+      this.marks.setUneven(s.step, s.title);
+      this.unevenHands.set(s.step, s.hand ?? "right");
+    }
     this.placeMarkers();
   }
 
@@ -647,6 +666,7 @@ export class ScoreView {
     this.placeNeedle(true);
     for (const [step] of this.marks.outcomes()) this.paintStep(step);
     this.placeMarkers();
+    this.events.onLayout?.();
   }
 
   private computeRects(): void {
@@ -785,6 +805,35 @@ export class ScoreView {
     if (!svg) return;
     const cells = (this.hoverCells ??= this.buildHoverCells());
     this.setHover(pickCell(cells, e.clientX - svg.left, e.clientY - svg.top));
+  }
+
+  private onContextMenu(e: MouseEvent): void {
+    if (!this._loaded || !this.events.onBarContextMenu) return;
+    const svg = this.svgRect();
+    if (!svg) return;
+    const idx = hitTest(this.rects, e.clientX - svg.left, e.clientY - svg.top);
+    if (idx === -1) return;
+    e.preventDefault();
+    this.events.onBarContextMenu({ bar: idx + 1, clientX: e.clientX, clientY: e.clientY });
+  }
+
+  barBoxes(): ({ left: number; top: number; width: number; height: number } | null)[] {
+    if (!this._loaded) return [];
+    const svg = this.svgRect();
+    if (!svg) return [];
+    const stage = this.stage.getBoundingClientRect();
+    return this.rects.map((r) =>
+      r
+        ? { left: r.x + svg.left - stage.left, top: r.y + svg.top - stage.top, width: r.width, height: r.height }
+        : null,
+    );
+  }
+
+  goToBar(bar: number): void {
+    if (!this._loaded || !this.rects[bar - 1]) return;
+    this.anchor = bar;
+    this.walkTo(bar - 1);
+    this.emitCursor();
   }
 
   private onClick(e: MouseEvent): void {

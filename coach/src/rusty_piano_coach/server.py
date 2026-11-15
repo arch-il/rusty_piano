@@ -1,4 +1,4 @@
-"""Local web server for the sheet music page (coach serve): reads the library, saves follower attempts, serves the read-only practice log (GET /api/log), read-only replay data (GET /api/replay/...), reports and starts piano-strip fingering (GET/POST /api/scores/<id>/fingering), and accepts guarded POSTs to download scores, remove scores and run source setup steps. Every request needs a local Host header; POSTs also need an Origin from a known page port."""
+"""Local web server for the sheet music page (coach serve): reads the library, saves follower attempts, serves the read-only practice log (GET /api/log), read-only replay data (GET /api/replay/...), reports and starts piano-strip fingering (GET/POST /api/scores/<id>/fingering), and score notes (GET/POST /api/scores/<id>/notes), and accepts guarded POSTs to download scores, remove scores and run source setup steps. Every request needs a local Host header; POSTs also need an Origin from a known page port."""
 
 import argparse
 import json
@@ -17,7 +17,8 @@ from .jobs import Busy, Jobs
 from .library import sources as library_sources
 from .library.busy import BUSY_LOCK_NAME
 from .library.cli import parse_difficulty
-from .library.fingering import read_status
+from .library.fingering import error_retry_due, read_status, sweep_sidecars
+from .library import score_notes
 from .library.index import Library
 
 DEFAULT_PORT = 8765
@@ -355,15 +356,24 @@ def _fingering_post(data_dir: Path, score_id: str, worker) -> Response:
     row, path = _fingering_path(data_dir, score_id)
     if path is None:
         return _json(404, {"error": "score file not found"})
+    if textbook_scale(row):
+        return _json(200, generate_for_row(row, path))
     st = read_status(path)
-    if st["status"] in ("ready", "error"):
+    if st["status"] == "ready" or (st["status"] == "error" and not error_retry_due(path)):
         return _json(200, st)
     if worker.is_pending(path):
         return _json(202, _PENDING)
-    if textbook_scale(row):
-        return _json(200, generate_for_row(row, path))
     worker.request(path)
     return _json(202, _PENDING)
+
+
+def _notes(data_dir: Path, score_id: str, method: str, body: bytes = b"", headers=None) -> Response:
+    row, path = _fingering_path(data_dir, score_id)
+    if method == "POST":
+        status, obj = score_notes.handle_post(path, body, (headers or {}).get("Content-Type"))
+    else:
+        status, obj = score_notes.handle_get(path)
+    return _json(status, obj)
 
 
 def _file(data_dir: Path, score_id: str) -> Response:
@@ -400,6 +410,7 @@ def _plan(plan_dir: Path) -> Response:
     tree_path = plan_dir / plan.TREE_FILE
     if not tree_path.exists():
         return _json(404, {"error": "No skill tree yet. Run /coach in Claude Code to set up your plan."})
+    plan.migrate_tree(plan_dir)
     try:
         tree = plan.load_json(tree_path)
     except ValueError as e:
@@ -474,6 +485,7 @@ def _route(
     is_remove = len(segments) == 5 and segments[:3] == ["", "api", "scores"] and segments[4] == "delete"
     is_attempts = segments == ["", "api", "attempts"]
     is_fingering = len(segments) == 5 and segments[:3] == ["", "api", "scores"] and segments[4] == "fingering"
+    is_notes = len(segments) == 5 and segments[:3] == ["", "api", "scores"] and segments[4] == "notes"
     if not host_allowed(headers.get("Host")):
         return _json(403, {"error": "cross-site request refused"})
     if method == "POST":
@@ -496,6 +508,8 @@ def _route(
             return _setup(data_dir, segments[3], segments[5], jobs)
         if is_fingering:
             return _fingering_post(data_dir, segments[3], fingering)
+        if is_notes:
+            return _notes(data_dir, segments[3], "POST", body, headers)
         return _json(404, {"error": "not found"})
     if method != "GET":
         return _json(404, {"error": "not found"})
@@ -503,6 +517,8 @@ def _route(
         return _json(405, {"error": "use POST for this"})
     if is_fingering:
         return _fingering_get(data_dir, segments[3], fingering)
+    if is_notes:
+        return _notes(data_dir, segments[3], "GET")
     if segments == ["", "api", "jobs", "current"]:
         return _json(200, {"job": jobs.current()})
     if segments == ["", "api", "plan"]:
@@ -660,6 +676,9 @@ def serve(data_dir: Path, port: int = DEFAULT_PORT, attempts_dir=None, plan_dir=
         with Library(data_dir) as lib:
             if not lib.search(downloaded=True, include_conflicts=True, limit=1):
                 print("Your library is empty; add scores with: uv run coach scores import <file or folder>")
+        orphans, tmps = sweep_sidecars(data_dir)
+        if orphans + tmps:
+            print(f"Cleaned up {orphans + tmps} leftover fingering file(s)")
         server.serve_forever()
     except KeyboardInterrupt:
         print("Stopped.")
