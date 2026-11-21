@@ -1,7 +1,7 @@
 [project]
 name = "rusty-piano-coach"
 version = "0.1.0"
-description = "Practice coach for rusty_piano: sheet music library (download, store, search MusicXML); session analysis and reports come later."
+description = "Practice coach for rusty_piano: sheet music library, attempt and session analysis, practice plan with skill tree, and the local API for the web page."
 requires-python = ">=3.12"
 dependencies = [
     "music21>=10.5.2",

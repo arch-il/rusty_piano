@@ -25,6 +25,12 @@ coach/
       sources.py      source interface shared by the sources
       local.py        imports your own MusicXML files
       pdmx.py         PDMX dataset (catalogue sync and archive download)
+      gen.py          source `gen`: the generated exercises for the skill tree drills
+      genx/           exercise generators, one module per track (reading, rhythm, technique, coordination, expression, harmony, pieces) plus seedtree.py
+      scales.py       source `scales`: 972 scales and arpeggios in all 12 keys with textbook fingering
+      scale_fingering.py  textbook fingering for the scales source
+      fingering.py    pianoplayer fingering sidecars for the piano strip
+      score_notes.py  hard bars, bar notes and the piece note (`<score>.notes.json`)
       cli.py          `coach scores ...` commands
     attempts.py       validates, saves, lists and loads follower attempts (one JSON file per run)
     attempts_cli.py   `coach attempts list` and `coach attempts show`
@@ -50,37 +56,13 @@ coach/
     fingering_jobs.py background fingering for `coach serve`, separate from jobs.py
     attempt_cache.py  cache of parsed attempts for `coach evidence`
     localzone.py      the computer's own time zone, for local dates in the log
-  tests/
-    test_imports.py   smoke test: the package and all its modules import
-    test_attempts.py  saving, listing and loading follower attempts
-    test_server_attempts.py  the attempts route of `coach serve`
-    test_cli_attempts.py     `coach attempts` commands
-    test_sessions.py  recorded session .mid files
-    mid_fixtures.py   builds small .mid files for the tests
-    test_compare.py   comparing a session or attempt with a score
-    test_reports.py   writing the report files
-    test_timing.py    graded timing score, old attempts, timing in reports
-    test_cli_analyse.py      `coach analyse`
-    test_practice_log.py     `coach log`: minutes, streak, pieces and the CLI
-    test_index.py     library index and search
-    test_analyse.py   score analysis
-    test_fetch.py     downloads and checksums
-    test_cli_local.py `coach scores` import and CLI
-    test_server.py    `coach serve` API and file serving
-    test_pdmx.py      PDMX sync and download
-    test_library_remove.py  removing scores from the library
-    test_server_remove.py   the delete route
-    test_jobs.py      the background job runner
-    test_server_sources.py  source setup and download routes
-    test_sources_api.py     the source interface with fake PDMX data
-    test_cli_polish.py      CLI options, help texts and exit codes
-    test_library_polish.py  index and analysis edge cases
-    test_server_guard.py    Host and Origin checks of `coach serve`
-    test_remove_order.py    delete order (rename first, then update the index)
-    test_remove_cli_lock.py `coach scores delete` and the busy.lock lock
-    fake_pdmx.py      builds fake PDMX data for tests and for trying the page
+    seed/tree.json    the seed skill tree (77 skills in 10 tracks) that `coach plan init` copies
+    schemas/          JSON schemas of tree.json and state.json
+  tests/              pytest suite (one test_*.py per module or feature), plus helpers:
     conftest.py       shared test setup
-    fixtures/         small MusicXML files for the tests
+    mid_fixtures.py   builds small .mid files for the tests
+    fake_pdmx.py      builds fake PDMX data for tests and for trying the page
+    fixtures/, analysis_fixtures/   small MusicXML files and analysis inputs
   web/
     package.json
     package-lock.json     locked npm dependencies (commit it)
@@ -155,6 +137,8 @@ uv run coach scores sources                      # list the score sources
 uv run coach scores sync pdmx                    # load the PDMX catalogue into the index
 uv run coach scores sync pdmx --from C:\path\PDMX.csv   # load the catalogue from a local copy
 uv run coach scores fetch-archive pdmx           # download the PDMX archive (one time, 1.9 GB)
+uv run coach scores sync gen                     # make the generated exercises for the skill tree drills
+uv run coach scores sync scales                  # make the scales and arpeggios (all 12 keys)
 uv run coach scores search "fur elise" --piano --difficulty 1-2   # piano scores, difficulty 1 or 2
 uv run coach scores search --composer bach --max-seconds 120     # Bach, up to 2 minutes
 uv run coach scores download 1234 5678           # download scores into your library
@@ -192,6 +176,24 @@ uv run coach log [--json]                        # minutes per day, practice str
 - `analyse` also takes `--score-file <file>` (a MusicXML file instead of a library score), `--hands both|right|left`, `--bars A-B` (or one bar), `--from-bar N`, `--loops N`, and `--start-ms`/`--end-ms` for a session .mid. A session needs `--score` or `--score-file`.
 - Saved attempts are in `coach/data/attempts/` (written by `coach serve` when a run ends). Reports are in `coach/data/reports/`. The `coach/data` folder moves when `RUSTY_PIANO_DATA_DIR` is set; `--attempts-dir`, `--sessions-dir` and `--reports-dir` override one folder.
 - `log` counts the time covered by session .mid files (`coach/data/sessions/`) and saved attempts. Overlapping time counts once and spans are split at midnight. `--days N` sets the window shown (default 14). `--today YYYY-MM-DD` sets today, and `--utc` counts dates in UTC instead of local time. Missing folders count as no practice; `log` never creates them.
+
+## Practice plan and evidence
+
+Run these in `coach/`:
+
+```
+uv run coach plan init                          # create tree.json and state.json from the seed (never overwrites)
+uv run coach plan check                         # validate tree.json, state.json and today.md
+uv run coach plan link <drill-id>               # print a page link that opens a drill (bars, hands, tempo, mode, loop, ramp)
+uv run coach plan link --score <id> --bars 5-8 --hands right --tempo 70 --mode wait --loop
+uv run coach evidence                           # add up attempts and reports per drill, piece, bar and feature, plus habits
+uv run coach evidence --update-state            # also write the gate numbers into state.json
+uv run coach sight add-drills                   # append the seed tree's sr.* sight-reading drills to your tree.json
+```
+
+- Gates per skill: **good** (3 clean runs on at least 2 days), **solid** (5 clean runs in a 7-day window over 3 days, no open habits) and **mastered** (cold runs after at least 7 days away, on 2 materials). The exact numbers are in `default_gates` of `seed/tree.json`; a mastered skill is flagged rusty after 30 days (`decay_days`) without a clean run.
+- `evidence` takes `--since`, `--all` (ignore `last_review`), `--today`, `--utc`, `--json`, `--habit-days N` (default 14) and the folder options of `analyse`.
+- The plan files are described in `data/plan/README.md`.
 
 ## Ear training
 
@@ -243,4 +245,5 @@ Git rule: everything under `data/` is ignored by the main repo except the README
 
 ## Not built yet
 
-- generated exercises beyond the first tracks (R1-R3, T1-T2, K1)
+- importing sheet music from a PDF or a photo
+- `scores.py` is still a placeholder (`compare.py` builds the expected notes per bar)

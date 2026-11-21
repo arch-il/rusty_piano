@@ -18,6 +18,7 @@ Run inside `engine/`:
     cargo run -- --play <file|latest>  play a .mid file (latest = newest recording), then exit
     cargo run --release -- --render <test|file.mid|latest> [--ref <file.wav>]   render offline to WAV + metrics JSON (see Render and metrics)
     cargo run -- --record-wav          also save the session audio as .wav
+    cargo run -- --no-record           do not record the session (--record-dir <path> moves it)
     cargo run -- --list                list MIDI ports and audio output devices
     cargo run -- --port <index|name>   connect to a MIDI port by index or name (any case)
     cargo run -- --audio-device <index|name>   pick the audio output
@@ -28,6 +29,7 @@ Run inside `engine/`:
     cargo run -- --transpose <n> --octave <n>   shift the sound by semitones/octaves (see Transpose and octave shift)
     cargo run -- --metronome <bpm>     live session with the metronome click on (see Metronome)
     cargo run -- --setup               open the setup window, then play (also opens by itself when setup.ron is missing)
+    cargo run --release -- --fit-check <folder>   compare a modal profile with reference renders (see Fitting)
     cargo test
 
 Tip: `cargo run --release` gives the smoothest playback.
@@ -218,7 +220,7 @@ A second run with no change in the profile prints `vs previous: 39 segments, mea
 
 ## Fitting to reference renders
 
-EXPERIMENTAL. A fitter compares the physical model with Pianoteq 9 renders (single notes at velocities 16 to 127 plus the test piece) and tunes the per-note table and a few globals. Status: `profiles/physical.ron` and `profiles/physical_sl990.ron` ship the fit (88 notes, 2026-11-06). The shipped-profile gate is `cargo test --release --test fitted_profiles` (needs the private references for the full per-note gate; it is skipped without them). Per-note gate misses that were accepted are listed in `tests/fitted_profiles.rs` (`EXCEPTIONS`) and in `docs/reports/2026-11-06-physical-engine-m6-fit.md`.
+EXPERIMENTAL. A fitter compares the physical model with Pianoteq 9 renders (single notes at velocities 16 to 127 plus the test piece) and tunes the per-note table and a few globals. Status: `profiles/physical.ron` and `profiles/physical_sl990.ron` ship the fit (88 notes, 2026-11-06). The shipped-profile gate is `cargo test --release --test fitted_profiles` (needs the private references for the full per-note gate; it is skipped without them). Per-note gate misses that were accepted are listed in `tests/fitted_profiles.rs` (`EXCEPTIONS`).
 
 Commands, from `engine/`:
 
@@ -274,7 +276,7 @@ Commands, from `engine/`:
 
 ## Module map
 
-- `cli`    - command-line argument parsing (`--list`, `--port`, `--audio-device`, `--buffer`, `--profile`, `--backend`, `--demo`, `--no-record`, `--record-dir`, `--record-wav`, `--play`, `--ws-port`, `--render`, `--ref`, `--render-dir`, `--setup`, `--transpose`, `--octave`, `--metronome`, `--help`)
+- `cli`    - command-line argument parsing (`--list`, `--port`, `--audio-device`, `--buffer`, `--profile`, `--backend`, `--demo`, `--no-record`, `--record-dir`, `--record-wav`, `--play`, `--ws-port`, `--render`, `--ref`, `--render-dir`, `--setup`, `--transpose`, `--octave`, `--metronome`, `--fit`, `--fit-check`, `--fit-halo`, `--fit-out`, `--fit-notes`, `--fit-passes`, `--fit-threads`, `--help`)
 - `midi`   - `MidiEvent`, MIDI byte parsing, port selection (midir input is wired in the binary)
 - `audio`  - backend selection and dispatch (WASAPI shared via cpal in audio.rs, `audio/asio.rs` ASIO via cpal's asio feature, `audio/wasapi_exclusive.rs` via the wasapi crate), device list/selection, MIDI-to-audio queue
 - `sound`  - `SoundEngine` trait, `simple_piano` live voice, `test_tone` sine, `modal_piano` physical-model piano (`--profile physical`), `waveguide_piano` placeholder for a future waveguide engine
@@ -300,6 +302,7 @@ Commands, from `engine/`:
 - `prompt` - (src/prompt.rs) ear-training prompts: `play_notes`/`play_stop` parsing, second sound engine on the audio thread, `play_ack` JSON
 - `wav_record` - session audio to WAV: non-blocking block hand-off (the audio thread never waits) from the audio thread to a writer thread (hound), finish and save message
 - `audio/extras` - extra audio-thread processors (metronome click and WAV tap) attached to the output
+- `flexasio` - reads `%USERPROFILE%\FlexASIO.toml` and rewrites only its `[output]` device line for the setup window
 - `keyboard` - held keys, pedal and last note for the 88-key strip
 - `live`   - live event WebSocket: JSON encoder and broadcast server (tungstenite, 127.0.0.1)
 
