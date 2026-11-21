@@ -1,3 +1,4 @@
+import hashlib
 import xml.etree.ElementTree as ET
 
 import pytest
@@ -11,22 +12,24 @@ PEDAL = [e for e in EXERCISES if e.track == "pedal"]
 
 EXPR_KEYS = [
     "d1-loud-soft-rh", "d1-echo-rh", "d1-soft-loud-lh", "d1-echo-lh", "d1-three-levels",
-    "d2-held-bass", "d2-chords", "d2-lh-tune", "d2-waltz", "d2-alberti",
-    "d3-cresc-rh", "d3-cresc-lh", "d3-one-phrase", "d3-both-hands", "d3-phrase-34",
+    "d2-held-bass", "d2-chords", "d2-lh-tune", "d2-alberti", "d2-broken-chords",
+    "d3-cresc-rh", "d3-cresc-lh", "d3-one-phrase", "d3-both-hands", "d3-with-chords",
+    "d4-accents-rh", "d4-offbeat-accents", "d4-accents-lh", "d4-mixed-touch",
 ]
 PEDAL_KEYS = [
     "p1-whole-chords", "p1-half-chords", "p1-tune-over-fifths", "p1-broken-chords", "p1-rh-chords",
+    "p2-melody-per-bar", "p2-two-changes", "p2-broken-accomp", "p2-direct-pedal",
 ]
 
 
 @pytest.fixture(scope="module")
 def expr_loaded(tmp_path_factory):
-    return check_exercises(EXPR, tmp_path_factory.mktemp("expr"), track="expression", nodes=["D1", "D2", "D3"])
+    return check_exercises(EXPR, tmp_path_factory.mktemp("expr"), track="expression", nodes=["D1", "D2", "D3", "D4"])
 
 
 @pytest.fixture(scope="module")
 def pedal_loaded(tmp_path_factory):
-    return check_exercises(PEDAL, tmp_path_factory.mktemp("pedal"), track="pedal", nodes=["P1"])
+    return check_exercises(PEDAL, tmp_path_factory.mktemp("pedal"), track="pedal", nodes=["P1", "P2"])
 
 
 def xml(ex):
@@ -38,15 +41,40 @@ def by_key(key):
 
 
 def test_house_rules(expr_loaded, pedal_loaded):
-    assert len(expr_loaded) == 15
-    assert len(pedal_loaded) == 5
-    assert len(EXERCISES) == 20
+    assert len(expr_loaded) == 19
+    assert len(pedal_loaded) == 9
+    assert len(EXERCISES) == 28
     assert [e.key for e in EXPR] == EXPR_KEYS
     assert [e.key for e in PEDAL] == PEDAL_KEYS
 
 
+def test_d4_accents():
+    for ex in EXPR:
+        if ex.node == "D4":
+            assert "<accent" in ex.musicxml(), ex.key
+
+
+def test_p2_direct_pedal():
+    types = [p.get("type") for p in xml(by_key("p2-direct-pedal")).iter("pedal")]
+    assert "start" in types and "stop" in types
+
+
+PINS = {
+    "d1-loud-soft-rh": "eb3d36b874f3fcd9", "d1-echo-rh": "f342fe62a415c2ba",
+    "d1-soft-loud-lh": "a839ccac9e1f9266", "d1-echo-lh": "2f9a5371ff01dd3c",
+    "d1-three-levels": "5afec7a3d275841e",
+}
+
+
+@pytest.mark.parametrize("key", sorted(PINS))
+def test_d1_pins(key):
+    assert hashlib.sha256(by_key(key).musicxml().encode("utf-8")).hexdigest()[:16] == PINS[key]
+
+
 def test_dynamics():
     for ex in EXPR:
+        if ex.node == "D4":
+            continue
         assert xml(ex).findall(".//dynamics"), ex.key
 
 
@@ -65,12 +93,13 @@ def test_pedal():
         types = [p.get("type") for p in root.iter("pedal")]
         assert types[0] == "start", ex.key
         assert types[-1] == "stop", ex.key
-        assert "change" in types, ex.key
+        if ex.key != "p2-direct-pedal":
+            assert "change" in types, ex.key
         staffs = set()
         for d in root.iter("direction"):
             if d.find("direction-type/pedal") is not None:
                 staffs.add(d.find("staff").text)
-        expected = {"1"} if ex.key == "p1-rh-chords" else {"2"}
+        expected = {"1"} if ex.key in ("p1-rh-chords", "p2-direct-pedal") else {"2"}
         assert staffs == expected, ex.key
 
 
@@ -98,4 +127,4 @@ def test_meta():
         assert ex.bpm == 72, ex.key
     for ex in PEDAL:
         assert ex.bpm == 60, ex.key
-    assert {e.key for e in EXERCISES if e.time == "3/4"} == {"d2-waltz", "d3-phrase-34"}
+    assert not [e for e in EXERCISES if e.time != "4/4"]

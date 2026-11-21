@@ -211,12 +211,16 @@ impl HaloSearch {
     }
 }
 
+/// A halo fit on fewer usable notes is not trusted enough to replace the shipped resonance.
+pub const MIN_HALO_NOTES: usize = 3;
+
 #[derive(Debug, Clone)]
 pub struct HaloFit {
     pub resonance: ModalResonance,
     pub error_before: f64,
     pub error_after: f64,
     pub report: String,
+    pub used: Vec<u8>,
 }
 
 fn rows_text(rows: &[HaloRow]) -> String {
@@ -248,7 +252,7 @@ pub fn fit_halo(base: &ModalProfile, search: &HaloSearch, threads: usize) -> Hal
         report.push_str("halo: fewer than 2 usable notes, resonance left unchanged
 ");
         let (e, _) = halo_error_on(base, threads, &used);
-        return HaloFit { resonance: base.resonance, error_before: e, error_after: e, report };
+        return HaloFit { resonance: base.resonance, error_before: e, error_after: e, report, used };
     }
     let (error_before, rows_before) = halo_error_on(base, threads, &used);
     let mut cur = ModalResonance::default();
@@ -297,7 +301,7 @@ pub fn fit_halo(base: &ModalProfile, search: &HaloSearch, threads: usize) -> Hal
     let (error_after, rows_after) = halo_error_on(&fitted, threads, &used);
     report.push_str(&format!("before: error {error_before:.2}\n{}", rows_text(&rows_before)));
     report.push_str(&format!("after: error {error_after:.2}\n{}", rows_text(&rows_after)));
-    HaloFit { resonance: cur, error_before, error_after, report }
+    HaloFit { resonance: cur, error_before, error_after, report, used }
 }
 
 #[cfg(test)]

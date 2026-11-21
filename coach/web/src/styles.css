@@ -1231,6 +1231,10 @@ a.btn {
 
 .skills-graph {
   padding: var(--space-4);
+}
+
+.skills-view.panel-open .skills-graph {
+  width: max-content;
   padding-right: calc(var(--skills-panel-width) + var(--space-4));
 }
 
@@ -1274,7 +1278,7 @@ a.btn {
 
 .skill-name {
   font-family: var(--font-ui);
-  font-size: var(--font-size-small);
+  font-size: var(--font-size-xs);
   fill: var(--color-ink);
 }
 
@@ -2558,6 +2562,7 @@ a.btn {
   min-height: 140px;
   padding: var(--space-2);
   overflow-x: auto;
+  overflow-y: hidden;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
@@ -2573,6 +2578,35 @@ a.btn {
   font-size: var(--font-size-small);
   color: var(--color-ink);
   overflow-wrap: anywhere;
+}
+
+/* ===== Server banner ===== */
+.server-banner {
+  position: fixed;
+  top: calc(var(--topbar-height) + var(--space-2));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 55;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  max-width: calc(100vw - 2 * var(--space-2));
+  box-sizing: border-box;
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-error);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  color: var(--color-ink);
+  font-size: var(--font-size-small);
+}
+
+.server-banner[hidden] {
+  display: none;
+}
+
+.server-banner code {
+  font-family: var(--font-mono);
 }
 
 /* ===== Top bar responsive: keep this section last in the file ===== */
@@ -2758,8 +2792,17 @@ a.btn {
 }
 
 @media (max-width: 580px) {
-  body {
-    --topbar-height: 188px;
+  .replay-bar {
+    flex-wrap: wrap;
+    justify-content: center;
+    border-radius: var(--radius-lg);
+    width: calc(100vw - 2 * var(--space-3));
+  }
+
+  .server-banner {
+    top: auto;
+    bottom: calc(var(--piano-height) + var(--space-2));
+    flex-wrap: wrap;
   }
 
   .cursor-controls,

@@ -4,8 +4,8 @@ import shutil
 from rusty_piano_coach import plan
 from rusty_piano_coach.library.scales import BY_KEY
 
-SCALE_NODES = ["S1", "S2", "S3", "S4", "S5", "S6"]
-DRILL_COUNTS = [8, 6, 8, 8, 5, 6]
+SCALE_NODES = ["S1", "S2", "S3", "S7", "S9", "S8", "S10", "S11", "S4", "S5", "S6"]
+DRILL_COUNTS = [8, 6, 8, 8, 8, 8, 8, 6, 8, 5, 6]
 REQUIRES = {
     "S1": [],
     "S2": ["S1"],
@@ -13,6 +13,11 @@ REQUIRES = {
     "S4": ["S2", "S3"],
     "S5": ["S4"],
     "S6": ["S5"],
+    "S7": ["S1"],
+    "S8": ["S7"],
+    "S9": ["S2"],
+    "S10": ["S9"],
+    "S11": ["S10", "S8"],
 }
 HANDS = {"rh": "right", "lh": "left", "ht": "both"}
 
@@ -36,10 +41,10 @@ def test_scale_nodes():
     nodes = scale_nodes(tree)
     assert [n["id"] for n in nodes] == SCALE_NODES
     skills = [n for n in tree["nodes"] if n.get("kind") != "piece" and n["track"] != "ear"]
-    assert [n["id"] for n in skills[-6:]] == SCALE_NODES
+    assert [n["id"] for n in skills[-11:]] == SCALE_NODES
     assert {n["id"]: n["requires"] for n in nodes} == REQUIRES
     assert [len(n["drills"]) for n in nodes] == DRILL_COUNTS
-    assert sum(DRILL_COUNTS) == 41
+    assert sum(DRILL_COUNTS) == 79
 
 
 def test_scale_drills_match_catalogue():

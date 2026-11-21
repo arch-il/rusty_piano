@@ -39,16 +39,16 @@ def check_exercises(exercises, tmp_dir, *, track, nodes, per_node=(4, 6)):
         assert ex.node in nodes, f"{k}: node {ex.node} not in nodes"
         counts[ex.node] += 1
         if ex.hands == "right":
-            assert ex.rh != "" and ex.lh == "", f"{k}: right hand only"
+            assert ex.rh != "" and not (ex.lh or ex.lh2), f"{k}: right hand only"
         elif ex.hands == "left":
-            assert ex.lh != "" and ex.rh == "", f"{k}: left hand only"
+            assert ex.lh != "" and not (ex.rh or ex.rh2), f"{k}: left hand only"
         else:
-            assert ex.hands == "both" and (ex.rh or ex.lh), f"{k}: both hands need notes"
+            assert ex.hands == "both" and (ex.rh or ex.rh2 or ex.lh or ex.lh2), f"{k}: both hands need notes"
         assert ex.mode in ("wait", "live"), f"{k}: bad mode"
         assert 40 <= ex.bpm <= 120, f"{k}: bpm out of range"
         assert ex.goal, f"{k}: empty goal"
-        assert ex.time in ("2/4", "3/4", "4/4"), f"{k}: bad time"
-        assert ex.fifths in (-1, 0, 1), f"{k}: bad fifths"
+        assert ex.time in ("2/4", "3/4", "4/4", "6/8", "2/2"), f"{k}: bad time"
+        assert -4 <= ex.fifths <= 4, f"{k}: bad fifths"
         text = ex.musicxml()
         assert text == ex.musicxml(), f"{k}: not deterministic"
         ET.fromstring(text.split("\n", 1)[1])

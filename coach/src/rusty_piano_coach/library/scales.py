@@ -100,7 +100,7 @@ def slug(name):
     return name.lower().replace("#", "s")
 
 
-def node_of(kind, octaves, hand):
+def node_of(kind, octaves, hand, pc):
     if kind in ("chromatic", "arp-dom7", "arp-dim7") or octaves == 4:
         return "S6"
     if hand == "ht":
@@ -108,7 +108,19 @@ def node_of(kind, octaves, hand):
     if octaves == 2:
         return "S4"
     if kind == "major":
-        return "S1"
+        if pc in (0, 7, 5, 2):
+            return "S1"
+        if pc in (9, 4, 10, 3):
+            return "S7"
+        return "S8"
+    if kind == "minor-harmonic":
+        if pc == 9:
+            return "S2"
+        if pc in (4, 2, 11, 7):
+            return "S9"
+        if pc in (0, 5, 6, 1):
+            return "S10"
+        return "S11"
     if kind.startswith("minor-"):
         return "S2"
     return "S3"
@@ -131,7 +143,7 @@ def make_scale(kind, pc, octaves, hand):
     tonic = tonic_name(kind, pc)
     key = f"{slug(tonic)}-{kind}-{octaves}oct-{hand}"
     title = KIND_TITLE[kind].format(t=tonic) + ", " + OCTAVE_TEXT[octaves] + ", " + HAND_TEXT[hand]
-    node = node_of(kind, octaves, hand)
+    node = node_of(kind, octaves, hand, pc)
     tags = (f"{'arpeggio arpeggios' if kind.startswith('arp-') else 'scale scales'} {slug(tonic)} {KIND_WORDS[kind]} "
             f"{octaves}oct {HAND_WORDS[hand]} {node.lower()}")
     return Scale(key, kind, pc, tonic, octaves, hand, title, node, tags)

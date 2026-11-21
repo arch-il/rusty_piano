@@ -3,10 +3,12 @@ import json
 import sys
 
 from rusty_piano_coach import plan
+from rusty_piano_coach.library import gen
 
 from . import all_exercises, all_piece_nodes
 from .core import drill
 
+TOGETHER_TEMPO = {'piece-minuet-in-g': 70}
 LEARN_GOAL = "Learn the notes slowly in wait mode, then play the whole piece in live mode."
 
 
@@ -18,6 +20,9 @@ def piece_node(meta, ex):
                   hands="right", mode="wait", goal=LEARN_GOAL),
             drill(ex, id=base + "-lh", title=meta["title"] + ", left hand alone",
                   hands="left", mode="wait", goal=LEARN_GOAL),
+            drill(ex, id=base + "-together", title=meta["title"] + ", hands together slowly",
+                  hands="both", mode="wait", tempo=TOGETHER_TEMPO.get(meta["id"], ex.drill_tempo),
+                  goal="Put the hands together slowly in wait mode before the live run."),
             drill(ex),
         ]
     else:
@@ -43,21 +48,38 @@ def extend(tree):
     out = copy.deepcopy(tree)
     nodes = {n["id"]: n for n in out["nodes"]}
     exercises = all_exercises()
+    live_keys = {e.key for e in gen.all_exercises()}
+    for node in out["nodes"]:
+        if node.get("kind") == "piece":
+            continue
+        node["drills"] = [
+            d for d in node["drills"]
+            if not (d["score"].startswith("gen:") and d["score"][4:] not in live_keys)
+        ]
     for ex in exercises:
         if ex.node.startswith("piece-"):
             continue
         if ex.node not in nodes:
             raise ValueError(f"exercise {ex.key} names unknown node {ex.node}")
         d = drill(ex)
-        node = nodes[ex.node]
-        if not any(x["id"] == d["id"] for x in node["drills"]):
-            node["drills"].append(d)
+        drills = nodes[ex.node]["drills"]
+        for i, x in enumerate(drills):
+            if x["id"] == d["id"]:
+                drills[i] = d
+                break
+        else:
+            drills.append(d)
     by_key = {ex.key: ex for ex in exercises}
     for meta in all_piece_nodes():
-        if meta["id"] not in nodes:
-            node = piece_node(meta, by_key[meta["id"]])
-            out["nodes"].append(node)
-            nodes[node["id"]] = node
+        node = piece_node(meta, by_key[meta["id"]])
+        if meta["id"] in nodes:
+            i = out["nodes"].index(nodes[meta["id"]])
+            out["nodes"][i] = node
+        else:
+            last = max((i for i, n in enumerate(out["nodes"]) if n.get("kind") == "piece"),
+                       default=len(out["nodes"]) - 1)
+            out["nodes"].insert(last + 1, node)
+        nodes[meta["id"]] = node
     return out
 
 

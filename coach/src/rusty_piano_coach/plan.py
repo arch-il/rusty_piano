@@ -1,6 +1,7 @@
 """The practice plan: tree.json (skills and drills), state.json (levels and habits), today.md (the day's links)."""
 
 import argparse
+import copy
 import json
 import os
 import re
@@ -201,6 +202,355 @@ def migrate_tree(plan_dir) -> bool:
                 except OSError:
                     pass
             return False
+    except Exception:
+        return False
+
+
+# Technique track before the old K4 (thumb-under C/G/F scales, a repeat of S1) was dropped:
+# drill suffixes per old node number; old node n had drills k{n}.<suffix> on scores gen:k{n}-<suffix>.
+_OLD_TECHNIQUE = {
+    4: ("c-rh", "c-lh", "g-rh", "g-lh", "f-rh", "f-lh"),
+    5: ("c-to-g", "octave-rh", "octave-lh", "c-to-a", "no-rest"),
+    6: ("c-chord-rh", "c-chord-lh", "c-g7-rh", "c-f-g-lh", "chords-quarters"),
+    7: ("broken-c-rh", "broken-lh", "alberti-lh", "arpeggio-rh", "broken-c-f-g"),
+}
+_TECHNIQUE_RENAME = {f"K{n}": f"K{n - 1}" for n in (5, 6, 7)}
+_TECHNIQUE_GONE = sorted(_TECHNIQUE_RENAME)[-1]  # the old top node id; no node has it after the fix
+TECHNIQUE_FIX = "technique K4 removed (it repeated S1), later technique nodes moved down by one"
+
+
+def _old_scores(n) -> set:
+    return {f"gen:k{n}-{s}" for s in _OLD_TECHNIQUE[n]}
+
+
+def _technique_tree_is_old(nodes) -> bool:
+    if not all(k in nodes for k in ("K5", "K6", _TECHNIQUE_GONE, "K2", "S1")):
+        return False
+    for n in (5, 6, 7):
+        if not any(d.get("score") in _old_scores(n) for d in nodes[f"K{n}"]["drills"]):
+            return False
+    if "K4" not in nodes:
+        return True
+    return sorted(d.get("score") for d in nodes["K4"]["drills"]) == sorted(_old_scores(4))
+
+
+def _technique_tree_is_new(nodes) -> bool:
+    if _TECHNIQUE_GONE in nodes or "K6" not in nodes:
+        return False
+    new_scores = {f"gen:k6-{s}" for s in _OLD_TECHNIQUE[7]}
+    return any(d.get("score") in new_scores for d in nodes["K6"]["drills"])
+
+
+def _state_has_gone(state) -> bool:
+    if _TECHNIQUE_GONE in state["nodes"]:
+        return True
+    return any(_TECHNIQUE_GONE in h["nodes"] for h in state["habits"] if isinstance(h, dict) and isinstance(h.get("nodes"), list))
+
+
+def _fix_technique_tree(tree):
+    tree = copy.deepcopy(tree)
+    tree["nodes"] = [n for n in tree["nodes"] if not (isinstance(n, dict) and n.get("id") == "K4")]
+    for node in tree["nodes"]:
+        old_id = node.get("id")
+        new_id = _TECHNIQUE_RENAME.get(old_id, old_id)
+        requires = []
+        for r in node["requires"]:
+            mapped = ["K2", "S1"] if r == "K4" else [_TECHNIQUE_RENAME.get(r, r)]
+            for x in mapped:
+                if x != new_id and x not in requires:
+                    requires.append(x)
+        node["requires"] = requires
+        node["id"] = new_id
+        for n in (5, 6, 7):
+            if old_id == f"K{n}":
+                for d in node["drills"]:
+                    if d["id"].startswith(f"k{n}."):
+                        d["id"] = f"k{n - 1}." + d["id"][len(f"k{n}.") :]
+                    if d["score"].startswith(f"gen:k{n}-"):
+                        d["score"] = f"gen:k{n - 1}-" + d["score"][len(f"gen:k{n}-") :]
+    return tree
+
+
+def _fix_technique_state(state):
+    state = copy.deepcopy(state)
+    nodes = {}
+    for nid, entry in state["nodes"].items():
+        if nid != "K4":
+            nodes[_TECHNIQUE_RENAME.get(nid, nid)] = entry
+    state["nodes"] = nodes
+    for habit in state["habits"]:
+        if isinstance(habit, dict) and isinstance(habit.get("nodes"), list):
+            ids = []
+            for nid in habit["nodes"]:
+                new_id = _TECHNIQUE_RENAME.get(nid, nid)
+                if nid != "K4" and new_id not in ids:
+                    ids.append(new_id)
+            habit["nodes"] = ids
+    return state
+
+
+def _dump_like(obj, text) -> str:
+    if "\n" not in text:
+        return json.dumps(obj, ensure_ascii=False)
+    nl = "\r\n" if "\r\n" in text else "\n"
+    out = json.dumps(obj, indent=2, ensure_ascii=False).replace("\n", nl)
+    return out + nl if text.endswith("\n") else out
+
+
+def _replace_text(path, text) -> bool:
+    tmp = None
+    try:
+        fd, tmp = tempfile.mkstemp(dir=path.parent, prefix=f".{path.name}.", suffix=".tmp")
+        with os.fdopen(fd, "wb") as f:
+            f.write(text.encode("utf-8"))
+        try:
+            shutil.copymode(path, tmp)
+        except OSError:
+            pass
+        os.replace(tmp, path)
+        return True
+    except OSError:
+        if tmp is not None and os.path.exists(tmp):
+            try:
+                os.remove(tmp)
+            except OSError:
+                pass
+        return False
+
+
+def migrate_technique(plan_dir) -> bool:
+    """One-off fix for plans made before the old technique K4 was dropped."""
+    try:
+        tree_path = Path(plan_dir) / TREE_FILE
+        state_path = Path(plan_dir) / STATE_FILE
+        # State is read first so concurrent callers (/api/plan polling during coach evidence) never rename an old tree against an already-new state.
+        state = state_text = None
+        if state_path.exists():
+            try:
+                state_text = state_path.read_bytes().decode("utf-8")
+                state = json.loads(state_text)
+            except (OSError, UnicodeDecodeError, ValueError):
+                return False
+            if not isinstance(state, dict) or not isinstance(state.get("nodes"), dict) or not isinstance(state.get("habits"), list):
+                return False
+        try:
+            tree_text = tree_path.read_bytes().decode("utf-8")
+            tree = json.loads(tree_text)
+        except (OSError, UnicodeDecodeError, ValueError):
+            return False
+        if not isinstance(tree, dict) or not isinstance(tree.get("nodes"), list):
+            return False
+        nodes = {n["id"]: n for n in tree["nodes"] if isinstance(n, dict) and isinstance(n.get("id"), str)}
+        new_tree = new_state = None
+        if _technique_tree_is_old(nodes):
+            new_tree = _fix_technique_tree(tree)
+            if state is not None:
+                new_state = _fix_technique_state(state)
+        elif _technique_tree_is_new(nodes) and state is not None and _state_has_gone(state):
+            new_state = _fix_technique_state(state)
+        else:
+            return False
+        wrote = False
+        if new_tree is not None:
+            if not _replace_text(tree_path, _dump_like(new_tree, tree_text)):
+                return False
+            wrote = True
+        if new_state is not None and new_state != state:
+            if _replace_text(state_path, _dump_like(new_state, state_text)):
+                wrote = True
+        return wrote
+    except Exception:
+        return False
+
+
+SKILL_TREE_FIX = "skill tree redesign: new nodes and drills from the seed, duplicate drills removed, snippet nodes R9/R10 merged into R2/R3"
+_REDESIGN_REMOVED = frozenset(
+    "r5.read-2 r8.sight-1 r8.sight-2 r8.sight-3 r8.sight-4 r8.sight-5 t4.after-rest t5.dotted-34 t7.triplets-34 "
+    "k6.arpeggio-rh c2.waltz c4.waltz d2.waltz d3.phrase-34".split()
+)
+_REDESIGN_CHANGED = frozenset(
+    "c2.held-c-g c3.octaves c3.contrary c3.tenths-halves c3.tenths-quarters c3.melody-bass c4.quarters-halves "
+    "c4.eighths-quarters c4.halves-quarters c4.dotted-tune d2.held-bass d2.chords d2.lh-tune d2.alberti d3.cresc-rh "
+    "d3.cresc-lh d3.both-hands r4.middle-c r4.read-1 r4.read-2 r4.read-3 "
+    "ear.updown-2 s2.a-natural-rh s2.a-natural-lh s2.a-harmonic-rh s2.a-harmonic-lh t6.syncopation".split()
+)
+_SNIPPETS = (("R9", "R2", "r2."), ("R10", "R3", "r3."))
+
+
+def _remap_requires(requires, merged, own_id):
+    out = []
+    for r in requires:
+        r = merged.get(r, r)
+        if r != own_id and r not in out:
+            out.append(r)
+    return out
+
+
+def _rebase_skill_tree(tree, seed, merged):
+    live = [n for n in tree["nodes"] if isinstance(n, dict) and isinstance(n.get("id"), str)]
+    live_by_id = {n["id"]: n for n in live}
+    live_tracks = {t.get("id") for t in tree.get("tracks", []) if isinstance(t, dict)}
+    live_drills = {d["id"]: d for n in live for d in n.get("drills", [])}
+    seed_ids = {n["id"] for n in seed["nodes"]}
+    seed_drill_ids = {d["id"] for n in seed["nodes"] for d in n["drills"]}
+    live_only = [n for n in live if n["id"] not in seed_ids and n["id"] not in merged]
+    kept_ids = {d["id"] for n in live_only for d in n.get("drills", [])}
+    keep_sr = any(i.startswith("sr.") for i in live_drills)
+
+    def extras(node):
+        return [
+            copy.deepcopy(d)
+            for d in node.get("drills", [])
+            if d["id"] not in seed_drill_ids and d["id"] not in _REDESIGN_REMOVED and d["id"] not in kept_ids
+        ]
+
+    out = []
+    for snode in seed["nodes"]:
+        if snode.get("track") in ("scales", "ear") and snode["track"] not in live_tracks:
+            continue
+        node = copy.deepcopy(snode)
+        drills = []
+        for d in node["drills"]:
+            if d["id"] in kept_ids or (d["id"].startswith("sr.") and not keep_sr):
+                continue
+            if d["id"] in live_drills and d["id"] not in _REDESIGN_CHANGED:
+                d = copy.deepcopy(live_drills[d["id"]])
+            drills.append(d)
+        node["drills"] = drills
+        lnode = live_by_id.get(node["id"])
+        if lnode is not None:
+            if "gates" in lnode:
+                node["gates"] = copy.deepcopy(lnode["gates"])
+            node["drills"] += extras(lnode)
+            for sid, target in merged.items():
+                if target == node["id"] and sid in live_by_id:
+                    node["drills"] += extras(live_by_id[sid])
+            for r in lnode.get("requires", []):
+                if r in kept_ids_nodes(live_only) and r not in node["requires"]:
+                    node["requires"].append(r)
+        out.append(node)
+    for lnode in live_only:
+        node = copy.deepcopy(lnode)
+        node["requires"] = _remap_requires(node.get("requires", []), merged, node["id"])
+        pos = len(out)
+        i = live.index(lnode)
+        present = {n["id"]: k for k, n in enumerate(out)}
+        for prev in reversed(live[:i]):
+            if prev["id"] in present:
+                pos = present[prev["id"]] + 1
+                break
+        out.insert(pos, node)
+    new = copy.deepcopy(tree)
+    new["nodes"] = out
+    seed_track_ids = {t["id"] for t in seed["tracks"]}
+    tracks = [t for t in seed["tracks"] if t["id"] not in ("scales", "ear") or t["id"] in live_tracks]
+    new["tracks"] = tracks + [t for t in tree.get("tracks", []) if isinstance(t, dict) and t.get("id") not in seed_track_ids]
+    return new
+
+
+def kept_ids_nodes(live_only):
+    return {n["id"] for n in live_only}
+
+
+def _merge_snippets_in_tree(tree, seed, merged):
+    new = copy.deepcopy(tree)
+    by_id = {n["id"]: n for n in new["nodes"] if isinstance(n, dict) and isinstance(n.get("id"), str)}
+    seed_nodes = {n["id"]: n for n in seed["nodes"]}
+    for sid, target in merged.items():
+        tnode = by_id[target]
+        union = tnode["drills"] + by_id[sid]["drills"]
+        order = [d["id"] for d in seed_nodes[target]["drills"]] if target in seed_nodes else []
+        rank = {i: k for k, i in enumerate(order)}
+        known = sorted((d for d in union if d["id"] in rank), key=lambda d: rank[d["id"]])
+        seen = set()
+        tnode["drills"] = []
+        for d in known + [d for d in union if d["id"] not in rank]:
+            if d["id"] not in seen:
+                seen.add(d["id"])
+                tnode["drills"].append(d)
+    new["nodes"] = [n for n in new["nodes"] if not (isinstance(n, dict) and n.get("id") in merged)]
+    for n in new["nodes"]:
+        if isinstance(n, dict) and isinstance(n.get("requires"), list):
+            n["requires"] = _remap_requires(n["requires"], merged, n.get("id"))
+    return new
+
+
+def _fix_snippet_state(state, gone):
+    state = copy.deepcopy(state)
+    for sid in gone:
+        state["nodes"].pop(sid, None)
+    for habit in state["habits"]:
+        if isinstance(habit, dict) and isinstance(habit.get("nodes"), list):
+            ids = []
+            for nid in habit["nodes"]:
+                nid = gone.get(nid, nid)
+                if nid not in ids:
+                    ids.append(nid)
+            habit["nodes"] = ids
+    return state
+
+
+def migrate_skill_tree(plan_dir) -> bool:
+    """One-off fix for plans made before the skill tree redesign."""
+    try:
+        tree_path = Path(plan_dir) / TREE_FILE
+        state_path = Path(plan_dir) / STATE_FILE
+        state = state_text = None
+        if state_path.exists():
+            try:
+                state_text = state_path.read_bytes().decode("utf-8")
+                state = json.loads(state_text)
+            except (OSError, UnicodeDecodeError, ValueError):
+                return False
+            if not isinstance(state, dict) or not isinstance(state.get("nodes"), dict) or not isinstance(state.get("habits"), list):
+                return False
+        try:
+            tree_text = tree_path.read_bytes().decode("utf-8")
+            tree = json.loads(tree_text)
+        except (OSError, UnicodeDecodeError, ValueError):
+            return False
+        if not isinstance(tree, dict) or not isinstance(tree.get("nodes"), list):
+            return False
+        nodes = {n["id"]: n for n in tree["nodes"] if isinstance(n, dict) and isinstance(n.get("id"), str)}
+        merged = {}
+        for sid, target, prefix in _SNIPPETS:
+            node = nodes.get(sid)
+            if node is not None and target in nodes and all(isinstance(d, dict) and str(d.get("id", "")).startswith(prefix) for d in node.get("drills", [])):
+                merged[sid] = target
+        r8 = nodes.get("R8")
+        is_old = (
+            "M1" not in nodes
+            and "R1" in nodes
+            and r8 is not None
+            and any(str(d.get("score", "")).startswith("gen:r8-sight-") for d in r8.get("drills", []))
+            and _technique_tree_is_new(nodes)
+        )
+        new_tree = None
+        if is_old:
+            new_tree = _rebase_skill_tree(tree, load_json(SEED_TREE), merged)
+        elif "M1" in nodes:
+            if merged:
+                new_tree = _merge_snippets_in_tree(tree, load_json(SEED_TREE), merged)
+        else:
+            return False
+        final = new_tree if new_tree is not None else tree
+        if new_tree is not None and validate_tree(new_tree):
+            return False
+        final_ids = {n.get("id") for n in final["nodes"] if isinstance(n, dict)}
+        new_state = None
+        if state is not None:
+            gone = {sid: target for sid, target, _ in _SNIPPETS if sid not in final_ids and target in final_ids}
+            if gone:
+                new_state = _fix_snippet_state(state, gone)
+        wrote = False
+        if new_tree is not None:
+            if not _replace_text(tree_path, _dump_like(new_tree, tree_text)):
+                return False
+            wrote = True
+        if new_state is not None and new_state != state:
+            if _replace_text(state_path, _dump_like(new_state, state_text)):
+                wrote = True
+        return wrote
     except Exception:
         return False
 
@@ -563,10 +913,10 @@ def add_plan_parser(subparsers):
     lk.add_argument("--plan-dir", default=None, help=default_help)
     lk.add_argument("--score", default=None, help="score id (needed without a drill id)")
     lk.add_argument("--bars", default=None, help="bar range A or A-B")
-    lk.add_argument("--hands", choices=["right", "left", "both"], default=None)
-    lk.add_argument("--tempo", type=int, default=None)
-    lk.add_argument("--mode", choices=["wait", "live"], default=None)
-    lk.add_argument("--loop", action=argparse.BooleanOptionalAction, default=None)
+    lk.add_argument("--hands", choices=["right", "left", "both"], default=None, help="which hands the page plays and expects")
+    lk.add_argument("--tempo", type=int, default=None, help="tempo percent (1-300)")
+    lk.add_argument("--mode", choices=["wait", "live"], default=None, help="follower mode: wait or live")
+    lk.add_argument("--loop", action=argparse.BooleanOptionalAction, default=None, help="loop the bars (--no-loop for no loop)")
     lk.add_argument("--ramp", action=argparse.BooleanOptionalAction, default=None, help="Ramp toggle: speed the loop up after each clean run")
     lk.add_argument("--target", type=int, default=None, help="ramp target tempo percent (1-300)")
     lk.add_argument("--plan", default=None, help="plan id, e.g. 2026-11-05")
@@ -634,6 +984,10 @@ def run_plan(args) -> int:
     if args.plan_command == "check":
         if migrate_tree(plan_dir):
             print("fixed: tree.json: S1 no longer requires K1")
+        if migrate_technique(plan_dir):
+            print(f"fixed: tree.json, state.json: {TECHNIQUE_FIX}")
+        if migrate_skill_tree(plan_dir):
+            print(f"fixed: tree.json, state.json: {SKILL_TREE_FIX}")
         errors, warnings = check_plan(plan_dir)
         for e in errors:
             print(f"error: {e}")

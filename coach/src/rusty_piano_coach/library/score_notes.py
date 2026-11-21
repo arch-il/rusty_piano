@@ -3,6 +3,7 @@
 import json
 import os
 import re
+import sqlite3
 import threading
 import time
 from datetime import datetime, timezone
@@ -142,8 +143,11 @@ def evidence_block(scores_dir) -> dict:
     from .index import Library
 
     files_dir = (folder / "files").resolve()
-    with Library(folder) as lib:
-        rows = lib.search(None, downloaded=True, include_conflicts=True, limit=None)
+    try:
+        with Library(folder) as lib:
+            rows = lib.search(None, downloaded=True, include_conflicts=True, limit=None)
+    except sqlite3.Error:
+        return {}
     out = {}
     for row in sorted(rows, key=lambda r: r["id"]):
         if not row["file_path"]:

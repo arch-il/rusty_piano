@@ -8,7 +8,9 @@ Measured 2026-11-15 on a busy 16 GB Windows machine (noisy, +-15%):
   after (v2 marshal cache, run memo, detector fast paths) cold 29.6 s, warm 4.7 s, cache 51 MB (about 2.2x warm).
 - 2000 x 400: before cold 64.5 s, warm 15.3 s, cache 152 MB; after cold 55.1 s, warm 11.8-14.0 s, cache 102 MB
   (only about 1.1-1.3x warm: the same Python operations cost 2-3x more per call at this size, peak working set 0.9 GB,
-  no paging; detection in habits.py is about 75% of the warm run)."""
+  no paging; detection in habits.py is about 75% of the warm run).
+
+Measured 2026-11-19 at 2000 x 400: warm before 12.97 s, after 11.73 s (ratio 1.11); compact per-run arrays reverted (output identical but under 1.5x)."""
 
 import argparse
 import json

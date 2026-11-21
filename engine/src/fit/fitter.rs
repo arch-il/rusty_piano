@@ -6,6 +6,9 @@ use super::evaluate::{build_errors, eval_jobs, evaluate, finish, our_features, r
 use crate::metrics::analyze;
 use crate::render::{read_wav_mono, render_events_stereo, test_piece};
 use super::reference::{measured_undamped_from, parallel_map, RefSet, AFTER_KEY_UP_S, VELOCITIES};
+use super::late_tail;
+use super::t60_order;
+use super::unison;
 use super::ron_edit::{field_value, fmt_dec, fmt_sig, set_value, unfitted, write_fitted, FITTED_FIELDS};
 use crate::midi::MidiEvent;
 use crate::sound::modal_piano::tables::{NoteAnchor, NoteTable, MAX_NOTE_ANCHORS};
@@ -911,6 +914,12 @@ pub fn fit(opts: &FitOptions, refs: &RefSet, physical_template: &str, sl990_temp
     // SN: per-note passes, N + 1 evaluations.
     let jobs = eval_jobs(refs, &notes);
     let mut states: Vec<NoteState> = notes.iter().map(|&n| NoteState::new(n)).collect();
+    let (direct, brightness_line) = super::brightness::brightness_pass(&p, refs, &notes, threads);
+    for s in states.iter_mut() {
+        if let Some(&(_, d)) = direct.iter().find(|(n, _)| *n == s.anchor.note) {
+            s.anchor.direct_db = d;
+        }
+    }
     let (table_note, shape_ref) = note_passes(&mut p, &mut states, refs, &notes, &jobs, threads, opts.passes, &[]);
 
     // SA: aftersound fold.
@@ -981,9 +990,18 @@ pub fn fit(opts: &FitOptions, refs: &RefSet, physical_template: &str, sl990_temp
     ));
 
     // SD: drop and release polish, then the level pass again.
+    eq_lines.push(unison::unison_pass(&mut p, refs, &notes, threads));
     let (drop_lines, _) = drop_polish(&mut p, refs, &notes, threads);
     eq_lines.extend(drop_lines);
-    eq_lines.push(damper_tail_pass(&mut p, refs, &notes, threads));
+    // Not applied since 2026-11-19: fitting the tail on long-hold v64 single notes made the short-hold pedal-pairs dry rings 5-22 dB too quiet (docs/reports/2026-11-19-engine-polish.md).
+    let mut tail_copy = p;
+    eq_lines.push(format!("report only (not applied): {}", damper_tail_pass(&mut tail_copy, refs, &notes, threads)));
+    eq_lines.push(format!("report only (not applied): {}", late_tail::late_tail_pass(&mut tail_copy, refs, &notes, threads)));
+    // p starts from the prior, not the template, so copy the template's damper tail globals before anything is written.
+    p.decay.damper_tail_db = t.decay.damper_tail_db;
+    p.decay.damper_tail_t60_bass_s = t.decay.damper_tail_t60_bass_s;
+    p.decay.damper_tail_t60_treble_s = t.decay.damper_tail_t60_treble_s;
+    eq_lines.push(t60_order::t60_order_pass(&mut p, &t, &notes));
     let stepped: Vec<u8> = p.notes.anchors().iter().filter(|a| a.after_level_db < 0.0).map(|a| a.note).collect();
     eq_lines.push(format!("two-stage: notes with an aftersound step (after_level_db < 0): {stepped:?}"));
     let sl_offset2 = level_pass(&mut p, refs, &notes, threads);
@@ -1017,6 +1035,19 @@ pub fn fit(opts: &FitOptions, refs: &RefSet, physical_template: &str, sl990_temp
     let profile = parse_modal_profile(&physical_ron).map_err(|e| format!("fitted physical.ron: {e}"))?;
     parse_modal_profile(&sl990_ron).map_err(|e| format!("fitted physical_sl990.ron: {e}"))?;
     let after = evaluate(&profile, refs, &notes, threads);
+
+    let mut final_q = p;
+    final_q.resonance = t.resonance;
+    eq_lines.push(match t60_order::test_piece_t60s(&final_q) {
+        Some(x) => format!(
+            "t60 order final: 36 {:.2} / 60 {:.2} / 96 {:.2} s, {}",
+            x[0],
+            x[1],
+            x[2],
+            if t60_order::order_ok(x) { "holds" } else { "broken" }
+        ),
+        None => "t60 order final: not measurable".to_string(),
+    });
 
     let mut report = String::new();
     report.push_str(&format!("Folder: {}\n", opts.folder.display()));
@@ -1053,6 +1084,7 @@ pub fn fit(opts: &FitOptions, refs: &RefSet, physical_template: &str, sl990_temp
     for l in &sv_log {
         report.push_str(&format!("  {l}\n"));
     }
+    report.push_str(&format!("{brightness_line}\n"));
     let damped_list: Vec<u8> = damper_rows.iter().filter(|r| r.damped).map(|r| r.note).collect();
     let undamped_list: Vec<u8> = damper_rows.iter().filter(|r| !r.damped).map(|r| r.note).collect();
     report.push_str(&format!(

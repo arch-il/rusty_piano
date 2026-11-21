@@ -1,6 +1,6 @@
 # rusty_piano coach
 
-The coach saves follower attempts from the sheet music page, analyses recorded sessions against scores and keeps a practice log. It also has a sheet music library (find, download, import and search MusicXML scores) and a local sheet music page that shows them. The Claude review that explains what to fix is still not built.
+The coach saves follower attempts from the sheet music page, analyses them and recorded sessions against scores, and keeps a practice log. It has a sheet music library (find, download, import and search MusicXML scores), a practice plan with a skill tree and level gates, and a local web page with the score follower, replay, sight-reading, ear training, free play, the skill tree and the log. `coach evidence` adds everything up per drill, piece and bar, so you or an AI assistant can plan the next practice from it.
 
 ## Layout
 
@@ -10,7 +10,7 @@ coach/
   uv.lock             locked Python dependencies (commit it)
   src/rusty_piano_coach/
     __init__.py       package entry point for the coach
-    cli.py            the `coach` command (sub-commands `scores`, `attempts`, `analyse`, `log` and `serve`)
+    cli.py            the `coach` command (sub-commands `scores`, `attempts`, `analyse`, `plan`, `evidence`, `sight`, `ear`, `fingering`, `log` and `serve`)
     data_paths.py     data folders (attempts, sessions, reports) under coach/data or RUSTY_PIANO_DATA_DIR
     server.py         local web server for the sheet music page (`coach serve`)
     jobs.py           one-at-a-time background jobs for `coach serve` (source setup steps, downloads)
@@ -28,13 +28,28 @@ coach/
       cli.py          `coach scores ...` commands
     attempts.py       validates, saves, lists and loads follower attempts (one JSON file per run)
     attempts_cli.py   `coach attempts list` and `coach attempts show`
-    scores.py         not implemented yet (compare.py builds the expected notes per bar for the analysis)
+    scores.py         placeholder (compare.py builds the expected notes per bar for the analysis)
     sessions.py       loads recorded .mid sessions into timed notes and pedal events, and finds the session that matches an attempt
     compare.py        aligns a session or attempt with its score and finds wrong, missed and extra notes, timing and dynamics problems
     reports.py        writes the JSON and Markdown report for one analysed session
     analyse_cli.py    `coach analyse` (a session or a saved attempt against a score)
     practice_log.py   `coach log`: minutes per day, streak and pieces worked on
-    trends.py         will find patterns across sessions per section of a piece
+    trends.py         evidence for the coach: adds up attempts and reports per drill, piece, bar and feature (`coach evidence`)
+    runs.py           turns saved attempts into runs (one per attempt, or per loop cycle)
+    habits.py         habit detection across runs, attempts and reports (15 detectors)
+    plan.py           the practice plan: tree.json (skills and drills), state.json (levels and habits), today.md (`coach plan`)
+    gates.py          level gates per skill: good, solid and mastered, plus lock and rusty flags
+    timing.py         graded timing score (0-100), the same curve as the web page
+    evenness.py       rhythmic evenness (0-100) of runs on scale scores
+    sight.py          sight-reading rounds: speed targets, drill stats and round history
+    sight_cli.py      `coach sight add-drills`
+    ear.py            ear-training rounds: speed targets, drill stats and round history
+    ear_cli.py        `coach ear add-drills`
+    replay.py         read-only replay data for the page (recent attempts, one attempt, session recordings)
+    fingering_cli.py  `coach fingering`: makes the fingering sidecars for the piano strip
+    fingering_jobs.py background fingering for `coach serve`, separate from jobs.py
+    attempt_cache.py  cache of parsed attempts for `coach evidence`
+    localzone.py      the computer's own time zone, for local dates in the log
   tests/
     test_imports.py   smoke test: the package and all its modules import
     test_attempts.py  saving, listing and loading follower attempts
@@ -80,13 +95,26 @@ coach/
       score-geometry.ts   bar rectangles, click hit test, zoom steps
       cursor-steps.ts     playhead step rules (never before the first or past the last note)
       score-view.ts       renders a score with OpenSheetMusicDisplay: zoom, bar selection, playhead
-      topbar.ts           title, piece details, zoom, playhead, placeholder metrics, engine dot
+      topbar.ts           title, piece details, zoom, playhead, practice metrics, engine dot
       sidebar.ts          library: search, filters, list
       source-query.ts     minimum search length for source search (same rule as the server)
       styles.css          all styling; colours, fonts and sizes are CSS variables in :root
-      feedback-overlay.ts will draw live feedback over the score
+      feedback-overlay.ts colours played notes over the score (red to green by timing score)
       engine-socket.ts    connects (and reconnects) to the engine's live event WebSocket
       keyboard-notes.ts   dev-only computer-keyboard-to-notes fallback
+      follower.ts, live-matcher.ts, note-matcher.ts, hold-checker.ts, timing-score.ts
+                          the score follower: wait and live mode, held-note checks, graded timing
+      practice-*.ts, tempo-ramp.ts, tempo-map.ts, autoplay.ts
+                          practice controls and metrics: hands, loops, tempo ramp, auto-play
+      replay-*.ts         replay of a saved run over the score
+      sight-*.ts          sight-reading drills (`#/sight`)
+      ear-*.ts            ear training (`#/ear`)
+      free-play-*.ts      free play: writes down what you play and names the chords (`#/free`)
+      skills-*.ts         the skill tree (`#/skills`)
+      log-*.ts            the practice log (`#/log`)
+      score-notes*.ts     hard bars, bar notes and the piece note
+      generated-fingering.ts, fingering-toggle.ts, piano-*.ts, live-keys.ts
+                          the piano strip with held keys and fingering
     tests/                node --test unit tests for the TypeScript modules (incl. engine-socket, keyboard-notes, page-wiring, page-layout, source-query, source-search-wiring)
   data/
     attempts/README.md
@@ -198,7 +226,7 @@ node --test tests/*.test.ts        # in coach/web/: unit tests
 - API: `GET /api/scores?q=&difficulty=1-2&key=&time=&limit=` returns `{scores, total, facets}`; `GET /api/scores/<id>` returns one score; `GET /api/scores/<id>/file` returns the MusicXML or .mxl file. Ids are URL-encoded (`local:abc` becomes `local%3Aabc`).
 - POST: `/api/scores/<id>/download` starts a download; `/api/sources/<name>/setup/<step>` runs a source setup step; `/api/scores/<id>/delete` removes a score from the library (409 while a job runs); `GET /api/jobs/current` returns the running job (or null).
 - Score notes: `GET /api/scores/<id>/notes` returns `{version, piece_note, hard_bars, bar_notes, updated_at}` (empty when there are none); a guarded `POST` to the same URL (`Content-Type: application/json`) replaces them. They are saved in `<score file>.notes.json` next to the score; bars count from 1 in score order, like the page bar selection. Bar notes hold up to 500 characters, the piece note up to 2000; saving an empty set removes the file, and deleting the score deletes it too.
-- The page: the Library button opens a sidebar over the score with search and difficulty/key/time filters; picking a piece closes it and renders the score with OpenSheetMusicDisplay; the top bar shows title and composer, an i button with the other details, zoom, playhead buttons (also Left/Right arrow keys) and placeholder slots for practice metrics (not wired yet); click a bar to select it and move the playhead there; the open piece is kept in the address (`#score=...`), so a reload keeps it. Back/Forward or editing `#score=...` in the address switches the piece. The score renderer (OSMD) loads on first score open.
+- The page: the Library button opens a sidebar over the score with search and difficulty/key/time filters; picking a piece closes it and renders the score with OpenSheetMusicDisplay; the top bar shows title and composer, an i button with the other details, zoom, playhead buttons (also Left/Right arrow keys) and the practice metrics of the current run (accuracy, tempo, wrong, missed, timing); click a bar to select it and move the playhead there; the open piece is kept in the address (`#score=...`), so a reload keeps it. Back/Forward or editing `#score=...` in the address switches the piece. The score renderer (OSMD) loads on first score open.
 - Engine connection: the page connects to the engine's live event WebSocket at ws://127.0.0.1:8790. Start the engine in engine/ with `cargo run -- --demo --ws-port 8790`, or set `ws_port: Some(8790)` in engine/setup.ron for live playing. To use another port, add `?engine=<port>` to the page address, e.g. http://localhost:5173/?engine=8791 (invalid values fall back to 8790). The dot at the right end of the top bar is green when connected, amber while connecting and red when disconnected; after the engine stops, the tooltip keeps '(engine stopped)' until it is back. Hovering it shows the state, the address and the last note (e.g. 'C4 vel 64'), and it pulses on each note. The page reconnects by itself (after 1 s, 2 s, 4 s, then every 5 s), so open the page first: `--demo`/`--play` wait only 10 s for it. While the engine is off, the browser console shows a failed-connection error on each retry; that is normal.
 - Computer keyboard (only with `npm run dev`, only while the engine is not connected): A W S E D F T G Y H U J K play C4 to C5, Z/X shift an octave down/up (C1 to C7 range), Space is the sustain pedal, and velocity is fixed at 80. It is ignored while typing in the search box or with Ctrl/Alt; the arrow keys and Escape work as before. Each live event is printed to the browser console (console.info, 'live event').
 - Restyling: all styles are in `web/src/styles.css`; colours, fonts and sizes are CSS variables in its `:root` block.

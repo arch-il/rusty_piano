@@ -89,9 +89,10 @@ test('responsive media blocks are in descending order and 1200px is gone', () =>
 });
 
 test('responsive blocks carry heights, Options popovers', () => {
-  for (const w of [1360, 760, 580, 400]) {
+  for (const w of [1360, 760, 400]) {
     assert.ok(mediaBlock(w)?.includes('--topbar-height:'), `${w} sets no height`);
   }
+  assert.ok(!(mediaBlock(580) ?? '').includes('--topbar-height:'), '580 must not repeat the height');
   const b1600 = mediaBlock(1600) ?? '';
   assert.ok(b1600.includes('.practice.open .practice-more') && b1600.includes('display: grid'));
   const b1000 = mediaBlock(1000) ?? '';

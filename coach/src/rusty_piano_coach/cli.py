@@ -1,4 +1,5 @@
 import argparse
+import sqlite3
 import sys
 from datetime import date
 
@@ -67,30 +68,40 @@ def main(argv=None) -> int:
         help="folder for saved follower attempts (default: RUSTY_PIANO_DATA_DIR/attempts or coach/data/attempts)",
     )
     args = parser.parse_args(argv)
-    if args.command == "scores":
-        return run_scores(args)
-    if args.command == "attempts":
-        return run_attempts(args)
-    if args.command == "analyse":
-        return run_analyse(args)
-    if args.command == "plan":
-        return plan.run_plan(args)
-    if args.command == "evidence":
-        return run_evidence(args)
-    if args.command == "sight":
-        return run_sight(args)
-    if args.command == "ear":
-        return run_ear(args)
-    if args.command == "log":
-        return practice_log.run_log(args)
-    if args.command == "fingering":
-        return run_fingering(args)
-    if args.command == "serve":
-        return server.serve(
-            resolve_data_dir(args.data_dir),
-            args.port,
-            attempts_dir=data_paths.attempts_dir(args.attempts_dir),
+    try:
+        if args.command == "scores":
+            return run_scores(args)
+        if args.command == "attempts":
+            return run_attempts(args)
+        if args.command == "analyse":
+            return run_analyse(args)
+        if args.command == "plan":
+            return plan.run_plan(args)
+        if args.command == "evidence":
+            return run_evidence(args)
+        if args.command == "sight":
+            return run_sight(args)
+        if args.command == "ear":
+            return run_ear(args)
+        if args.command == "log":
+            return practice_log.run_log(args)
+        if args.command == "fingering":
+            return run_fingering(args)
+        if args.command == "serve":
+            return server.serve(
+                resolve_data_dir(args.data_dir),
+                args.port,
+                attempts_dir=data_paths.attempts_dir(args.attempts_dir),
+            )
+    except sqlite3.OperationalError:
+        raise
+    except sqlite3.DatabaseError as e:
+        print(
+            f"error: the score library file library.sqlite is damaged ({e}); move it out of the scores folder "
+            "and run `coach scores sync gen` and `coach scores sync scales` to rebuild it",
+            file=sys.stderr,
         )
+        return 1
     return 0
 
 

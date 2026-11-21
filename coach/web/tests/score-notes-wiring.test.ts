@@ -54,6 +54,12 @@ test("score notes view handles stop propagation, hashchange and marks", () => {
   assert.ok(notesView.includes("showMarks("));
 });
 
+test("a piece-note save only updates the view it was started in", () => {
+  assert.ok(notesView.includes("const openAtClick = loadToken;"));
+  assert.ok(notesView.includes("if (loadToken !== openAtClick) return;"));
+  assert.ok(!notesView.includes("idAtClick"));
+});
+
 test("styles define score notes before the responsive section", () => {
   const root = css.match(/:root\s*\{[^}]*\}/)?.[0] ?? "";
   assert.ok(root.includes("--color-hard-bar"));

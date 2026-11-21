@@ -478,7 +478,7 @@ export function createEarView(opts: EarViewOptions): {
       dd.textContent = v;
       dl.append(dt, dd);
     }
-    const lines = [model.compare, model.clean].map((t) => {
+    const lines = [model.compare, model.clean].filter((t) => t !== '').map((t) => {
       const p = document.createElement('p');
       p.textContent = t;
       return p;

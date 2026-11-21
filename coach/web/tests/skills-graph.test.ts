@@ -29,11 +29,11 @@ const tree: PlanTree = {
 
 test('edges are routed at right angles through gutters and row gaps', () => {
   assert.deepEqual(layout(tree).edges, [
-    { from: 'a', to: 'b', d: 'M 258 38 H 286' },
-    { from: 'a', to: 'c', d: 'M 258 38 H 272 V 76 H 432 V 38 H 446' },
-    { from: 'd', to: 'e', d: 'M 258 114 H 286' },
-    { from: 'd', to: 'f', d: 'M 258 114 H 272 V 76 H 432 V 114 H 446' },
-    { from: 'e', to: 'g', d: 'M 418 114 H 432 V 76 H 592 V 38 H 606' },
+    { from: 'a', to: 'b', d: 'M 190 38 H 202' },
+    { from: 'a', to: 'c', d: 'M 190 38 H 196 V 78 H 298 V 38 H 304' },
+    { from: 'd', to: 'e', d: 'M 190 118 H 202' },
+    { from: 'd', to: 'f', d: 'M 190 118 H 196 V 78 H 298 V 118 H 304' },
+    { from: 'e', to: 'g', d: 'M 292 118 H 298 V 78 H 400 V 38 H 406' },
   ]);
 });
 

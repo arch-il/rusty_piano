@@ -132,6 +132,11 @@ fn subset_fit_runs_and_improves() {
     assert!(out.profile.validate().is_ok());
     let at: Vec<u8> = out.profile.notes.anchors().iter().map(|a| a.note).collect();
     assert_eq!(at, vec![60, 72]);
+    let phys = rusty_piano_engine::sound::modal_piano::parse_modal_profile(include_str!("../profiles/physical.ron")).unwrap();
+    assert!(out.profile.notes.anchors().iter().all(|a| a.damper_tail == 1.0), "per-note damper_tail changed");
+    assert_eq!(out.profile.decay.damper_tail_db, phys.decay.damper_tail_db);
+    assert_eq!(out.profile.decay.damper_tail_t60_bass_s, phys.decay.damper_tail_t60_bass_s);
+    assert_eq!(out.profile.decay.damper_tail_t60_treble_s, phys.decay.damper_tail_t60_treble_s);
 }
 
 #[test]

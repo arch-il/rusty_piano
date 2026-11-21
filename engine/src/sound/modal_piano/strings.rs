@@ -222,7 +222,7 @@ pub fn string_set_soft(note: u8, p: &ModalProfile, sample_rate: f32, shift: f32)
     for (i, c) in detune_cents.iter_mut().enumerate().take(count) {
         *c = base[i] * s.unison_detune_cents * adj.detune * (1.0 + 0.3 * jitter(note, i));
     }
-    let sp = s.unison_decay_spread;
+    let sp = (s.unison_decay_spread * adj.decay_spread).min(0.9);
     let decay_scale = match count {
         1 => [1.0, 1.0, 1.0],
         2 => [1.0 - sp, 1.0 + sp, 1.0],
@@ -266,7 +266,7 @@ pub fn string_set_soft(note: u8, p: &ModalProfile, sample_rate: f32, shift: f32)
         damping_per_khz2: d.damping_per_khz2 * adj.damping,
         damper_t60_s: damper,
         damper_tail_db: d.damper_tail_db,
-        damper_tail_t60_s: geo_note(note, d.damper_tail_t60_bass_s, d.damper_tail_t60_treble_s) * adj.damper,
+        damper_tail_t60_s: geo_note(note, d.damper_tail_t60_bass_s, d.damper_tail_t60_treble_s) * adj.damper * adj.damper_tail,
         partials_per_string,
         max_hz,
         coupled_partials: if p.soundboard.coupling > 0.0 { p.soundboard.coupled_partials.min(partials_per_string) } else { 0 },
@@ -638,6 +638,9 @@ mod tests {
             aftersound: 1.0,
             prompt_db_per_s: 0.0,
             after_level_db: 0.0,
+            decay_spread: 1.0,
+            damper_tail: 1.0,
+            direct_db: 0.0,
         };
         let p = table_profile(&[anchor]);
         let close = |a: f32, b: f32| ((a - b) / b).abs() < 1e-5;

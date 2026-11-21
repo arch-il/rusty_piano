@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { STRIP_KEEP, STRIP_SHIFT_AT, STRIP_SIZE, stripStart, stripXml } from "../src/sight-strip.ts";
+import { STRIP_KEEP, STRIP_SHIFT_AT, STRIP_SIZE, staffLayout, stripStart, stripXml } from "../src/sight-strip.ts";
 import { WRONG_ANCHOR_COLOR } from "../src/sight-xml.ts";
 import { makeRound } from "../src/sight-gen.ts";
 import { levelById } from "../src/sight-levels.ts";
@@ -164,4 +164,17 @@ test("current step colour and wrong anchor", () => {
   assert.equal(count(wrong, "<note>") + count(wrong, "<note "), count(plain, "<note>") + count(plain, "<note "));
   assert.equal(count(wrong, `<note color="${WRONG_ANCHOR_COLOR}">`), 1);
   assert.ok(!wrong.includes(COLORS.wrong));
+});
+
+test("staffLayout shrinks the staff on narrow screens", () => {
+  assert.deepEqual(staffLayout(940, "notes"), { zoom: 1.2, perLine: 8 });
+  assert.deepEqual(staffLayout(940, "intervals"), { zoom: 1.0, perLine: 8 });
+  assert.deepEqual(staffLayout(940, "bars"), { zoom: 1.5, perLine: 0 });
+  assert.deepEqual(staffLayout(760, "notes"), { zoom: 1.2, perLine: 8 });
+  assert.deepEqual(staffLayout(700, "notes"), { zoom: 1.2, perLine: 4 });
+  assert.deepEqual(staffLayout(368, "notes"), { zoom: 0.79, perLine: 4 });
+  assert.deepEqual(staffLayout(368, "intervals"), { zoom: 0.66, perLine: 4 });
+  assert.deepEqual(staffLayout(368, "bars"), { zoom: 0.99, perLine: 0 });
+  assert.deepEqual(staffLayout(200, "notes"), { zoom: 0.6, perLine: 4 });
+  assert.deepEqual(staffLayout(0, "notes"), { zoom: 1.2, perLine: 8 });
 });

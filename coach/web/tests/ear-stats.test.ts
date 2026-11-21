@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import {
   categoryStats,
   cleanText,
@@ -235,4 +236,32 @@ test("earTreeHasDrills finds an ear drill id in any node", () => {
     }) as unknown as PlanTree;
   assert.equal(earTreeHasDrills(tree("ear.echo-1")), true);
   assert.equal(earTreeHasDrills(tree("sr.r2-treble")), false);
+});
+
+test("compareLast leaves out stopped rounds", () => {
+  const prior = [round({ end: "stop", accuracy: 0, median_step_ms: 9000 }), round({ accuracy: 1, median_step_ms: 1000 })];
+  assert.deepEqual(compareLast(prior, "echo-1"), { rounds: 1, accuracy: 1, medianStepMs: 1000 });
+});
+
+test("summaryModel says no timed answers instead of a dash", () => {
+  const level = LEVELS[0];
+  const revealed = [item({ first_try: false, response_ms: null, revealed: true }), item({ first_try: false, response_ms: null, revealed: true })];
+  const m = summaryModel(revealed, [round({ accuracy: 0.25, median_step_ms: 2700 })], level, true, true);
+  assert.deepEqual(m.rows[1], ["Median time per answer", "no timed answers"]);
+  assert.equal(m.compare, "First try 25% vs 0%, median 2.7 s vs no timed answers over the last round.");
+  const none = summaryModel(revealed, [round({ accuracy: 1, median_step_ms: null })], level, true, true);
+  assert.equal(none.compare, "First try 100% vs 0% over the last round.");
+  const back = summaryModel([item({ response_ms: 2000 })], [round({ accuracy: 1, median_step_ms: null })], level, true, true);
+  assert.equal(back.compare, "First try 100% vs 100%, median no timed answers vs 2.0 s over the last round.");
+});
+
+test("summaryModel with only stopped earlier rounds, and for a stopped round", () => {
+  const level = LEVELS[0];
+  assert.equal(summaryModel([item()], [round({ end: "stop" })], level, true, true).compare, "No earlier finished rounds on this level to compare.");
+  assert.equal(summaryModel([item()], [round()], level, false, true).compare, "");
+});
+
+test("ear-view skips an empty comparison line", () => {
+  const view = readFileSync(new URL("../src/ear-view.ts", import.meta.url), "utf8");
+  assert.ok(view.includes("[model.compare, model.clean].filter((t) => t !== '')"));
 });

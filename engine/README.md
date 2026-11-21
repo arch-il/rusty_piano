@@ -1,7 +1,10 @@
 # rusty_piano engine
 
-Real-time MIDI to audio engine in Rust for a Studiologic SL990 controller.
-Currently: MIDI input via midir drives a live piano voice through cpal audio output; a `SoundEngine` trait and sine `TestTone` exist.
+Real-time MIDI to audio engine in Rust, built around a Studiologic SL990 controller (any MIDI keyboard works).
+
+It reads MIDI with midir and plays through WASAPI shared, WASAPI exclusive or ASIO. There are two piano voices: a simple sine-based one and a modal physical model. It also records every session, renders offline with sound metrics, has a setup window and a metronome, and sends live note events over a WebSocket to the coach page.
+
+Contents: [Build, run, test](#build-run-test) · [Audio backends](#audio-backends) · [Sound profiles and setup](#sound-profiles-and-setup) · [Physical model](#modal-piano-engine-physical-model) · [Setup window](#setup-window) · [Transpose](#transpose-and-octave-shift) · [Metronome](#metronome) · [Session recording](#session-recording) · [Render and metrics](#render-and-metrics-sound-tuning) · [Fitting](#fitting-to-reference-renders) · [Live events](#live-events-websocket) · [Module map](#module-map)
 
 ## Build, run, test
 
@@ -94,7 +97,7 @@ What was tried on the Realtek laptop and why it is not used:
 A second engine, selected with `--profile physical` (or `profile: Some("physical")` in `engine/setup.ron`, or the setup window). Its profile is `profiles/physical.ron`; its first setting, `engine: Modal,` (just below the header comment), picks the engine.
 
 - What it models now: inharmonic modal strings (stiffness per register), 1 to 3 detuned unison strings per key, per-partial decay (frequency-dependent damping), strike position, a nonlinear felt hammer with velocity-dependent speed, dampers and the sustain pedal, stereo pan (bass left, treble right), a shared soundboard (board modes plus a two-way coupled low-partial bank through the bridge), two virtual microphones with a body path, sympathetic resonance of free strings (sustain pedal, held keys, sostenuto, and the undamped treble) and key, hammer and pedal noises.
-- Also available: an output EQ and an optional room reverb (see below). The shipped `physical` and `physical_sl990` are fitted to Pianoteq 9 NY Steinway D Player renders (see `## Fitting to reference renders`); the rest of the values are approximate published grand-piano data. Hammer mass and unison detune are not fitted.
+- Also available: an output EQ and an optional room reverb (see below). The shipped `physical` and `physical_sl990` are fitted to Pianoteq 9 NY Steinway D Player renders (see `## Fitting to reference renders`); the rest of the values are approximate published grand-piano data. Hammer mass is not fitted; unison detune and decay spread are fitted per note (see `## Fitting to reference renders`).
 - Choose it: `cargo run -- --profile physical`, or `profile: Some("physical")` in `engine/setup.ron`, or pick the profile in the setup window. The engine is printed on startup as `Sound engine: modal piano (physical model)`.
 - Tuning loop: `cargo run --release -- --render test --profile physical` renders the test piece with metrics, and `engine/renders/test/render.wav` is 2-channel. While playing, save `engine/profiles/physical.ron`: board and mics edits apply at once, decay edits reach the coupled low partials of sounding notes at once (other partials on the next note-on), coupled modes of sounding notes are updated unless the coupled split changes (then new notes only), resonance edits re-set the free strings at once (a short CPU spike), noise levels apply to the next noise, and other edits apply to new notes within about 0.5 s; a broken or out-of-range edit prints an error and the last good settings stay active. Changing `engine` needs a restart.
 - SL990 variant: `--profile physical_sl990` (`profiles/physical_sl990.ron`) is the same engine with `full_force_velocity` 90 (the SL990's hardest hits reach about 85, so playing is louder and brighter through the hammer physics) and a bass lift of `level_tilt_db_per_octave: -1.5` for laptop speakers. For headphones set `level_tilt_db_per_octave` back to 0.0.
@@ -103,7 +106,7 @@ A second engine, selected with `--profile physical` (or `profile: Some("physical
   - `velocity`: `full_force_velocity`, `hammer_speed_min_mps` and `hammer_speed_max_mps` (hammer speed range), `speed_curve`.
   - `strings`: `tension_n`, `length_*` (string lengths by register), `inharmonicity_*`, `two_strings_from_note` and `three_strings_from_note` (unison count), `unison_detune_cents`, `unison_decay_spread`, `strike_position_bass` and `strike_position_treble`, `max_partials`, `max_mode_hz`.
   - `decay`: `t60_*` (decay times; the table is the total in-phase decay, and `physical_sl990` shares the same board), `damping_per_khz2` (high partials die faster), `damper_t60_bass_s` and `damper_t60_treble_s`, `undamped_from_note` (keys from here up ring without dampers; fitted from the references, 97 in the shipped profiles); in the notes table, `damper` goes up to 30.
-  - `notes`: per-note table (88 anchors in the shipped profiles) with, among others, `strike` (strike position factor), and the explicit two-stage decay fields `prompt_db_per_s` (prompt decay rate) and `after_level_db` (aftersound level).
+  - `notes`: per-note table (88 anchors in the shipped profiles) with, among others, `strike` (strike position factor), and the explicit two-stage decay fields `prompt_db_per_s` (prompt decay rate) and `after_level_db` (aftersound level), `detune` (multiplier of the unison detune), `decay_spread` (multiplier of the decay-rate spread between unison strings), `damper_tail` (multiplier of the damper tail decay time; acts only when `decay.damper_tail_db` > 0) and `direct_db` (level of the note's direct string sound in dB).
   - `hammer`: `mass_*_g`, `force_1mm_*_n` (felt stiffness), `exponent_*` (felt nonlinearity).
   - `eq`: output EQ before the limiter (see below).
   - `reverb`: optional room reverb (see below).
@@ -224,9 +227,10 @@ Commands, from `engine/`:
 
 - `--fit-check <folder>` measures `--profile` (a modal profile) against the reference renders note by note and prints the errors.
 - `--fit <folder>` fits and writes `physical.ron`, `physical_sl990.ron` and `fit-report.txt` to `--fit-out` (default `engine/renders/fit`). Nothing in `profiles/` is overwritten; copy files by hand if you want to try them.
+- `--fit-halo` (with `--profile`, no folder) fits the resonance strength, partials and max_hz of the modal profile to the built-in pedal-pairs numbers, prints the dry-ring errors per note and writes nothing; a fit on fewer than 3 usable notes is not trusted (a warning is printed and the shipped resonance is kept).
 - Flags: `--fit-out <dir>` (with --fit), `--fit-notes <list>` (e.g. `60`, `21-108`, `36,48,60-72`; default 21-108), `--fit-passes <n>` (with --fit, 1 to 10, default 5), `--fit-threads <n>` (1 to 64, default all cores, at most 16).
 - The single-note measurement (`render_note`) renders with noises and resonance off.
-- The fit tunes the per-note table (cents, level, t60, damping, inharmonicity, hardness, damper, aftersound, and now prompt_db_per_s, after_level_db) and these globals: undamped_from_note, the velocity curve (hammer_speed_min_mps, hammer_speed_max_mps, speed_curve), hammer.exponent_bass/exponent_treble, soundboard.coupling_loss_fraction, output_gain and the five EQ gains. Hammer mass and unison detune are not fitted.
+- The fit tunes the per-note table (cents, level, t60, damping, inharmonicity, hardness, damper, aftersound, and now prompt_db_per_s, after_level_db) and these globals: undamped_from_note, the velocity curve (hammer_speed_min_mps, hammer_speed_max_mps, speed_curve), hammer.exponent_bass/exponent_treble, soundboard.coupling_loss_fraction, output_gain and the five EQ gains. Per note it also fits detune, decay_spread and direct_db. Extra passes: brightness (treble direct level, notes 86 and up), unison (detune and decay_spread, notes up to 79) and t60-order (keeps the test-piece t60 order 36 > 60 > 96). The damper-tail and late-tail passes are report only. Hammer mass is not fitted.
 - The reference WAVs are private: they stay in the gitignored `renders/reference/` folder, are only read to derive numbers, and are never copied or committed.
 
 ## Live events (WebSocket)

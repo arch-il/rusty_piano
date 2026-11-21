@@ -14,6 +14,22 @@ function rule(selector: string): string {
   return m[1];
 }
 
+function mediaBlock(width: number): string | undefined {
+  const head = `@media (max-width: ${width}px) {`;
+  const start = css.indexOf(head);
+  if (start < 0) return undefined;
+  const open = start + head.length - 1;
+  let depth = 0;
+  for (let i = open; i < css.length; i++) {
+    if (css[i] === "{") depth++;
+    else if (css[i] === "}") {
+      depth--;
+      if (depth === 0) return css.slice(open + 1, i);
+    }
+  }
+  return undefined;
+}
+
 test("every className set in score-view.ts has a CSS rule", () => {
   const names = [...view.matchAll(/className = "([^"]+)"/g)].map((m) => m[1]);
   assert.ok(names.length > 0);
@@ -47,11 +63,14 @@ test("two-row top bar", () => {
   assert.ok(rule(".topbar::after").includes("order: 1"));
   assert.match(css, /\.mode-switch,\s*\.follow-controls,\s*\.practice,\s*\.metrics\s*\{[^}]*order: 2/);
   assert.ok(rule(".practice-toggle").includes("display: none"));
-  const m = /@media \(max-width: 1600px\)\s*\{([\s\S]*)\}\s*$/.exec(css);
-  assert.ok(m, "media block missing");
-  assert.ok(m[1].includes(".practice-toggle"));
-  assert.ok(m[1].includes(".practice-options"));
-  assert.ok(m[1].includes("position: absolute"));
+  const b1600 = mediaBlock(1600);
+  assert.ok(b1600, "1600px media block missing");
+  assert.ok(b1600.includes(".practice-toggle"));
+  assert.ok(b1600.includes(".practice-more"));
+  assert.ok(b1600.includes("position: absolute"));
+  assert.ok(!b1600.includes("@media"), "the 1600px block must end at its own closing brace");
+  const b1000 = mediaBlock(1000);
+  assert.ok(b1000 && b1000.includes(".practice-options"));
 });
 
 test("piece block takes only free space", () => {
@@ -88,7 +107,11 @@ test("score area never scrolls sideways", () => {
 });
 
 test("narrow top bar", () => {
-  assert.match(css, /@media \(max-width: 580px\)\s*\{[\s\S]*--topbar-height:\s*\d+px[\s\S]*\.cursor-controls/);
+  const b580 = mediaBlock(580);
+  assert.ok(b580, "580px media block missing");
+  assert.ok(b580.includes(".cursor-controls"));
+  assert.ok(!b580.includes("--topbar-height:"), "580px block must not repeat --topbar-height; the 760px block sets it");
+  assert.ok((mediaBlock(760) ?? "").includes("--topbar-height: 188px"));
   assert.ok(css.indexOf("@media (max-width: 580px)") > css.indexOf("@media (max-width: 1600px)"));
 });
 

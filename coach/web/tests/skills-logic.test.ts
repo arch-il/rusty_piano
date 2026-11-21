@@ -82,39 +82,39 @@ const state: PlanState = {
 
 test('layout places the first node of row 1 and the second node of row 2', () => {
   const l = layout(tree);
-  assert.deepEqual(l.nodes.find((n) => n.id === 'pulse-1'), { id: 'pulse-1', x: 126, y: 16, w: 132, h: 44 });
-  assert.deepEqual(l.nodes.find((n) => n.id === 'read-2'), { id: 'read-2', x: 286, y: 92, w: 132, h: 44 });
+  assert.deepEqual(l.nodes.find((n) => n.id === 'pulse-1'), { id: 'pulse-1', x: 100, y: 12, w: 90, h: 52 });
+  assert.deepEqual(l.nodes.find((n) => n.id === 'read-2'), { id: 'read-2', x: 202, y: 92, w: 90, h: 52 });
 });
 
 test('layout has track labels at the row centres', () => {
   assert.deepEqual(layout(tree).tracks, [
-    { id: 'pulse', title: 'Pulse', x: 16, y: 38 },
-    { id: 'reading', title: 'Reading', x: 16, y: 114 },
-    { id: 'hands', title: 'Hands', x: 16, y: 190 },
+    { id: 'pulse', title: 'Pulse', x: 12, y: 38 },
+    { id: 'reading', title: 'Reading', x: 12, y: 118 },
+    { id: 'hands', title: 'Hands', x: 12, y: 198 },
   ]);
 });
 
 test('layout width and height cover the three rows and two columns', () => {
   const l = layout(tree);
-  assert.equal(l.width, 434);
-  assert.equal(l.height, 228);
+  assert.equal(l.width, 304);
+  assert.equal(l.height, 236);
 });
 
 test('layout of an empty tree is just the padding', () => {
   const empty: PlanTree = { version: 1, kind: 'skills', decay_days: 30, tracks: [{ id: 't', title: 'T' }], nodes: [] };
   const l = layout(empty);
-  assert.equal(l.width, 32);
-  assert.equal(l.height, 32);
+  assert.equal(l.width, 24);
+  assert.equal(l.height, 24);
   assert.deepEqual(l.nodes, []);
   assert.deepEqual(l.edges, []);
 });
 
 test('layout edges run from each prerequisite to the node that requires it', () => {
   assert.deepEqual(layout(tree).edges, [
-    { from: 'pulse-1', to: 'pulse-2', d: 'M 258 38 H 286' },
-    { from: 'read-1', to: 'read-2', d: 'M 258 114 H 286' },
-    { from: 'pulse-2', to: 'read-2', d: 'M 418 38 H 432 V 76 H 272 V 114 H 286' },
-    { from: 'read-2', to: 'hands-1', d: 'M 418 114 H 432 V 152 H 112 V 190 H 126' },
+    { from: 'pulse-1', to: 'pulse-2', d: 'M 190 38 H 202' },
+    { from: 'read-1', to: 'read-2', d: 'M 190 118 H 202' },
+    { from: 'pulse-2', to: 'read-2', d: 'M 292 38 H 298 V 78 H 196 V 118 H 202' },
+    { from: 'read-2', to: 'hands-1', d: 'M 292 118 H 298 V 158 H 94 V 198 H 100' },
   ]);
 });
 
@@ -318,6 +318,7 @@ test('nodePanel fills the summary, level, lock, verdict and gate lines', () => {
   const panel = nodePanel(tree, state, 'read-2', drillHash);
   assert.deepEqual(panel, {
     id: 'read-2',
+    heading: 'read-2 Read a melody line',
     title: 'Read a melody line',
     summary: 'Read simple melodies.',
     levelText: 'Locked',

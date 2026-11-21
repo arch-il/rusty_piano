@@ -54,6 +54,17 @@ export function percentText(v: number | null): string {
   return Math.floor((v ?? 0) * 100 + 1e-9) + '%';
 }
 
+export const NO_TIMED_TEXT = 'no timed answers';
+
+export function timedText(ms: number | null): string {
+  return ms === null ? NO_TIMED_TEXT : formatSeconds(ms);
+}
+
+function medianPart(before: number | null, now: number | null): string {
+  if (before === null && now === null) return '';
+  return `, median ${timedText(before)} vs ${timedText(now)}`;
+}
+
 export const NO_DRILLS_TEXT = 'Rounds are saved, but they only count toward skills after you run: uv run coach ear add-drills';
 export const NO_TREE_TEXT =
   'No skill tree yet: rounds are saved, but they only count toward skills once you set up your plan with /coach in Claude Code and add the ear drills (uv run coach ear add-drills).';
@@ -122,7 +133,7 @@ export function roundsOfLevel(rounds: readonly EarRound[], level: string, last?:
 }
 
 export function compareLast(prior: readonly EarRound[], level: string, n = 5): EarComparison {
-  const rounds = roundsOfLevel(prior, level).filter((r) => r.items.length > 0);
+  const rounds = roundsOfLevel(prior, level).filter((r) => r.end === 'done' && r.items.length > 0);
   const last = rounds.slice(Math.max(0, rounds.length - n));
   return {
     rounds: last.length,
@@ -182,17 +193,25 @@ export function summaryModel(
   const s = earRoundStats(records);
   const cmp = compareLast(prior, level.id);
   const lastText = cmp.rounds === 1 ? 'last round' : `last ${cmp.rounds} rounds`;
+  let compare: string;
+  if (!complete) {
+    compare = '';
+  } else if (cmp.rounds === 0) {
+    compare =
+      roundsOfLevel(prior, level.id).length === 0
+        ? 'First round on this level.'
+        : 'No earlier finished rounds on this level to compare.';
+  } else {
+    compare = `First try ${percentText(cmp.accuracy)} vs ${percentText(s.accuracy)}${medianPart(cmp.medianStepMs, s.medianStepMs)} over the ${lastText}.`;
+  }
   return {
     rows: [
       ['First try', `${s.firstTry} of ${s.items} (${percentText(s.accuracy)})`],
-      ['Median time per answer', formatSeconds(s.medianStepMs)],
+      ['Median time per answer', timedText(s.medianStepMs)],
       ['Replays', String(s.replays)],
       ['Revealed', String(s.revealed)],
     ],
-    compare:
-      cmp.rounds === 0
-        ? 'First round on this level.'
-        : `First try ${percentText(cmp.accuracy)} vs ${percentText(s.accuracy)}, median ${formatSeconds(cmp.medianStepMs)} vs ${formatSeconds(s.medianStepMs)} over the ${lastText}.`,
+    compare,
     clean: cleanText(s, level.kind, complete, counted),
   };
 }

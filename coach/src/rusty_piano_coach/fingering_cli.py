@@ -55,26 +55,24 @@ def run_fingering(args) -> int:
                 continue
             label = f"#{row['num']} {row['title']} ({row['id']})"
             before = fingering.read_status(path)
-            if not args.force and before["status"] == "ready":
-                sc = textbook_scale(row)
-                if sc is not None and before["notes"] != scale_fingering.scale_notes(sc):
+            sc = textbook_scale(row)
+            if sc is not None:
+                if not args.force and before["status"] == "ready" and before["notes"] == scale_fingering.scale_notes(sc):
+                    cached += 1
+                else:
                     st = generate_for_row(row, path, force=True)
                     print(f"{label}: textbook ({len(st['notes'])} fingers)")
                     made += 1
-                else:
-                    if sc is None:
-                        print(f"{label}: cached")
-                    cached += 1
+                continue
+            if not args.force and before["status"] == "ready":
+                print(f"{label}: cached")
+                cached += 1
             elif not args.force and before["status"] == "error" and not fingering.error_retry_due(path):
                 print(
                     f"{label}: cached error: {before['error']} "
                     "(tried again after 7 days or a pianoplayer update; use --force to try now)"
                 )
                 cached += 1
-            elif textbook_scale(row):
-                st = generate_for_row(row, path, force=True)
-                print(f"{label}: textbook ({len(st['notes'])} fingers)")
-                made += 1
             else:
                 print(f"{label}: working...")
                 t0 = time.perf_counter()

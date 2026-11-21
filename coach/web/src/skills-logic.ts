@@ -118,6 +118,7 @@ export interface PlanResponse {
 
 export interface PanelModel {
   id: string;
+  heading: string;
   title: string;
   summary: string;
   levelText: string;
@@ -138,13 +139,43 @@ export interface Layout {
 }
 
 export const LEVEL_NAMES = ['Not started', 'Learning', 'Good enough', 'Solid', 'Mastered'];
-export const STARTED_TEXT = 'Started (no level yet)';
-export const PAD = 16;
-export const TRACK_LABEL_W = 110;
-export const NODE_W = 132;
-export const NODE_H = 44;
-export const GAP_X = 28;
-export const ROW_H = 76;
+export const STARTED_TEXT = 'Started, not yet at Learning';
+export const NO_PRACTICE_TEXT = 'No practice recorded yet.';
+export const RUNS_NO_GATES_TEXT = 'Runs recorded; gate progress is not counted yet.';
+export const PIECE_TAG = 'Piece';
+export const PAD = 12;
+export const TRACK_LABEL_W = 88;
+export const NODE_W = 90;
+export const NODE_H = 52;
+export const GAP_X = 12;
+export const ROW_H = 80;
+export const NAME_CHARS = 13;
+export const TRACK_CHARS = 12;
+
+export function isPieceNode(node: Pick<PlanNode, 'id' | 'kind'>): boolean {
+  return node.kind === 'piece' || node.id.startsWith('piece-');
+}
+
+export function prettyId(id: string): string {
+  const words = id.replace(/^piece-/, '').split(/[-_]+/).filter((w) => w !== '');
+  if (words.length === 0) return id;
+  const text = words.join(' ');
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+export function nodeTag(node: Pick<PlanNode, 'id' | 'kind'>): string {
+  return isPieceNode(node) ? PIECE_TAG : node.id;
+}
+
+export function nodeName(node: Pick<PlanNode, 'id' | 'kind' | 'title'>): string {
+  const t = node.title.trim();
+  if (t !== '' && t !== node.id) return t;
+  return isPieceNode(node) ? prettyId(node.id) : node.id;
+}
+
+export function nodeRef(node: Pick<PlanNode, 'id' | 'kind' | 'title'>): string {
+  return isPieceNode(node) ? nodeName(node) : `${node.id} ${node.title}`;
+}
 
 export function nodeLevel(state: PlanState | null, id: string): number {
   const level = state?.nodes[id]?.level ?? 0;
@@ -176,8 +207,8 @@ export function lockText(tree: PlanTree, id: string, state: PlanState | null): s
   const unmet = (node?.requires ?? [])
     .filter((r) => nodeLevel(state, r) < 2)
     .map((r) => {
-      const title = tree.nodes.find((n) => n.id === r)?.title;
-      return title ? `${r} ${title}` : r;
+      const n = tree.nodes.find((x) => x.id === r);
+      return n ? nodeRef(n) : r;
     });
   return 'Needs ' + unmet.join(', ') + ' at Good enough';
 }
@@ -226,7 +257,7 @@ export function gateLines(g?: GateProgress, drillTitle: (id: string) => string =
       );
     }
   }
-  return lines.length > 0 ? lines : ['No practice recorded yet.'];
+  return lines.length > 0 ? lines : [NO_PRACTICE_TEXT];
 }
 
 export function shortTitle(t: string, max = 18): string {
@@ -321,14 +352,16 @@ export function nodePanel(
   const habits = (state?.habits ?? [])
     .filter((h) => h.nodes.includes(id) || nodeHabits.includes(h.id))
     .map((h) => `${h.title} (${h.status})`);
+  const lines = gateLines(state?.nodes[id]?.gates, (did) => node.drills.find((d) => d.id === did)?.title ?? did);
   return {
     id,
-    title: node.title,
+    heading: nodeRef(node),
+    title: nodeName(node),
     summary: node.summary ?? '',
     levelText: levelText(tree, id, state),
     lockText: lockText(tree, id, state),
     rusty: state?.nodes[id]?.rusty === true,
-    gateLines: gateLines(state?.nodes[id]?.gates, (did) => node.drills.find((d) => d.id === did)?.title ?? did),
+    gateLines: lines.length === 1 && lines[0] === NO_PRACTICE_TEXT && hasRuns(state, id) ? [RUNS_NO_GATES_TEXT] : lines,
     verdict: state?.nodes[id]?.verdict ?? '',
     habits,
     drills: node.drills.map((d) => ({

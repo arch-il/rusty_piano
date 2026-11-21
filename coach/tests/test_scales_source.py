@@ -70,6 +70,28 @@ def test_titles_and_tags():
              "g-major-2oct-lh": "S4", "c-major-2oct-ht": "S5", "c-major-4oct-rh": "S6", "c-chromatic-1oct-rh": "S6"}
     for k, node in nodes.items():
         assert BY_KEY[k].node == node, k
+    assert BY_KEY["e-minor-harmonic-1oct-rh"].tags.endswith("s9")
+
+
+@pytest.mark.parametrize("key,node", [
+    ("a-major-1oct-rh", "S7"),
+    ("bb-major-1oct-lh", "S7"),
+    ("fs-major-1oct-rh", "S8"),
+    ("db-major-1oct-lh", "S8"),
+    ("e-minor-harmonic-1oct-lh", "S9"),
+    ("g-minor-harmonic-1oct-rh", "S9"),
+    ("cs-minor-harmonic-1oct-rh", "S10"),
+    ("f-minor-harmonic-1oct-lh", "S10"),
+    ("gs-minor-harmonic-1oct-rh", "S11"),
+    ("bb-minor-harmonic-1oct-lh", "S11"),
+    ("a-minor-harmonic-1oct-rh", "S2"),
+    ("e-minor-natural-1oct-rh", "S2"),
+    ("a-major-2oct-rh", "S4"),
+    ("a-major-1oct-ht", "S5"),
+    ("d-minor-harmonic-2oct-rh", "S4"),
+])
+def test_scale_nodes_by_tonic(key, node):
+    assert BY_KEY[key].node == node
 
 
 @pytest.mark.parametrize("key,hand,expected", [

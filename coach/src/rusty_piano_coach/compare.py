@@ -20,7 +20,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import music21
-from music21 import dynamics, meter, stream, tempo
+from music21 import dynamics, harmony, meter, stream, tempo
 
 from rusty_piano_coach.sessions import PlayedNote
 from rusty_piano_coach.timing import DEFAULT_CURVE, mean_score, timing_score
@@ -119,6 +119,8 @@ def _extract(s) -> tuple[list[_Raw], list[tuple[int, int, float, float]]]:
             for d in m.recurse().getElementsByClass(dynamics.Dynamic):
                 dyns.append((start + float(d.getOffsetInHierarchy(m)), d.value))
             for el in m.recurse().notes:
+                if isinstance(el, harmony.Harmony):
+                    continue
                 if el.duration.isGrace:
                     continue
                 offset = float(el.getOffsetInHierarchy(m))

@@ -3,10 +3,22 @@
 import { attributesXml, staffXml } from './sight-xml.ts';
 import type { XmlMarks } from './sight-xml.ts';
 import type { Card } from './sight-levels.ts';
+import type { LevelKind } from './sight-levels.ts';
 
 export const STRIP_SIZE = 8;
 export const STRIP_SHIFT_AT = 5;
 export const STRIP_KEEP = 1;
+export const NARROW_STAFF_PX = 760;
+export const NARROW_REF_PX = 560;
+export const MIN_STAFF_ZOOM = 0.6;
+
+export function staffLayout(widthPx: number, kind: LevelKind): { zoom: number; perLine: number } {
+  const base = kind === 'bars' ? 1.5 : kind === 'intervals' ? 1.0 : 1.2;
+  const full = kind === 'bars' ? 0 : STRIP_SIZE;
+  if (!(widthPx > 0) || widthPx >= NARROW_STAFF_PX) return { zoom: base, perLine: full };
+  const scaled = Math.round(((base * widthPx) / NARROW_REF_PX) * 100) / 100;
+  return { zoom: Math.max(MIN_STAFF_ZOOM, Math.min(base, scaled)), perLine: kind === 'bars' ? 0 : STRIP_SIZE / 2 };
+}
 
 export function stripStart(prevStart: number, current: number, total: number): number {
   let start = prevStart;

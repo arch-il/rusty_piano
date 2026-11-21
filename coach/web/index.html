@@ -92,6 +92,10 @@
         <div class="metric" title="Timing score, 0-100: how close to the beat the notes were"><span class="metric-label">Timing</span><span class="metric-value" id="metric-timing">-</span></div>
       </div>
     </header>
+    <div id="server-banner" class="server-banner" role="alert" hidden>
+      <span class="server-banner-text">Coach server not reachable - start <code>uv run coach serve</code></span>
+      <button type="button" id="server-retry" class="btn">Retry</button>
+    </div>
     <div id="summary-panel" class="summary-panel" role="dialog" aria-label="Practice summary" hidden>
       <h2 id="summary-title" class="summary-title">Practice summary</h2>
       <dl id="summary-list"></dl>

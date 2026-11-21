@@ -1,27 +1,28 @@
 import shutil
 from pathlib import Path
 
-import pytest
-
 from rusty_piano_coach import data_paths, plan
 from rusty_piano_coach.library import genx
 
 NODE_IDS = [
-    "R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8",
-    "T1", "T2", "T3", "T4", "T5", "T6", "T7",
-    "K1", "K2", "K3", "K4", "K5", "K6", "K7",
-    "C1", "C2", "C3", "C4",
-    "D1", "D2", "D3",
-    "P1",
-    "S1", "S2", "S3", "S4", "S5", "S6",
+    "R1", "R2", "R3", "R4", "R14", "R5", "R11", "R6", "R7", "R12",
+    "R13", "R8", "T1", "T2", "T3", "T4", "T10", "T5", "T8", "T9",
+    "T6", "T7", "T11", "K1", "K2", "K3", "K8", "K11", "K4", "K5",
+    "K6", "K9", "K10", "C1", "C2", "C3", "C4", "C5", "C6", "D1",
+    "D2", "D3", "D4", "P1", "P2", "M1", "M2", "M3", "M4", "M5",
+    "S1", "S2", "S3", "S7", "S9", "S8", "S10", "S11", "S4", "S5",
+    "S6",
 ]
 
 PIECE_IDS = [
     "piece-first-steps", "piece-evening-song", "piece-ode-to-joy",
     "piece-twinkle", "piece-lightly-row", "piece-little-waltz",
+    "piece-row-your-boat", "piece-minuet-in-g", "piece-little-lament", "piece-bells-at-dusk",
 ]
 
 EAR_IDS = ["E1", "E2", "E3", "E4", "E5", "E6"]
+
+ONE_HAND = {"piece-first-steps", "piece-evening-song", "piece-ode-to-joy"}
 
 GEN_KEYS = {
     "r1-all-cs", "r1-two-black", "r1-three-black",
@@ -48,14 +49,18 @@ def test_seed_is_packaged_not_live(monkeypatch):
     assert package in plan.SEED_TREE.resolve().parents
 
 
-def test_seed_ids_exist_in_live_tree(monkeypatch):
-    # may be dropped once the user's tree diverges from the seed; piece nodes are new in the seed
-    monkeypatch.delenv("RUSTY_PIANO_DATA_DIR", raising=False)
-    live = data_paths.plan_dir() / "tree.json"
-    if not live.exists():
-        pytest.skip("no live tree")
-    live_ids = {n["id"] for n in plan.load_json(live)["nodes"]}
-    assert {n["id"] for n in seed()["nodes"] if n["track"] not in ("scales", "ear") and n.get("kind") != "piece"} <= live_ids
+def test_counts():
+    t = seed()
+    assert len(t["nodes"]) == 77
+    assert sum(len(n["drills"]) for n in t["nodes"]) == 372
+
+
+def test_no_duplicate_drills():
+    seen = {}
+    for d in all_drills(seed()):
+        k = (d["score"], d["hands"], d["mode"], d["bars"] if not isinstance(d["bars"], list) else tuple(d["bars"]))
+        assert k not in seen, (d["id"], seen[k])
+        seen[k] = d["id"]
 
 
 def test_seed_validates():
@@ -82,8 +87,10 @@ def test_drill_nodes():
         count = len([d for d in n["drills"] if d["score"] in keys])
         if n["id"] in old:
             assert len([d for d in n["drills"] if d["score"][4:] in GEN_KEYS]) == old[n["id"]], n["id"]
+        elif n["id"] == "R8":
+            assert all(d["id"].startswith("sr.") for d in n["drills"])
         elif n["id"] in PIECE_IDS:
-            assert len(n["drills"]) == (2 if PIECE_IDS.index(n["id"]) < 3 else 3)
+            assert len(n["drills"]) == (2 if n["id"] in ONE_HAND else 4)
         else:
             assert 4 <= count <= 6, n["id"]
     with_sight = {n["id"] for n in seed()["nodes"] if any(d["id"].startswith("sr.") for d in n["drills"])}

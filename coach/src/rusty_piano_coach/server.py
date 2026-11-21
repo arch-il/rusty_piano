@@ -411,6 +411,8 @@ def _plan(plan_dir: Path) -> Response:
     if not tree_path.exists():
         return _json(404, {"error": "No skill tree yet. Run /coach in Claude Code to set up your plan."})
     plan.migrate_tree(plan_dir)
+    plan.migrate_technique(plan_dir)
+    plan.migrate_skill_tree(plan_dir)
     try:
         tree = plan.load_json(tree_path)
     except ValueError as e:

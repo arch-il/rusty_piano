@@ -2,6 +2,7 @@ import type { BarRange } from "./practice-steps";
 import type { KV } from "./fingering-toggle";
 
 export const BAR_NOTE_MAX = 500;
+export const BAR_NOTE_ICON_W = 18;
 export const PIECE_NOTE_MAX = 2000;
 export const MAX_BAR = 9999;
 export const MARKS_KEY = "rp.scoreMarks";
@@ -179,7 +180,7 @@ export function markLayout(doc: ScoreNotesDoc, boxes: readonly (BarBox | null)[]
   for (const bar of noteBars) {
     const box = boxes[bar - 1];
     if (!box) continue;
-    icons.push({ bar, left: box.left + 2, top: box.top - 2, title: noteTitle(bar, doc.bar_notes[String(bar)]) });
+    icons.push({ bar, left: Math.max(box.left + 2, box.left + box.width - BAR_NOTE_ICON_W - 2), top: box.top - 2, title: noteTitle(bar, doc.bar_notes[String(bar)]) });
   }
   return { bands, icons };
 }

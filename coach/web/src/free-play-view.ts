@@ -3,7 +3,7 @@ import type { LiveEvent } from "./engine-socket";
 import { createSlotHistory, wantsEvent } from "./free-play-slots";
 import { KEYS, loadFreeKey, saveFreeKey } from "./free-play-theory";
 import type { KV } from "./free-play-theory";
-import { fallbackText, freePlayXml } from "./free-play-xml";
+import { fallbackText, freePlayXml, freePlayZoom } from "./free-play-xml";
 
 type OsmdModule = typeof import("opensheetmusicdisplay");
 
@@ -142,7 +142,7 @@ export function createFreePlayView(opts: FreePlayOptions): FreePlayView {
     }
     try {
       await osmd.load(freePlayXml(slots, fifths));
-      osmd.Zoom = 1.0;
+      osmd.Zoom = freePlayZoom(staff.clientWidth);
       osmd.EngravingRules.RenderXMeasuresPerLineAkaSystem = 0;
       osmd.EngravingRules.RenderSingleHorizontalStaffline = true;
       osmd.render();

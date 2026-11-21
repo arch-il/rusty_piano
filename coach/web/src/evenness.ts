@@ -266,7 +266,78 @@ export function evennessRows(e: Evenness): [string, string][] {
   return rows;
 }
 
-export function unevenTitle(w: WeakSpot): string {
+export function medianGaps(input: EvennessInput): Record<EvennessHand, number | null> {
+  const steps = [...input.steps].sort((a, b) => a.cycle - b.cycle || a.step - b.step);
+  const dh: EvennessHand =
+    input.hands === 'left'
+      ? 'left'
+      : input.hands === 'right'
+        ? 'right'
+        : input.score_id.endsWith('-lh')
+          ? 'left'
+          : 'right';
+  const pitchOf = (s: EvennessStep, h: EvennessHand): number | undefined => {
+    if (s.expected.length >= 2) return h === 'left' ? Math.min(...s.expected) : Math.max(...s.expected);
+    if (s.expected.length === 1) return h === dh ? s.expected[0] : undefined;
+    return undefined;
+  };
+  const onset = (s: EvennessStep, h: EvennessHand): number | null => {
+    const pitch = pitchOf(s, h);
+    if (pitch === undefined) return null;
+    let best: number | null = null;
+    for (const pl of s.played) {
+      if (pl.note === pitch && Number.isFinite(pl.page_ms) && (best === null || pl.page_ms < best)) {
+        best = pl.page_ms;
+      }
+    }
+    return best;
+  };
+  const out: Record<EvennessHand, number | null> = { right: null, left: null };
+  for (const h of ['right', 'left'] as const) {
+    const pairs: { gap: number; ioi: number }[] = [];
+    for (let i = 0; i + 1 < steps.length; i++) {
+      const a = steps[i];
+      const b = steps[i + 1];
+      if (a.cycle !== b.cycle || b.step !== a.step + 1) continue;
+      const oa = onset(a, h);
+      const ob = onset(b, h);
+      if (oa === null || ob === null) continue;
+      pairs.push({ gap: Math.floor((b.time_q - a.time_q) * 1e6 + 0.5) / 1e6, ioi: ob - oa });
+    }
+    const counts = new Map<number, number>();
+    for (const p of pairs) counts.set(p.gap, (counts.get(p.gap) ?? 0) + 1);
+    let main = 0;
+    let mainCount = 0;
+    for (const [gap, count] of counts) {
+      if (count > mainCount || (count === mainCount && gap < main)) {
+        main = gap;
+        mainCount = count;
+      }
+    }
+    const iois = pairs
+      .filter((p) => p.gap === main && p.ioi > 0)
+      .map((p) => p.ioi)
+      .sort((x, y) => x - y);
+    if (iois.length < EVENNESS_CONSTANTS.min_intervals) continue;
+    const mid = Math.floor(iois.length / 2);
+    out[h] = iois.length % 2 ? iois[mid] : (iois[mid - 1] + iois[mid]) / 2;
+  }
+  return out;
+}
+
+export function shownWeakSpots(ev: Evenness, medians: Record<EvennessHand, number | null>): WeakSpot[] {
+  return ev.weak_spots.filter((w) => {
+    const m = medians[w.hand];
+    if (m === null || m <= 0) return true;
+    return Math.abs(w.gap_ms - m) / m >= EVENNESS_CONSTANTS.weak_min_dev;
+  });
+}
+
+export function unevenTitle(w: WeakSpot, medianMs: number | null = null): string {
+  if (medianMs !== null && medianMs > 0) {
+    const pct = Math.round((Math.abs(w.gap_ms - medianMs) / medianMs) * 100);
+    return `Uneven: the gap before this note was ${pct}% ${w.gap_ms > medianMs ? 'longer' : 'shorter'} than your usual gap (${w.hand} hand)`;
+  }
   return `Uneven: the gap before this note was ${Math.round(Math.abs(w.deviation) * 100)}% ${
     w.deviation > 0 ? 'longer' : 'shorter'
   } than average (${w.hand} hand)`;

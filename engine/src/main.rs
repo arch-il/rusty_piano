@@ -57,6 +57,10 @@ fn main() {
         run_fit_check(&startup, &args, folder);
         return;
     }
+    if args.fit_halo {
+        run_fit_halo(&startup, &args);
+        return;
+    }
     if args.demo && !args.list {
         run_demo(&startup);
         return;
@@ -283,6 +287,39 @@ fn run_fit_check(startup: &setup::Startup, args: &cli::Args, folder: &str) {
     let eval = fit::evaluate::evaluate(&profile, &refs, &notes, threads);
     print!("{}", fit::evaluate::report_table(&eval, None));
     println!("Checked in {:.1} s.", start.elapsed().as_secs_f64());
+}
+
+fn run_fit_halo(startup: &setup::Startup, args: &cli::Args) {
+    let profile = match &startup.profile {
+        config::SoundProfile::Modal(p) => *p,
+        _ => {
+            eprintln!("error: --fit-halo needs a modal profile (for example --profile physical)");
+            std::process::exit(2);
+        }
+    };
+    let threads = args
+        .fit_threads
+        .unwrap_or_else(|| std::thread::available_parallelism().map_or(4, |n| n.get().min(16)));
+    let start = Instant::now();
+    println!("Dry ring after key-up, ours minus reference (window 1.0-1.5 s / 2.5-3.0 s):");
+    for (n, w1, w2) in fit::halo::dry_errors(&profile, threads) {
+        println!("note {n}: {w1:+.1} / {w2:+.1} dB");
+    }
+    let f = fit::halo::fit_halo(&profile, &fit::halo::HaloSearch::full(), threads);
+    print!("{}", f.report);
+    println!("halo error before {:.2}, after {:.2}", f.error_before, f.error_after);
+    println!(
+        "resonance: strength {}, partials {}, max_hz {}",
+        f.resonance.strength, f.resonance.partials, f.resonance.max_hz
+    );
+    if f.used.len() < fit::halo::MIN_HALO_NOTES {
+        println!(
+            "warning: only {} usable notes (fewer than {}): the shipped resonance is kept; do not ship this result",
+            f.used.len(),
+            fit::halo::MIN_HALO_NOTES
+        );
+    }
+    println!("Done in {:.1} s.", start.elapsed().as_secs_f64());
 }
 
 fn run_fit(args: &cli::Args, folder: &str) {

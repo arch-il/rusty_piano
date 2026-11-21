@@ -55,6 +55,11 @@ test("per-type rules", () => {
       } else if (l.type === "updown") {
         assert.deepEqual(it.given, [pnotes(it)[0]]);
         assert.deepEqual(it.answerNotes, [pnotes(it)[1]]);
+        if (it.category === "higher" || it.category === "lower") {
+          assert.deepEqual(it.answer, [{ kind: "direction", from: pnotes(it)[0], up: it.category === "higher" }]);
+        } else {
+          assert.deepEqual(it.answer, [{ kind: "note", pitch: pnotes(it)[1] }]);
+        }
       } else if (l.type === "interval") {
         const iv = INTERVALS.find((i) => i.id === it.category);
         assert.ok(iv);

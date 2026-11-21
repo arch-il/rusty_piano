@@ -167,6 +167,7 @@ pub struct ModalPiano {
     pedal_lift_max: f32,
     eq: OutputEq,
     reverb: Box<Reverb>,
+    quiet_peak: f32,
 }
 
 impl ModalPiano {
@@ -216,6 +217,7 @@ impl ModalPiano {
             pedal_lift_max: 0.0,
             eq: OutputEq::new(),
             reverb: Box::new(Reverb::new(sr)),
+            quiet_peak: QUIET_PEAK,
         };
         s.update_bank_dampers();
         s.eq.configure(&p.eq, sr);
@@ -335,6 +337,15 @@ impl ModalPiano {
         &self.profile
     }
 
+    /// Voice and board cull level at QUIET_REF_GAIN (default QUIET_PEAK = 1e-7, about 100-110 dB under a v64 strike). For CPU measurements only; not a profile value.
+    pub fn set_quiet_peak(&mut self, v: f32) {
+        self.quiet_peak = v;
+    }
+
+    pub fn quiet_peak(&self) -> f32 {
+        self.quiet_peak
+    }
+
     pub fn active_voices(&self) -> usize {
         self.voices.iter().filter(|v| v.active).count()
     }
@@ -364,8 +375,10 @@ impl ModalPiano {
         let v = &mut self.voices[idx];
         v.bank.setup(&set, sr, keep_state);
         v.coupled.setup(&set, sr, &p.soundboard, &self.board.mob, keep_state);
-        v.gl = gl;
-        v.gr = gr;
+        let d = p.notes.at(note).direct_db;
+        let g = if d == 0.0 { 1.0 } else { 10f32.powf(d / 20.0) };
+        v.gl = gl * g;
+        v.gr = gr * g;
         v.tilt = tilt;
         v.shift = shift;
         v.bank.set_damped(false);
@@ -585,7 +598,7 @@ impl SoundEngine for ModalPiano {
         let knee = self.profile.output.limiter_knee;
         let ceiling = self.profile.output.limiter_ceiling;
         let output_gain = self.profile.output.output_gain;
-        let quiet = QUIET_PEAK * (output_gain / QUIET_REF_GAIN);
+        let quiet = self.quiet_peak * (output_gain / QUIET_REF_GAIN);
         let direct_mix = self.profile.mics.direct_mix;
         let board_mix = self.profile.mics.board_mix;
         let body_mix = self.profile.mics.body_mix;

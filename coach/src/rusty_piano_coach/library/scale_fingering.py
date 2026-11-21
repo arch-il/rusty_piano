@@ -95,8 +95,10 @@ def fingers(sc, hand, notes) -> list[int]:
     top = 7 * n
     if sc.kind == "major":
         cycle, bottom, top_finger = MAJOR_FINGERS[sc.pc][hand]
-    else:
+    elif sc.kind in ("minor-natural", "minor-harmonic", "minor-melodic"):
         cycle, bottom, top_finger = MINOR_FINGERS[sc.pc][hand]
+    else:
+        raise ValueError(f"no fingering table for scale kind {sc.kind!r}")
     first_bottom = last_bottom = bottom
     up_cycle = down_cycle = cycle
     nat = NATURAL_CYCLE_OVERRIDE.get((sc.pc, hand), cycle)

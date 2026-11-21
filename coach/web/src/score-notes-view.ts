@@ -304,11 +304,11 @@ export function createScoreNotes(deps: ScoreNotesDeps): ScoreNotesController {
     if (notes.state() !== "ready") return;
     const text = pieceText.value;
     const wanted = setPieceNote(emptyNotes(), text).piece_note;
-    const idAtClick = notes.scoreId();
+    const openAtClick = loadToken;
     pieceDirty = false;
     pieceStatus = "Saving…";
     void notes.change(setPieceNote(notes.doc(), text)).then(() => {
-      if (notes.scoreId() !== idAtClick) return;
+      if (loadToken !== openAtClick) return;
       if (notes.doc().piece_note === wanted) {
         pieceStatus = "Saved";
       } else {

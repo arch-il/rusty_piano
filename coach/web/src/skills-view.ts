@@ -1,5 +1,5 @@
 import { drillHash } from './drill-link';
-import { LOCK_PATH, layout, levelText, nodeClasses, nodePanel, shortTitle, trackLines } from './skills-logic';
+import { LOCK_PATH, NAME_CHARS, TRACK_CHARS, layout, levelText, nodeClasses, nodeName, nodePanel, nodeRef, nodeTag, trackLines } from './skills-logic';
 import type { PlanResponse } from './skills-logic';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -53,7 +53,7 @@ export function createSkillsView(opts: { fetchPlan: () => Promise<PlanResponse>;
       const text = svgEl('text', 'skills-track');
       text.setAttribute('x', String(t.x));
       text.setAttribute('y', String(t.y));
-      const lines = trackLines(t.title);
+      const lines = trackLines(t.title, TRACK_CHARS);
       if (lines.length === 1) {
         text.textContent = lines[0];
       } else {
@@ -83,33 +83,39 @@ export function createSkillsView(opts: { fetchPlan: () => Promise<PlanResponse>;
       const g = svgEl('g', cls);
       g.setAttribute('role', 'button');
       g.setAttribute('tabindex', '0');
-      g.setAttribute('aria-label', `${n.id} ${node.title}: ${levelText(tree, n.id, state)}`);
+      g.setAttribute('aria-label', `${nodeRef(node)}: ${levelText(tree, n.id, state)}`);
       g.setAttribute('transform', `translate(${n.x} ${n.y})`);
       const rect = svgEl('rect', 'skill-box');
       rect.setAttribute('width', String(n.w));
       rect.setAttribute('height', String(n.h));
       rect.setAttribute('rx', '6');
       const id = svgEl('text', 'skill-id');
-      id.setAttribute('x', '8');
-      id.setAttribute('y', '16');
-      id.textContent = n.id;
+      id.setAttribute('x', '6');
+      id.setAttribute('y', '15');
+      id.textContent = nodeTag(node);
       const name = svgEl('text', 'skill-name');
-      name.setAttribute('x', '8');
-      name.setAttribute('y', '32');
-      name.textContent = shortTitle(node.title);
-      g.append(rect, id, name);
+      trackLines(nodeName(node), NAME_CHARS).forEach((line, i) => {
+        const span = svgEl('tspan');
+        span.setAttribute('x', '6');
+        span.setAttribute('y', String(31 + i * 14));
+        span.textContent = line;
+        name.append(span);
+      });
+      const tip = svgEl('title');
+      tip.textContent = `${nodeRef(node)}: ${levelText(tree, n.id, state)}`;
+      g.append(tip, rect, id, name);
       const locked = cls.split(' ').includes('locked');
       const rusty = cls.split(' ').includes('rusty');
       if (locked) {
         const lock = svgEl('path', 'skill-lock');
         lock.setAttribute('d', LOCK_PATH);
         lock.setAttribute('fill-rule', 'evenodd');
-        lock.setAttribute('transform', `translate(${n.w - 20} 6) scale(0.75)`);
+        lock.setAttribute('transform', `translate(${n.w - 18} 5) scale(0.75)`);
         g.append(lock);
       } else if (rusty) {
         const mark = svgEl('text', 'skill-mark');
-        mark.setAttribute('x', String(n.w - 8));
-        mark.setAttribute('y', '16');
+        mark.setAttribute('x', String(n.w - 6));
+        mark.setAttribute('y', '15');
         mark.setAttribute('text-anchor', 'end');
         mark.textContent = 'rusty';
         g.append(mark);
@@ -132,6 +138,7 @@ export function createSkillsView(opts: { fetchPlan: () => Promise<PlanResponse>;
     if (!model) {
       panel.hidden = true;
       panel.replaceChildren();
+      section.classList.toggle('panel-open', !panel.hidden);
       return;
     }
     const close = document.createElement('button');
@@ -140,7 +147,7 @@ export function createSkillsView(opts: { fetchPlan: () => Promise<PlanResponse>;
     close.textContent = 'Close';
     close.addEventListener('click', () => closePanel());
     const h3 = document.createElement('h3');
-    h3.textContent = `${model.id} ${model.title}`;
+    h3.textContent = model.heading;
     const summary = document.createElement('p');
     summary.textContent = model.summary;
     const level = document.createElement('p');
@@ -201,6 +208,7 @@ export function createSkillsView(opts: { fetchPlan: () => Promise<PlanResponse>;
     }
     panel.replaceChildren(...parts);
     panel.hidden = false;
+    section.classList.toggle('panel-open', !panel.hidden);
   }
 
   function select(id: string): void {

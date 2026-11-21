@@ -1,32 +1,23 @@
-import random
-
 from .core import Gx, bars, walk
 
 UP5 = ['C4', 'D4', 'E4', 'F4', 'G4']
 LOW5 = ['C3', 'D3', 'E3', 'F3', 'G3']
+TREBLE8 = ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5']
+BASS8 = ['C3', 'D3', 'E3', 'F3', 'G3', 'A3', 'B3', 'C4']
 
 G_R4 = 'Find your place from the landmark notes: middle C, treble G, bass F.'
 G_R5 = 'Read the distance between notes from their shape: step, skip or jump.'
 G_R6 = 'Count the ledger lines to find each note before you play it.'
 G_R7 = 'Remember the key signature: every F is F sharp in G major, every B is B flat in F major.'
-G_R8 = 'Keep going through mistakes; do not stop to fix them.'
-
-_RHYTHMS_44 = [['q', 'q', 'q', 'q'], ['h', 'q', 'q'], ['q', 'q', 'h'], ['h', 'h'], ['e', 'e', 'q', 'h'], ['q', 'q', 'e', 'e', 'q']]
-_RHYTHMS_34 = [['q', 'q', 'q'], ['h', 'q'], ['q', 'h'], ['h.'], ['e', 'e', 'q', 'q']]
-
-
-def _sight(seed, scale, end, rhythms=_RHYTHMS_44, n_bars=6):
-    rnd = random.Random(seed)
-    pitches = walk(seed + 1, scale, 5 * n_bars)
-    out, i = [], 0
-    for _ in range(n_bars):
-        toks = []
-        for d in rnd.choice(rhythms):
-            toks.append(pitches[i] if d == 'q' else pitches[i] + ':' + d)
-            i += 1
-        out.append(' '.join(toks))
-    out.append(end)
-    return ' | '.join(out)
+G_R11 = 'A sharp or flat lasts to the end of the bar; a natural cancels it.'
+G_R12 = 'Say the key signature before you start: which notes are sharp or flat all the way through?'
+G_R13 = 'A minor key uses the key signature of its relative major; the raised 7th is written as an accidental.'
+G_R14_REPEAT = 'Play to the end repeat sign, go back to the start and play the bars a second time.'
+G_R14_ENDINGS = 'Play ending 1 the first time; after the repeat skip it and play ending 2.'
+G_R14_DC_FINE = 'At D.C. al Fine go back to the start and stop at Fine.'
+G_R14_DS_CODA = 'At D.S. al Coda go back to the sign, play to To Coda, then jump to the Coda.'
+G_R4_MIDDLE_C = 'Middle C is the same key in both clefs: one ledger line below the treble staff or above the bass staff.'
+G_R4_READ = "Read it from the landmarks (bass F, middle C, treble G), don't memorise it: one slow try, then move on."
 
 
 EXERCISES = [
@@ -35,21 +26,21 @@ EXERCISES = [
        lh='r | r | C3:h F3:h | C3:h F3:h | r',
        hands='both', goal=G_R4),
     Gx('r4-middle-c', 'R4 Middle C in both clefs', 'R4', 'reading', 60,
-       rh='C4 D4 E4 D4 | C4:w | r | r | E4 D4 C4:h',
+       rh='E4 D4 C4 D4 | C4:w | r | r | D4 E4 C4:h',
        lh='r | r | C4 B3 A3 B3 | C4:w | r',
-       hands='both', goal=G_R4),
+       hands='both', goal=G_R4_MIDDLE_C),
     Gx('r4-read-1', 'R4 Reading snippet 1 (both hands)', 'R4', 'reading', 60,
-       rh=bars(walk(401, UP5, 8), 4) + ' | r | r | C4:w',
-       lh='r | r | ' + bars(walk(411, LOW5, 8), 4) + ' | r',
-       hands='both', goal=G_R4),
+       rh=bars(walk(401, TREBLE8, 8), 4) + ' | r | r | C4:w',
+       lh='r | r | ' + bars(walk(411, BASS8, 8), 4) + ' | r',
+       hands='both', goal=G_R4_READ),
     Gx('r4-read-2', 'R4 Reading snippet 2 (both hands)', 'R4', 'reading', 60,
-       rh=bars(walk(402, UP5, 8), 4) + ' | r | r | C4:w',
-       lh='r | r | ' + bars(walk(412, LOW5, 8), 4) + ' | r',
-       hands='both', goal=G_R4),
+       rh=bars(walk(402, TREBLE8, 8), 4) + ' | r | r | C4:w',
+       lh='r | r | ' + bars(walk(412, BASS8, 8), 4) + ' | r',
+       hands='both', goal=G_R4_READ),
     Gx('r4-read-3', 'R4 Reading snippet 3 (both hands)', 'R4', 'reading', 60,
-       rh=bars(walk(403, UP5, 8), 4) + ' | r | r | C4:w',
-       lh='r | r | ' + bars(walk(413, LOW5, 8), 4) + ' | r',
-       hands='both', goal=G_R4),
+       rh=bars(walk(403, TREBLE8, 8), 4) + ' | r | r | C4:w',
+       lh='r | r | ' + bars(walk(413, BASS8, 8), 4) + ' | r',
+       hands='both', goal=G_R4_READ),
     Gx('r5-seconds', 'R5 Seconds (steps)', 'R5', 'reading', 60,
        rh='C4 D4 E4 D4 | E4 F4 G4 F4 | E4 D4 C4 D4 | C4:w',
        hands='right', goal=G_R5),
@@ -65,8 +56,8 @@ EXERCISES = [
     Gx('r5-read-1', 'R5 Reading snippet 1 (right hand)', 'R5', 'reading', 60,
        rh=bars(walk(501, UP5, 12, moves=(-4, -3, -2, 2, 3, 4)), 4) + ' | C4:w',
        hands='right', goal=G_R5),
-    Gx('r5-read-2', 'R5 Reading snippet 2 (right hand)', 'R5', 'reading', 60,
-       rh=bars(walk(502, UP5, 12, moves=(-4, -3, -2, 2, 3, 4)), 4) + ' | C4:w',
+    Gx('r5-sixths-octaves', 'R5 Sixths and octaves (right hand)', 'R5', 'reading', 60,
+       rh='C4:h A4:h | D4:h B4:h | C4:h C5:h | G4:h G5:h | C5:w',
        hands='right', goal=G_R5),
     Gx('r6-high-c', 'R6 Up to high C (right hand)', 'R6', 'reading', 60,
        rh='G5 A5 B5 C6 | C6:h G5:h | A5 B5 C6:h | C6:w',
@@ -101,19 +92,63 @@ EXERCISES = [
     Gx('r7-read-f', 'R7 Reading snippet in F major', 'R7', 'reading', 60, fifths=-1,
        rh=bars(walk(702, ['F4', 'G4', 'A4', 'Bb4', 'C5'], 12), 4) + ' | F4:w',
        hands='right', goal=G_R7),
-    Gx('r8-sight-1', 'R8 Sight-reading 1 (right hand)', 'R8', 'reading', 60,
-       rh=_sight(801, UP5, 'C4:w'),
-       hands='right', mode='live', goal=G_R8),
-    Gx('r8-sight-2', 'R8 Sight-reading 2 (right hand)', 'R8', 'reading', 60,
-       rh=_sight(802, UP5, 'C4:w'),
-       hands='right', mode='live', goal=G_R8),
-    Gx('r8-sight-3', 'R8 Sight-reading 3 (left hand)', 'R8', 'reading', 60,
-       lh=_sight(803, LOW5, 'C3:w'),
-       hands='left', mode='live', goal=G_R8),
-    Gx('r8-sight-4', 'R8 Sight-reading 4 (G position, right hand)', 'R8', 'reading', 60,
-       rh=_sight(804, ['G4', 'A4', 'B4', 'C5', 'D5'], 'G4:w'),
-       hands='right', mode='live', goal=G_R8),
-    Gx('r8-sight-5', 'R8 Sight-reading 5 (3/4, right hand)', 'R8', 'reading', 60, time='3/4',
-       rh=_sight(805, UP5, 'C4:h.', rhythms=_RHYTHMS_34),
-       hands='right', mode='live', goal=G_R8),
+    Gx('r11-sharps', 'R11 Sharps (right hand)', 'R11', 'reading', 60,
+       rh='C4 C#4 D4:h | E4 F4 F#4 G4 | G4 F#4 E4 D4 | D4 C#4 C4:h',
+       hands='right', goal=G_R11),
+    Gx('r11-flats', 'R11 Flats (right hand)', 'R11', 'reading', 60,
+       rh='E4 Eb4 D4:h | B4 Bb4 A4:h | A4 Ab4 G4:h | D4 Db4 C4:h',
+       hands='right', goal=G_R11),
+    Gx('r11-naturals', 'R11 Naturals and the bar rule (right hand)', 'R11', 'reading', 60,
+       rh='F4 F#4 G4 F#4 | F#4 G4 F4 E4 | Bb4 A4 B4 C5 | C5 B4 Bb4 A4 | G4:w',
+       hands='right', goal=G_R11),
+    Gx('r11-lh', 'R11 Accidentals (left hand)', 'R11', 'reading', 60,
+       lh='C3 C#3 D3 D#3 | E3:h Eb3:h | D3 Db3 C3:h | C3:w',
+       hands='left', goal=G_R11),
+    Gx('r11-read', 'R11 Accidentals in both hands (reading snippet)', 'R11', 'reading', 60,
+       rh='G4 F#4 G4 A4 | Bb4 A4 G4:h | r | r | G4:w',
+       lh='r | r | D3 C#3 D3 E3 | F3 E3 D3:h | G2:w',
+       hands='both', goal=G_R11),
+    Gx('r12-d-rh', 'R12 D major: F sharp and C sharp (right hand)', 'R12', 'reading', 60, fifths=2,
+       rh='D4 E4 F#4 G4 | A4 G4 F#4 E4 | F#4 A4 C#5 D5 | D5:w',
+       hands='right', goal=G_R12),
+    Gx('r12-bb-lh', 'R12 B flat major: B flat and E flat (left hand)', 'R12', 'reading', 60, fifths=-2,
+       lh='Bb2 C3 D3 Eb3 | F3 Eb3 D3 C3 | D3 F3 Eb3 C3 | Bb2:w',
+       hands='left', goal=G_R12),
+    Gx('r12-a-major', 'R12 A major, three sharps (both hands)', 'R12', 'reading', 60, fifths=3,
+       rh='A4 C#5 B4 A4 | E4 F#4 G#4 A4 | r | r | A4:w',
+       lh='r | r | E3 D3 C#3 B2 | A2 B2 C#3 E3 | A2:w',
+       hands='both', goal=G_R12),
+    Gx('r12-eb-major', 'R12 E flat major, three flats (both hands)', 'R12', 'reading', 60, fifths=-3,
+       rh='Eb4 F4 G4 Ab4 | Bb4 Ab4 G4:h | r | r | Eb4:w',
+       lh='r | r | Eb3 G3 Bb3 G3 | Ab3 F3 Eb3:h | Eb3:w',
+       hands='both', goal=G_R12),
+    Gx('r12-naturals', 'R12 Naturals against the key signature (right hand)', 'R12', 'reading', 60, fifths=1,
+       rh='G4 F#4 E4 F4 | G4 A4 G4:h | E4 F4 G4 F#4 | G4:w',
+       hands='right', goal=G_R12),
+    Gx('r13-a-minor-rh', 'R13 A minor: G sharp (right hand)', 'R13', 'reading', 60,
+       rh='E4 A4 G#4 A4 | B4 C5 B4:h | C5 B4 A4 G#4 | A4:w',
+       hands='right', goal=G_R13),
+    Gx('r13-e-minor-lh', 'R13 E minor: D sharp (left hand)', 'R13', 'reading', 60, fifths=1,
+       lh='E3 G3 F#3 E3 | D#3 E3 F#3:h | G3 F#3 E3 D#3 | E3:w',
+       hands='left', goal=G_R13),
+    Gx('r13-d-minor', 'R13 D minor: C sharp (both hands)', 'R13', 'reading', 60, fifths=-1,
+       rh='A4 F4 E4 D4 | C#4 D4 E4:h | r | r | D4:w',
+       lh='r | r | D3 E3 F3 G3 | A3 C#3 D3:h | D3:w',
+       hands='both', goal=G_R13),
+    Gx('r13-relative', 'R13 C major or A minor? (right hand)', 'R13', 'reading', 60,
+       rh='G4 E4 C4 E4 | G4:w | A4 C5 E5 C5 | B4 G#4 A4:h',
+       hands='right', goal=G_R13),
+    Gx('r14-repeat', 'R14 Repeat sign (right hand)', 'R14', 'reading', 60, marks='1:repeat-start 4:repeat-end',
+       rh='C4 D4 E4 F4 | G4:h G4:h | F4 E4 D4 E4 | C4:w',
+       hands='right', goal=G_R14_REPEAT),
+    Gx('r14-endings', 'R14 First and second endings', 'R14', 'reading', 60, marks='1:repeat-start 3:ending-1 3:repeat-end 4:ending-2',
+       rh='E4 F4 G4 E4 | F4 E4 D4:h | D4 E4 F4 G4 | E4 D4 C4:h',
+       lh='C3:h E3:h | G2:h B2:h | G2:h B2:h | G2:h C3:h',
+       hands='both', goal=G_R14_ENDINGS),
+    Gx('r14-dc-fine', 'R14 D.C. al Fine (right hand)', 'R14', 'reading', 60, marks='2:fine 4:dc-al-fine',
+       rh='C4 E4 G4 E4 | C4:w | G4 F4 E4 D4 | G4:w',
+       hands='right', goal=G_R14_DC_FINE),
+    Gx('r14-ds-coda', 'R14 D.S. al Coda (right hand)', 'R14', 'reading', 60, marks='2:segno 3:to-coda 4:ds-al-coda 5:coda',
+       rh='C4 D4 E4:h | F4 E4 D4:h | E4 F4 G4:h | G4 F4 E4 D4 | C4:w',
+       hands='right', goal=G_R14_DS_CODA),
 ]

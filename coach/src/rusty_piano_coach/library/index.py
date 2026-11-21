@@ -55,12 +55,16 @@ class Library:
         self.data_dir.mkdir(parents=True, exist_ok=True)
         self.conn = sqlite3.connect(self.data_dir / "library.sqlite", timeout=10)
         self.conn.row_factory = sqlite3.Row
-        self.conn.execute("PRAGMA journal_mode=WAL")
-        # The CREATE ... IF NOT EXISTS statements only read when the objects already exist,
-        # so opening an existing library does not take the write lock.
-        self.conn.executescript(SCHEMA)
-        if self.conn.execute("PRAGMA user_version").fetchone()[0] != 1:
-            self.conn.execute("PRAGMA user_version = 1")
+        try:
+            self.conn.execute("PRAGMA journal_mode=WAL")
+            # The CREATE ... IF NOT EXISTS statements only read when the objects already exist,
+            # so opening an existing library does not take the write lock.
+            self.conn.executescript(SCHEMA)
+            if self.conn.execute("PRAGMA user_version").fetchone()[0] != 1:
+                self.conn.execute("PRAGMA user_version = 1")
+        except sqlite3.Error:
+            self.conn.close()
+            raise
 
     def close(self):
         self.conn.close()

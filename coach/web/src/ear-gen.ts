@@ -109,7 +109,7 @@ function genUpDown(rng: Rng, s: EarSettings, beatMs: number): Draft {
     prompt,
     answerSound: prompt,
     given: [first],
-    answer: [{ kind: 'note', pitch: second }],
+    answer: motion === 'higher' || motion === 'lower' ? [{ kind: 'direction', from: first, up: motion === 'higher' }] : [{ kind: 'note', pitch: second }],
     answerNotes: [second],
   };
 }

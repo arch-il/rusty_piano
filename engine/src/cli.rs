@@ -28,9 +28,10 @@ pub struct Args {
     pub fit_notes: Option<Vec<u8>>,
     pub fit_passes: Option<usize>,
     pub fit_threads: Option<usize>,
+    pub fit_halo: bool,
 }
 
-pub const USAGE: &str = "Usage: rusty_piano_engine [--list] [--port <index|name>] [--audio-device <index|name>] [--buffer <frames>] [--profile <name>] [--transpose <n>] [--octave <n>] [--metronome <bpm>] [--backend <wasapi|asio|wasapi-exclusive>] [--demo] [--no-record] [--record-wav] [--record-dir <path>] [--play <file|latest>] [--ws-port <port>] [--render <test|file.mid|latest>] [--ref <file.wav>] [--render-dir <path>] [--fit <folder>] [--fit-check <folder>] [--fit-out <dir>] [--fit-notes <list>] [--fit-passes <n>] [--fit-threads <n>] [--setup] [--help]
+pub const USAGE: &str = "Usage: rusty_piano_engine [--list] [--port <index|name>] [--audio-device <index|name>] [--buffer <frames>] [--profile <name>] [--transpose <n>] [--octave <n>] [--metronome <bpm>] [--backend <wasapi|asio|wasapi-exclusive>] [--demo] [--no-record] [--record-wav] [--record-dir <path>] [--play <file|latest>] [--ws-port <port>] [--render <test|file.mid|latest>] [--ref <file.wav>] [--render-dir <path>] [--fit <folder>] [--fit-check <folder>] [--fit-out <dir>] [--fit-notes <list>] [--fit-passes <n>] [--fit-threads <n>] [--fit-halo] [--setup] [--help]
   --list               list MIDI input ports and audio output devices, then exit
   --port <x>           MIDI input: port index x or the first port whose name contains x (any case); default: SL990
   --audio-device <x>   audio output: device index x (as shown by --list for the selected backend) or the first device whose name contains x (any case); default: system default output
@@ -54,7 +55,8 @@ pub const USAGE: &str = "Usage: rusty_piano_engine [--list] [--port <index|name>
   --fit-out <dir>      with --fit: output folder; default: engine/renders/fit
   --fit-notes <list>   with --fit or --fit-check: notes, e.g. 60, 21-108 or 36,48,60-72; default: 21-108
   --fit-passes <n>     with --fit: per-note passes, 1-10; default: 5
-  --fit-threads <n>    with --fit or --fit-check: worker threads, 1-64; default: all cores
+  --fit-threads <n>    with --fit, --fit-check or --fit-halo: worker threads, 1-64; default: all cores
+  --fit-halo           fit the sympathetic halo (resonance strength, partials, max_hz) of --profile (a modal profile) to the built-in Pianoteq pedal-pairs numbers and print the dry-ring errors; writes nothing
   --setup              open the setup window (MIDI port, audio, profile, recording, WebSocket), then play; opens by itself when engine/setup.ron is missing
   --help               show this help
 Values not given as flags come from engine/setup.ron (see setup.example.ron).";
@@ -151,6 +153,7 @@ pub fn parse_args(args: &[String]) -> Result<Args, String> {
                 let value = iter.next().ok_or("--fit-threads needs a value")?;
                 parsed.fit_threads = Some(parse_count("--fit-threads", value, 64)?);
             }
+            "--fit-halo" => parsed.fit_halo = true,
             _ => {
                 if let Some(value) = arg.strip_prefix("--fit-check=") {
                     parsed.fit_check = Some(value.to_string());
@@ -227,8 +230,14 @@ pub fn parse_args(args: &[String]) -> Result<Args, String> {
     if parsed.fit.is_none() && (parsed.fit_out.is_some() || parsed.fit_passes.is_some()) {
         return Err("--fit-out and --fit-passes need --fit".to_string());
     }
-    if !fitting && (parsed.fit_notes.is_some() || parsed.fit_threads.is_some()) {
-        return Err("--fit-notes and --fit-threads need --fit or --fit-check".to_string());
+    if parsed.fit_halo && (fitting || parsed.list || parsed.demo || parsed.play.is_some() || parsed.render.is_some() || parsed.setup) {
+        return Err("--fit-halo cannot be used with --fit, --fit-check, --list, --demo, --play, --render or --setup".to_string());
+    }
+    if !fitting && parsed.fit_notes.is_some() {
+        return Err("--fit-notes needs --fit or --fit-check".to_string());
+    }
+    if !fitting && !parsed.fit_halo && parsed.fit_threads.is_some() {
+        return Err("--fit-threads needs --fit, --fit-check or --fit-halo".to_string());
     }
     Ok(parsed)
 }
@@ -285,7 +294,7 @@ pub fn parse_note_list(s: &str) -> Result<Vec<u8>, String> {
 
 /// True when the setup window should open: --setup, or a live start with no setup.ron.
 pub fn opens_setup_window(args: &Args, setup_file_exists: bool) -> bool {
-    if args.help || args.list || args.demo || args.play.is_some() || args.render.is_some() || args.fit.is_some() || args.fit_check.is_some() {
+    if args.help || args.list || args.demo || args.play.is_some() || args.render.is_some() || args.fit.is_some() || args.fit_check.is_some() || args.fit_halo {
         return false;
     }
     args.setup || !setup_file_exists
@@ -862,5 +871,38 @@ mod tests {
     fn usage_mentions_setup() {
         assert!(USAGE.contains("[--setup] [--help]"), "{USAGE}");
         assert!(USAGE.contains("  --setup              open the setup window"), "{USAGE}");
+    }
+
+    #[test]
+    fn parses_fit_halo_flag() {
+        assert_eq!(
+            parse(&["--fit-halo", "--profile", "physical", "--fit-threads", "4"]),
+            Ok(Args {
+                fit_halo: true,
+                profile: Some("physical".to_string()),
+                fit_threads: Some(4),
+                ..Args::default()
+            })
+        );
+    }
+
+    #[test]
+    fn fit_halo_conflicts() {
+        for case in [
+            &["--fit-halo", "--fit", "x"][..],
+            &["--fit-halo", "--fit-check", "x"][..],
+            &["--fit-halo", "--list"][..],
+            &["--fit-halo", "--demo"][..],
+            &["--fit-halo", "--render", "test"][..],
+            &["--fit-halo", "--setup"][..],
+            &["--fit-halo", "--fit-notes", "60"][..],
+        ] {
+            assert!(parse(case).is_err(), "{case:?}");
+        }
+    }
+
+    #[test]
+    fn opens_setup_window_not_for_fit_halo() {
+        assert!(!opens_setup_window(&Args { fit_halo: true, ..Args::default() }, false));
     }
 }

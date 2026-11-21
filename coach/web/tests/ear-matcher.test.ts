@@ -76,3 +76,24 @@ test("chord then note: advancing clears held keys", () => {
   assert.deepEqual(m.handle(on(67)).at(-1), { kind: "step", step: 1 });
   assert.deepEqual(m.handle(on(62)), [{ kind: "accepted", step: 1, note: 62 }, { kind: "done" }]);
 });
+
+test("direction step up: any higher key advances, equal or lower is wrong", () => {
+  const m = createEarMatcher([{ kind: "direction", from: 60, up: true }]);
+  assert.deepEqual(m.handle(on(60)), [{ kind: "wrong", step: 0, note: 60 }]);
+  assert.deepEqual(m.handle(on(58)), [{ kind: "wrong", step: 0, note: 58 }]);
+  assert.equal(m.done(), false);
+  assert.deepEqual(m.handle(on(61)), [{ kind: "accepted", step: 0, note: 61 }, { kind: "done" }]);
+});
+
+test("direction step up: a far higher key is accepted", () => {
+  const m = createEarMatcher([{ kind: "direction", from: 60, up: true }]);
+  assert.deepEqual(m.handle(on(79)), [{ kind: "accepted", step: 0, note: 79 }, { kind: "done" }]);
+});
+
+test("direction step down: any lower key advances, equal or higher is wrong", () => {
+  const m = createEarMatcher([{ kind: "direction", from: 60, up: false }]);
+  assert.deepEqual(m.handle(on(60)), [{ kind: "wrong", step: 0, note: 60 }]);
+  assert.deepEqual(m.handle(on(62)), [{ kind: "wrong", step: 0, note: 62 }]);
+  assert.equal(m.done(), false);
+  assert.deepEqual(m.handle(on(48)), [{ kind: "accepted", step: 0, note: 48 }, { kind: "done" }]);
+});

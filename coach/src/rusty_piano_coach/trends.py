@@ -3,6 +3,7 @@
 import gc
 import json
 import os
+import sqlite3
 import statistics
 import sys
 from datetime import date, datetime, time, timedelta, timezone
@@ -68,10 +69,13 @@ def load_score_keys(scores_dir, ids) -> dict[str, str | None]:
     if not ids or not (Path(scores_dir) / "library.sqlite").exists():
         return {}
     out = {}
-    with Library(Path(scores_dir)) as lib:
-        for score_id in ids:
-            row = lib.get(score_id)
-            out[score_id] = row["key"] if row else None
+    try:
+        with Library(Path(scores_dir)) as lib:
+            for score_id in ids:
+                row = lib.get(score_id)
+                out[score_id] = row["key"] if row else None
+    except sqlite3.Error:
+        return {}
     return out
 
 
@@ -322,6 +326,10 @@ def _build_evidence(*, attempts_dir, reports_dir, plan_dir, scores_dir, since, t
     state = None
     if plan.migrate_tree(plan_dir):
         warnings.append("tree.json: S1 no longer requires K1 (one-off fix)")
+    if plan.migrate_technique(plan_dir):
+        warnings.append(f"tree.json, state.json: {plan.TECHNIQUE_FIX} (one-off fix)")
+    if plan.migrate_skill_tree(plan_dir):
+        warnings.append(f"tree.json, state.json: {plan.SKILL_TREE_FIX} (one-off fix)")
     try:
         tree = plan.load_json(plan_dir / plan.TREE_FILE)
     except (OSError, ValueError) as e:
@@ -445,10 +453,10 @@ def add_evidence_parser(sub):
     p.add_argument("--json", action="store_true", help="print the evidence as JSON (version 1)")
     p.add_argument("--update-state", action="store_true", help="write the node progress into state.json")
     p.add_argument("--habit-days", type=int, default=14, help="days of history before --since that habit detection sees (default 14)")
-    p.add_argument("--attempts-dir", default=None, help="folder of saved attempts (default: coach/data/attempts)")
-    p.add_argument("--reports-dir", default=None, help="folder of analysis reports (default: coach/data/reports)")
-    p.add_argument("--plan-dir", default=None, help="folder with tree.json and state.json (default: coach/data/plan)")
-    p.add_argument("--sessions-dir", default=None, help="folder of recorded session .mid files (default: coach/data/sessions)")
+    p.add_argument("--attempts-dir", default=None, help="folder of saved attempts (default: RUSTY_PIANO_DATA_DIR/attempts or coach/data/attempts)")
+    p.add_argument("--reports-dir", default=None, help="folder of analysis reports (default: RUSTY_PIANO_DATA_DIR/reports or coach/data/reports)")
+    p.add_argument("--plan-dir", default=None, help="folder with tree.json and state.json (default: RUSTY_PIANO_DATA_DIR/plan or coach/data/plan)")
+    p.add_argument("--sessions-dir", default=None, help="folder of recorded session .mid files (default: RUSTY_PIANO_DATA_DIR/sessions or coach/data/sessions)")
     p.add_argument("--data-dir", default=None, help=DATA_DIR_HELP)
     return p
 

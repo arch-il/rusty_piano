@@ -52,6 +52,15 @@ pub struct NoteAnchor {
     /// Level of the aftersound part relative to the start in dB, -60..0; 0.0 = single decay; the aftersound decays with the t60 table.
     #[serde(default)]
     pub after_level_db: f32,
+    /// Multiplier of strings.unison_decay_spread (the decay-rate spread between the strings of a unison); the effective spread is capped at 0.9.
+    #[serde(default = "one")]
+    pub decay_spread: f32,
+    /// Multiplier of the damper tail decay time (decay.damper_tail_t60_bass_s .. treble_s); acts only when decay.damper_tail_db > 0.
+    #[serde(default = "one")]
+    pub damper_tail: f32,
+    /// Level of this note's direct string sound in dB; the board and body paths are unchanged; 0.0 = no change.
+    #[serde(default)]
+    pub direct_db: f32,
 }
 
 impl NoteAnchor {
@@ -71,6 +80,9 @@ impl NoteAnchor {
             aftersound: 1.0,
             prompt_db_per_s: 0.0,
             after_level_db: 0.0,
+            decay_spread: 1.0,
+            damper_tail: 1.0,
+            direct_db: 0.0,
         }
     }
 }
@@ -154,6 +166,9 @@ impl NoteTable {
                     aftersound: m(x.aftersound, y.aftersound),
                     prompt_db_per_s: m(x.prompt_db_per_s, y.prompt_db_per_s),
                     after_level_db: m(x.after_level_db, y.after_level_db),
+                    decay_spread: m(x.decay_spread, y.decay_spread),
+                    damper_tail: m(x.damper_tail, y.damper_tail),
+                    direct_db: m(x.direct_db, y.direct_db),
                 };
             }
         }

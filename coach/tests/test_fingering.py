@@ -101,13 +101,14 @@ def test_normalise_finger():
 
 
 def test_gen_ground_truth():
-    ex = next(e for e in track_technique.EXERCISES if e.key == "k4-f-rh")
+    ex = next(e for e in track_technique.EXERCISES if e.key == "k2-legato-rh")
     root = ET.fromstring(ex.musicxml().encode("utf-8"))
     notes = written_fingering(root)
-    assert len(notes) == len(root.findall(".//fingering"))
-    bb = [n for n in notes if n["p"] == 70]
-    assert bb
-    assert all(n["f"] == "4" for n in bb)
+    assert len(notes) == len(root.findall(".//fingering")) == 9
+    f4 = [n for n in notes if n["p"] == 65]
+    assert len(f4) == 2
+    assert all(n["f"] == "4" for n in f4)
+    assert [n["f"] for n in notes if n["p"] == 67] == ["5"]
 
 
 def test_sidecar_cycle(tmp_path):

@@ -728,6 +728,9 @@ impl ModalProfile {
             check_f32(&format!("notes[{i}].aftersound"), a.aftersound, 0.1, 5.0)?;
             check_f32(&format!("notes[{i}].prompt_db_per_s"), a.prompt_db_per_s, 0.0, 400.0)?;
             check_f32(&format!("notes[{i}].after_level_db"), a.after_level_db, -60.0, 0.0)?;
+            check_f32(&format!("notes[{i}].decay_spread"), a.decay_spread, 0.0, 4.0)?;
+            check_f32(&format!("notes[{i}].damper_tail"), a.damper_tail, 0.1, 10.0)?;
+            check_f32(&format!("notes[{i}].direct_db"), a.direct_db, -30.0, 30.0)?;
         }
         Ok(())
     }

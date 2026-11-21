@@ -42,7 +42,8 @@ export interface PromptNote {
 export type AnswerStep =
   | { kind: 'note'; pitch: number }
   | { kind: 'pc'; pc: number }
-  | { kind: 'chord'; pcs: number[] };
+  | { kind: 'chord'; pcs: number[] }
+  | { kind: 'direction'; from: number; up: boolean };
 
 export interface EarItem {
   index: number;

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   allHard,
+  BAR_NOTE_ICON_W,
   barNote,
   createNotesStore,
   emptyNotes,
@@ -202,8 +203,21 @@ test("markLayout skips null boxes and offsets icons", () => {
       { bar: 1, left: 10, top: 20, width: 30, height: 40 },
       { bar: 3, left: 100, top: 200, width: 50, height: 60 },
     ],
-    icons: [{ bar: 3, left: 102, top: 198, title: "Bar 3: m" }],
+    icons: [{ bar: 3, left: 130, top: 198, title: "Bar 3: m" }],
   });
+});
+
+test("markLayout puts the note icon at the right end of the bar, clear of the tempo mark", () => {
+  const doc = docWith({ bar_notes: { "1": "a", "2": "b" } });
+  const boxes: (BarBox | null)[] = [
+    { left: 10, top: 20, width: 200, height: 40 },
+    { left: 210, top: 20, width: 12, height: 40 },
+  ];
+  assert.deepEqual(markLayout(doc, boxes).icons, [
+    { bar: 1, left: 190, top: 18, title: "Bar 1: a" },
+    { bar: 2, left: 212, top: 18, title: "Bar 2: b" },
+  ]);
+  assert.equal(BAR_NOTE_ICON_W, 18);
 });
 
 test("placePopup clamps to the viewport", () => {

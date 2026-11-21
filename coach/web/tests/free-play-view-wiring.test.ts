@@ -45,6 +45,14 @@ test("free-play-view.ts follows the wiring rules", () => {
   }
 });
 
+test("free play staff zooms to its width and never scrolls vertically", () => {
+  assert.ok(view.includes("freePlayZoom(staff.clientWidth)"));
+  assert.ok(!view.includes("osmd.Zoom = 1.0"));
+  const rule = css.slice(css.indexOf(".free-play-staff {"), css.indexOf("}", css.indexOf(".free-play-staff {")));
+  assert.ok(rule.includes("overflow-x: auto"));
+  assert.ok(rule.includes("overflow-y: hidden"));
+});
+
 test("every class used by free-play-view.ts has a CSS rule", () => {
   const classes: string[] = [];
   for (const m of view.matchAll(/className = "([^"]+)"/g)) {

@@ -37,7 +37,8 @@ import { createSidebar } from "./sidebar";
 import { createSkillsView } from "./skills-view";
 import { createLogView } from "./log-view";
 import { createReplayView } from "./replay-view";
-import { ApiError, fetchAttempt, fetchLog, fetchPlan, fetchScore, fetchScoreNotes, postAttempt, saveScoreNotes } from "./api";
+import { ApiError, fetchAttempt, fetchLog, fetchPlan, fetchScore, fetchScoreNotes, onServerReach, postAttempt, saveScoreNotes, SERVER_UNREACHABLE_MESSAGE } from "./api";
+import { createReachState } from "./server-status";
 import type { ReplayAttempt } from "./replay-logic";
 import { createSightView } from "./sight-view";
 import { fetchSightHistory } from "./api";
@@ -46,7 +47,7 @@ import { createEarView } from "./ear-view";
 import { fetchEarHistory } from "./api";
 import { createAttemptRecorder } from "./attempt-recorder";
 import type { AttemptDrill } from "./attempt-recorder";
-import { attachEvenness, evennessRows, unevenTitle } from "./evenness";
+import { attachEvenness, evennessRows, medianGaps, shownWeakSpots, unevenTitle } from "./evenness";
 import type { AttemptWithEvenness, Evenness } from "./evenness";
 import type { Score, ScoreList } from "./api";
 import { drillHash, keepsPage, linkDrill, linkUi, parseRoute, replayHash } from "./drill-link";
@@ -420,7 +421,12 @@ function saveAttempt(end: "done" | "stop" | "interrupted"): void {
     try {
       const ev = attachEvenness(attempt as AttemptWithEvenness);
       lastEvenness = ev;
-      if (ev) view.markUneven(ev.weak_spots.map((w) => ({ step: w.source_step, title: unevenTitle(w), hand: w.hand })));
+      if (ev) {
+        const gaps = medianGaps({ score_id: attempt.score.id, hands: attempt.practice.hands, steps: attempt.steps });
+        const shown = shownWeakSpots(ev, gaps);
+        lastEvenness = { ...ev, weak_spots: shown };
+        view.markUneven(shown.map((w) => ({ step: w.source_step, title: unevenTitle(w, gaps[w.hand]), hand: w.hand })));
+      }
     } catch (err) {
       console.error(err);
     }
@@ -553,7 +559,7 @@ const sidebar = createSidebar({
   onOpenChange: (open) => topbar.setLibraryOpen(open),
   onResult: (list: ScoreList | null, error: string | null) => {
     if (state !== "idle") return;
-    if (error) showMessage(error);
+    if (error) { if (error === SERVER_UNREACHABLE_MESSAGE) hideMessage(); else showMessage(error); }
     else if (list && list.total === 0) showEmptyLibrary();
     else hideMessage();
   },
@@ -927,6 +933,30 @@ if (keyboard) {
 
 const sight = createSightView({ engine, postAttempt: (a) => postAttempt(a), fetchHistory: (level) => fetchSightHistory(level), fetchPlan: () => fetchPlan(), onBack: () => leaveSkills(), onToast: showToast });
 const ear = createEarView({ engine, postAttempt: (a) => postAttempt(a), fetchHistory: (level) => fetchEarHistory(level), fetchPlan: () => fetchPlan(), onBack: () => leaveSkills(), onToast: showToast });
+const serverBanner = byId<HTMLElement>("server-banner");
+const reach = createReachState();
+reach.onChange((down) => {
+  serverBanner.hidden = !down;
+});
+onServerReach((ok) => reach.report(ok));
+byId<HTMLButtonElement>("server-retry").addEventListener("click", () => retryLoad());
+
+function retryLoad(): void {
+  void sidebar.refresh();
+  if (skills.visible()) {
+    skills.show();
+    return;
+  }
+  if (logView.visible()) {
+    logView.show();
+    return;
+  }
+  if ((sight.visible() && !sight.running()) || (ear.visible() && !ear.running()) || state === "hashError") {
+    applyRoute(location.hash);
+    syncFreePlay();
+  }
+}
+
 const startRoute = parseRoute(location.hash).route;
 if (startRoute.kind === "score") state = "opening";
 void sidebar.refresh();

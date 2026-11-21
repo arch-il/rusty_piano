@@ -46,7 +46,14 @@ export function createEarMatcher(steps: readonly AnswerStep[]): EarMatcher {
       }
       const step = steps[index];
       const note = ev.note;
-      if (step.kind === 'note') {
+      if (step.kind === 'direction') {
+        if (step.up ? note > step.from : note < step.from) {
+          out.push({ kind: 'accepted', step: index, note });
+          advance(out);
+        } else {
+          out.push({ kind: 'wrong', step: index, note });
+        }
+      } else if (step.kind === 'note') {
         if (note === step.pitch) {
           out.push({ kind: 'accepted', step: index, note });
           advance(out);

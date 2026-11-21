@@ -112,7 +112,7 @@ export type FetchLike = (
   init?: RequestInitLike,
 ) => Promise<{ ok: boolean; status: number; json(): Promise<unknown> }>;
 
-export const SERVER_UNREACHABLE_MESSAGE = "Can't reach the coach server. Start it in coach/ with: uv run coach serve";
+export const SERVER_UNREACHABLE_MESSAGE = "Coach server not reachable.";
 
 export const CURRENT_JOB_URL = "/api/jobs/current";
 
@@ -123,6 +123,21 @@ export class ApiError extends Error {
     super(message);
     this.name = "ApiError";
     this.status = status;
+  }
+}
+
+export type ReachListener = (reachable: boolean) => void;
+let reachListener: ReachListener | null = null;
+
+export function onServerReach(fn: ReachListener | null): void {
+  reachListener = fn;
+}
+
+function reportReach(ok: boolean): void {
+  try {
+    reachListener?.(ok);
+  } catch {
+    // a listener error must not break the request
   }
 }
 
@@ -164,6 +179,7 @@ async function request<T>(url: string, fetchFn: FetchLike, init?: RequestInitLik
   try {
     response = init === undefined ? await fetchFn(url) : await fetchFn(url, init);
   } catch {
+    reportReach(false);
     throw new ApiError(SERVER_UNREACHABLE_MESSAGE, 0);
   }
   if (!response.ok) {
@@ -174,9 +190,14 @@ async function request<T>(url: string, fetchFn: FetchLike, init?: RequestInitLik
       body = null;
     }
     const error = (body as { error?: unknown } | null)?.error;
-    if (typeof error === "string") throw new ApiError(error, response.status);
+    if (typeof error === "string") {
+      reportReach(true);
+      throw new ApiError(error, response.status);
+    }
+    reportReach(false);
     throw new ApiError(SERVER_UNREACHABLE_MESSAGE, response.status);
   }
+  reportReach(true);
   return (await response.json()) as T;
 }
 

@@ -196,3 +196,153 @@ def test_gen_hook(tmp_path, monkeypatch):
     assert row["tags"] == "exercise beginner r4 reading"
     assert "Makes 2 short" in GenSource().setup_steps(lib)[0].detail
     lib.close()
+
+
+def beams(n):
+    return [(b.get("number"), b.text) for b in n.findall("beam")]
+
+
+def accs(ex, staff="1"):
+    return [(a.text if (a := n.find("accidental")) is not None else None) for n in notes_of(ex, staff)]
+
+
+def test_sixteenth_beams_and_hooks():
+    ns = notes_of(g(rh="C4:s D4:s E4:s F4:s G4:q A4:h"))
+    assert ns[0].find("type").text == "16th"
+    assert beams(ns[0]) == [("1", "begin"), ("2", "begin")]
+    assert beams(ns[1]) == [("1", "continue"), ("2", "continue")]
+    assert beams(ns[3]) == [("1", "end"), ("2", "end")]
+    ns = notes_of(g(rh="C4:e. D4:s G4:h. | C4:s D4:e. G4:h."))
+    assert beams(ns[0]) == [("1", "begin")]
+    assert beams(ns[1]) == [("1", "end"), ("2", "backward hook")]
+    assert beams(ns[3]) == [("1", "begin"), ("2", "forward hook")]
+    assert beams(notes_of(g(rh="C4:e D4:e E4:h."))[0]) == [("1", "begin")]
+    with pytest.raises(ValueError):
+        write(g(rh="C4:s. D4:q. E4:h"))
+
+
+def test_six_eight(tmp_path):
+    ex = g(time="6/8", rh="C4:e D4:e E4:e F4:e G4:e A4:e")
+    r = root_of(ex)
+    assert r.find(".//time/beats").text == "6" and r.find(".//time/beat-type").text == "8"
+    assert r.find(".//metronome/beat-unit").text == "quarter"
+    ns = notes_of(ex)
+    assert [beams(n)[0][1] for n in ns] == ["begin", "continue", "end"] * 2
+    p, _ = load(ex, tmp_path)
+    assert analyse_file(p).time_signature == "6/8"
+    with pytest.raises(ValueError):
+        write(g(time="6/8", rh="C4:3e D4:3e E4:3e F4:h."))
+
+
+def test_cut_time():
+    r = root_of(g(time="2/2", rh="C4:w"))
+    t = r.find(".//time")
+    assert t.get("symbol") == "cut"
+    assert t.find("beats").text == "2" and t.find("beat-type").text == "2"
+
+
+def test_key_alters_and_accidentals():
+    ex = g(fifths=2, rh="F#4:q C#4:q D4:q B3:q")
+    assert accs(ex) == [None, None, None, None]
+    assert [n.find("pitch/alter") is not None for n in notes_of(ex)] == [True, True, False, False]
+    ex = g(fifths=-3, rh="Bb3:q Eb4:q Ab4:q D4:q")
+    assert accs(ex) == [None] * 4
+    assert [n.find("pitch/alter") is not None for n in notes_of(ex)] == [True, True, True, False]
+    ex = g(fifths=7, rh="F#4:q C#4:q Fb4:q B4:q")
+    assert accs(ex)[:2] == [None, None]
+    assert accs(ex)[2] == "flat"
+    ex = g(fifths=-7, rh="Bb3:q B3:q E4:q F4:q")
+    assert accs(ex) == [None, "natural", "natural", "natural"]
+    with pytest.raises(ValueError):
+        write(g(fifths=8))
+
+
+def test_accidental_bar_rule():
+    assert accs(g(rh="F#4:h F#4:h")) == ["sharp", None]
+    assert accs(g(rh="F#4:h F4:h")) == ["sharp", "natural"]
+    assert accs(g(rh="F#4:h F4:h | F#4:h F5:h")) == ["sharp", "natural", "sharp", None]
+    assert accs(g(rh="F#4:h~ F#4:h")) == ["sharp", None]
+    assert accs(g(rh="F#4:h F#4:h~ | F#4:h F4:h")) == ["sharp", None, None, None]
+    assert accs(g(rh="C4+C#4:w")) == [None, "sharp"]
+
+
+def test_pickup():
+    ex = g(rh="G4:q | C4:w", pickup=12)
+    ns = notes_of(ex)
+    assert ns[0].find("duration").text == "12"
+    assert ET.tostring(root_of(ex).find("part/measure[1]/backup/duration"), encoding="unicode").strip() == "<duration>12</duration>"
+    ex = g(rh="r:h G4:q | C4:w", pickup=36, time="4/4")
+    assert write(ex)
+    ex = g(rh="r | C4:w", pickup=12)
+    assert notes_of(ex)[0].find("duration").text == "12"
+    ex = g(rh="", lh="C3:q | C3:w", pickup=12, hands="left")
+    n2 = notes_of(ex, "1")[0]
+    assert n2.find("rest") is not None and n2.find("duration").text == "12"
+    with pytest.raises(ValueError):
+        write(g(rh="C4:w | C4:w", pickup=12))
+    assert len(root_of(g(rh="G4:q | C4:w", pickup=12)).findall("part/measure")) == 2
+
+
+def test_pickup_bare_rest_bar_one(tmp_path):
+    from music21 import converter
+
+    cases = [
+        (g(rh="G4:q | C4:w", lh="", pickup=12, hands="right"), 12, "quarter", False),
+        (g(rh="G4:q | C4:w", lh="r | C3:w", pickup=12), 12, "quarter", False),
+        (g(rh="G4:q. | C4:w", lh="", pickup=18, hands="right"), 18, "quarter", True),
+    ]
+    for ex, dur, typ, dotted in cases:
+        xml = write(ex)
+        assert 'measure="yes"' not in xml.split("</measure>")[0]
+        assert '<measure number="1" implicit="yes">' in xml
+        rest = [n for n in notes_of(ex, "2") if n.find("rest") is not None][0]
+        assert rest.find("duration").text == str(dur)
+        assert rest.find("type").text == typ
+        assert (rest.find("dot") is not None) == dotted
+        score = converter.parseData(xml, format="musicxml")
+        lens = [p.getElementsByClass("Measure")[0].duration.quarterLength for p in score.parts]
+        assert lens[0] == lens[1] == dur / 12
+    assert 'implicit' not in write(g(rh="C4:w | C4:w"))
+
+
+def test_accent():
+    n = notes_of(g(rh="C4:w>"))[0]
+    arts = n.findall("notations/articulations")
+    assert len(arts) == 1 and arts[0].find("accent") is not None
+    n = notes_of(g(rh="C4:h>! D4:h"))[0]
+    arts = n.findall("notations/articulations")
+    assert len(arts) == 1
+    assert arts[0].find("accent") is not None and arts[0].find("staccato") is not None
+
+
+def test_ramp_drill():
+    ex = g(drill_tempo=60, loop=True, ramp=True, target=100)
+    d = drill(ex)
+    assert d["tempo"] == 60 and d["loop"] is True and d["ramp"] is True and d["target"] == 100
+    d = drill(g())
+    assert d["tempo"] == 100 and d["loop"] is False and "ramp" not in d and "target" not in d
+    for bad in (dict(drill_tempo=10), dict(drill_tempo=200), dict(ramp=True, target=100),
+                dict(ramp=True, loop=True), dict(ramp=True, loop=True, target=301)):
+        with pytest.raises(ValueError):
+            write(g(**bad))
+
+
+def test_combinations():
+    ns = notes_of(g(rh="r:3e r:3e E4:3e G4:h."))
+    assert all(n.find("time-modification") is not None for n in ns[:3])
+    assert ns[0].find("rest") is not None
+    ns = notes_of(g(rh="C4:3e~ C4:3e D4:3e G4:h."))
+    assert ns[0].find("notations/tied").get("type") == "start"
+    assert ns[1].find("tie").get("type") == "stop"
+    ns = notes_of(g(rh="C4+E4:h( D4+F4:h)"))
+    assert ns[0].find("notations/slur").get("type") == "start"
+    assert ns[2].find("notations/slur").get("type") == "stop" and ns[3].find("notations/slur") is None
+    assert ns[3].find("chord") is not None
+    assert ns[1].find("notations/slur") is None
+    ns = notes_of(g(rh="C4+E4:w@1"))
+    assert ns[0].find("notations/technical/fingering").text == "1"
+    assert ns[1].find("notations/technical") is None
+    ex = g(rh="mf ped C4:q>  D4:q! f E4:q> pedchange F4:q pedup")
+    r = root_of(ex)
+    assert len(r.findall(".//direction")) >= 6
+    assert len(r.findall(".//accent")) == 2 and len(r.findall(".//staccato")) == 1

@@ -9,7 +9,7 @@ import { DEFAULT_CUSTOM, KEY_HIGH, KEY_LOW, LEVELS, levelById, normalizeCustom, 
 import type { Card, Clef, CustomRange, LevelDef, SightHistory, SightRound, SightStepRecord } from "./sight-levels";
 import { cardXml, DEFAULT_XML_COLORS, WRONG_ANCHOR_COLOR, wrongNoteOffset } from "./sight-xml";
 import type { XmlMarks } from "./sight-xml";
-import { STRIP_SIZE, stripStart, stripXml } from "./sight-strip";
+import { staffLayout, stripStart, stripXml } from "./sight-strip";
 import { nextShow, paramsAfterPick } from "./sight-route-state";
 import { createSightController } from "./sight-controller";
 import type { SightEnd } from "./sight-controller";
@@ -53,6 +53,10 @@ function byId<T extends HTMLElement>(id: string): T {
   const el = document.getElementById(id);
   if (!el) throw new Error(`#${id} missing`);
   return el as T;
+}
+
+export function keysScrollDelta(keysBottom: number, viewBottom: number, margin = 8): number {
+  return Math.max(0, Math.ceil(keysBottom + margin - viewBottom));
 }
 
 function cssColour(style: CSSStyleDeclaration, name: string, fallback: string): string {
@@ -298,6 +302,7 @@ export function createSightView(opts: SightViewOptions): {
       wrong: cssColour(style, "--color-mark-wrong", DEFAULT_XML_COLORS.wrong),
     };
     const strip = currentLevel().kind !== "bars";
+    const fit = staffLayout(staffEl.clientWidth, currentLevel().kind);
     staffEl.classList.toggle("strip", strip);
     let restore: string | null = null;
     if (strip) {
@@ -306,16 +311,23 @@ export function createSightView(opts: SightViewOptions): {
       stripStartIdx = stripStart(stripStartIdx, card.index, cards.length);
       restore = cssColour(style, "--color-accent", "#2f6fdd");
       await osmd.load(stripXml(cards, stripStartIdx, card.index, marks, { ...colors, current: restore }));
-      osmd.EngravingRules.RenderXMeasuresPerLineAkaSystem = STRIP_SIZE;
-      osmd.Zoom = currentLevel().kind === "intervals" ? 1.0 : 1.2; // two notes per card need more width
+      osmd.EngravingRules.RenderXMeasuresPerLineAkaSystem = fit.perLine;
+      osmd.Zoom = fit.zoom;
     } else {
       await osmd.load(cardXml(card, { ...marks, colors }));
       osmd.EngravingRules.RenderXMeasuresPerLineAkaSystem = 0;
-      osmd.Zoom = 1.5;
+      osmd.Zoom = fit.zoom;
     }
     osmd.render();
     const off = wrongNoteOffset(card, marks);
     if (off !== null) drawWrongHead(off, colors.wrong, restore);
+    if (card.index === 0 && controller.running()) revealKeys();
+  }
+
+  function revealKeys(): void {
+    const view = section;
+    const delta = keysScrollDelta(keysEl.getBoundingClientRect().bottom, view.getBoundingClientRect().bottom);
+    if (delta > 0) view.scrollTop += delta;
   }
 
   function drawWrongHead(
@@ -556,6 +568,7 @@ export function createSightView(opts: SightViewOptions): {
     const run = renderChain.then(() => {
       osmd = null;
       staffEl.replaceChildren();
+      staffEl.classList.remove("strip");
     });
     renderChain = run.catch(() => undefined);
   }

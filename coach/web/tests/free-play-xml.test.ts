@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { buildTimeline } from "../src/score-timeline.ts";
-import { fallbackText, freePlayXml } from "../src/free-play-xml.ts";
+import { fallbackText, freePlayXml, freePlayZoom } from "../src/free-play-xml.ts";
 import type { Slot } from "../src/free-play-slots.ts";
 import { fakeSheetFromMusicXml } from "./helpers/fake-osmd-sheet.ts";
 
@@ -112,6 +112,14 @@ test("fallbackText", () => {
     "C (C4 E4 G4) | D4",
   );
   assert.equal(fallbackText([{ notes: [66], clef: "treble" }], -1), "Gb4");
+});
+
+test("freePlayZoom shrinks the staff only below 600 px, down to 0.7", () => {
+  assert.equal(freePlayZoom(0), 1);
+  assert.equal(freePlayZoom(900), 1);
+  assert.equal(freePlayZoom(600), 1);
+  assert.equal(freePlayZoom(450), 0.75);
+  assert.equal(freePlayZoom(300), 0.7);
 });
 
 test("every slot set passes the well-formedness check", () => {

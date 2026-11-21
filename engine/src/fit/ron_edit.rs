@@ -76,7 +76,7 @@ pub fn set_notes(text: &str, anchors: &[NoteAnchor]) -> Result<String, String> {
     let mut block = format!("    notes: [{nl}");
     for a in anchors {
         block.push_str(&format!(
-            "        (note: {}, cents: {}, level_db: {}, t60: {}, damping: {}, inharmonicity: {}, hardness: {}, strike: {}, damper: {}, aftersound: {}, prompt_db_per_s: {}, after_level_db: {}),{nl}",
+            "        (note: {}, cents: {}, level_db: {}, t60: {}, damping: {}, inharmonicity: {}, hardness: {}, strike: {}, damper: {}, aftersound: {}, prompt_db_per_s: {}, after_level_db: {}, detune: {}, decay_spread: {}, damper_tail: {}, direct_db: {}),{nl}",
             a.note,
             fmt_dec(a.cents as f64, 2),
             fmt_dec(a.level_db as f64, 2),
@@ -89,6 +89,10 @@ pub fn set_notes(text: &str, anchors: &[NoteAnchor]) -> Result<String, String> {
             fmt_dec(a.aftersound as f64, 3),
             fmt_dec(a.prompt_db_per_s as f64, 2),
             fmt_dec(a.after_level_db as f64, 2),
+            fmt_dec(a.detune as f64, 3),
+            fmt_dec(a.decay_spread as f64, 3),
+            fmt_dec(a.damper_tail as f64, 3),
+            fmt_dec(a.direct_db as f64, 2),
         ));
     }
     block.push_str(&format!("    ],{nl}"));
@@ -255,6 +259,10 @@ mod tests {
                 strike: 0.8,
                 prompt_db_per_s: 42.5,
                 after_level_db: -12.25,
+                detune: 0.5,
+                decay_spread: 0.4,
+                damper_tail: 2.5,
+                direct_db: 6.25,
                 ..NoteAnchor::neutral(21)
             },
             NoteAnchor { cents: 4.0, level_db: -2.25, t60: 0.5, hardness: 1.333, ..NoteAnchor::neutral(60) },
@@ -284,7 +292,11 @@ mod tests {
             assert!((x.strike - y.strike).abs() <= 0.0005, "{x:?} {y:?}");
             assert!((x.prompt_db_per_s - y.prompt_db_per_s).abs() <= 0.005, "{x:?} {y:?}");
             assert!((x.after_level_db - y.after_level_db).abs() <= 0.005, "{x:?} {y:?}");
-            assert_eq!((y.hammer_mass, y.detune), (1.0, 1.0));
+            for (u, v) in [(x.detune, y.detune), (x.decay_spread, y.decay_spread), (x.damper_tail, y.damper_tail)] {
+                assert!((u - v).abs() <= 0.0005, "{x:?} {y:?}");
+            }
+            assert!((x.direct_db - y.direct_db).abs() <= 0.005, "{x:?} {y:?}");
+            assert_eq!(y.hammer_mass, 1.0);
         }
         assert_eq!(q.output.output_gain, 0.003141);
         assert_eq!(q.hammer.exponent_bass, 2.45);

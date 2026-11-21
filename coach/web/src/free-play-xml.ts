@@ -5,6 +5,13 @@ const TREBLE = '<clef><sign>G</sign><line>2</line></clef>';
 const BASS = '<clef><sign>F</sign><line>4</line></clef>';
 const BARLINE = '<barline location="right"><bar-style>none</bar-style></barline>';
 
+export const FREE_PLAY_FULL_PX = 600;
+
+export function freePlayZoom(widthPx: number): number {
+  if (!(widthPx > 0) || widthPx >= FREE_PLAY_FULL_PX) return 1.0;
+  return Math.max(0.7, Math.round((widthPx / FREE_PLAY_FULL_PX) * 100) / 100);
+}
+
 function attrs(fifths: number, clef: string): string {
   return `<attributes><divisions>1</divisions><key><fifths>${fifths}</fifths></key><time print-object="no"><beats>4</beats><beat-type>4</beat-type></time>${clef}</attributes>`;
 }

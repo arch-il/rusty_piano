@@ -59,9 +59,9 @@ def add_analyse_parser(subparsers) -> None:
     p.add_argument("--end-ms", type=float, default=None, help="ignore session notes after this time (.mid only)")
     p.add_argument("--chord-ms", type=float, default=40.0, help="notes closer than this count as one chord (default 40)")
     p.add_argument("--data-dir", default=None, help=DATA_DIR_HELP)
-    p.add_argument("--sessions-dir", default=None, help="folder of session .mid files (default: coach/data/sessions)")
-    p.add_argument("--attempts-dir", default=None, help="folder of saved attempts (default: coach/data/attempts)")
-    p.add_argument("--reports-dir", default=None, help="folder for reports (default: coach/data/reports)")
+    p.add_argument("--sessions-dir", default=None, help="folder of session .mid files (default: RUSTY_PIANO_DATA_DIR/sessions or coach/data/sessions)")
+    p.add_argument("--attempts-dir", default=None, help="folder of saved attempts (default: RUSTY_PIANO_DATA_DIR/attempts or coach/data/attempts)")
+    p.add_argument("--reports-dir", default=None, help="folder for reports (default: RUSTY_PIANO_DATA_DIR/reports or coach/data/reports)")
     p.add_argument("--json", action="store_true", help="print the report JSON only")
 
 
